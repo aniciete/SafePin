@@ -1,1 +1,3 @@
 # SafePin
+
+using namespace std;
