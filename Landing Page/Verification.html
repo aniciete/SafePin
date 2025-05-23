@@ -48,10 +48,17 @@
         }
         
         .logo {
+            display: flex;
+            align-items: center;
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary-color);
             text-decoration: none;
+        }
+        
+        .logo img {
+            height: 40px;
+            margin-right: 0.5rem;
         }
         
         nav ul {
@@ -203,7 +210,10 @@
 <body>
     <header>
         <div class="container header-container">
-            <a href="Landing Page.html" class="logo">SafePin</a>
+            <a href="Landing Page.html" class="logo">
+                <img src="SafePin Logo Green.svg" alt="SafePin Logo">
+                SafePin
+            </a>
             <nav>
                 <ul>
                     <li><a href="Landing Page.html">Home</a></li>
