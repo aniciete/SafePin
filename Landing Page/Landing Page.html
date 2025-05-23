@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePin - Creating Safer Communities</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        h1, h2, h3, p {
+            margin-top: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #6ab04c; /* Green */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5a9a42;
+        }
+
+        .btn-outline {
+            border: 2px solid #6ab04c;
+            color: #6ab04c;
+            background-color: white;
+        }
+         .btn-outline:hover {
+            background-color: #f0f8f0;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #6ab04c;
+        }
+
+        .logo img {
+            height: 30px; /* Adjust as needed */
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: #555;
+            font-size: 0.9em;
+        }
+        nav ul li a:hover {
+            color: #6ab04c;
+        }
+        .nav-button {
+            background-color: #6ab04c;
+            color: white !important;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .nav-button:hover {
+            background-color: #5a9a42;
+        }
+
+
+        /* Hero Section */
+        .hero {
+            background-color: #e9f5e9; /* Light green background */
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .hero-map-icon img {
+            width: 80px; /* Adjust as needed */
+            margin-bottom: 10px;
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 1.1em;
+            color: #555;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+
+        .hero .btn-primary {
+            font-size: 1.2em;
+            padding: 15px 30px;
+        }
+        .check-status-link {
+            color: #6ab04c;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+        }
+         .check-status-link:hover {
+            text-decoration: underline;
+        }
+
+
+        /* Report Info Section */
+        .report-info {
+            background-color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+        .report-info-grid {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .info-item {
+            flex: 1;
+            max-width: 250px;
+        }
+        .info-item img {
+            width: 60px; /* Adjust icon size */
+            margin-bottom: 15px;
+        }
+        .info-item h3 {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .info-item p {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+
+        /* How It Works Section */
+        .how-it-works {
+            background-color: #6ab04c; /* Green background */
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .how-it-works h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start; /* Align items to the top for varying text lengths */
+            gap: 20px;
+        }
+
+        .step {
+            background-color: #5a9a42; /* Darker green */
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1;
+            max-width: 220px; /* Control max width of steps */
+        }
+
+        .step h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step h3 .step-number {
+            background-color: white;
+            color: #5a9a42;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step p {
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* About SafePin Section */
+        .about-safepin {
+            background-color: white;
+            padding: 50px 0;
+        }
+        .about-safepin .container {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        .about-icon img {
+            width: 150px; /* Adjust as needed */
+        }
+        .about-text h2 {
+            font-size: 1.8em;
+            color: #6ab04c;
+            margin-bottom: 15px;
+        }
+        .about-text p {
+            font-size: 1em;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        /* Statistics Section */
+        .statistics {
+            background-color: #e9f5e9; /* Light green background */
+            padding: 30px 0;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            text-align: center;
+        }
+        .stat-item {
+            color: #333;
+        }
+        .stat-item img { /* Assuming icons are used */
+            width: 30px; /* Adjust icon size */
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .stat-item .number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #6ab04c;
+            margin-left: 5px; /* Space between icon and number */
+        }
+        .stat-item .label {
+            font-size: 0.9em;
+            color: #555;
+            display: block; /* Or adjust flex alignment in stat-item */
+        }
+        .safepin-stats-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #6ab04c;
+            margin-right: 30px; /* Space between title and first stat */
+        }
+
+
+        /* Trusted By Section */
+        .trusted-by {
+            background-color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .trusted-by h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .logos-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px; /* Space between logos */
+        }
+
+        .logos-container img {
+            height: 60px; /* Adjust logo height as needed */
+            max-width: 120px; /* Control max width of logos */
+            filter: grayscale(100%); /* If logos are grayscale */
+            opacity: 0.7;
+        }
+        /* .logos-container img:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+        } */
+
+        /* Recent Alerts Section */
+        .recent-alerts {
+            background-color: #f4f4f4; /* Light grey background */
+            padding: 40px 0;
+        }
+        .recent-alerts h2 {
+            text-align: center;
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .alerts-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .alert-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            flex: 1;
+            max-width: 32%; /* Roughly for 3 cards */
+        }
+        .alert-card img {
+            width: 100%;
+            height: 180px; /* Fixed height for images */
+            object-fit: cover;
+        }
+        .alert-content {
+            padding: 15px;
+        }
+        .alert-content h3 {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 10px;
+            min-height: 40px; /* Ensure consistent title height */
+        }
+        .alert-content p {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .alert-content .read-more {
+            color: #6ab04c;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .alert-content .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #6ab04c; /* Green background */
+            color: white;
+            padding: 30px 0;
+            font-size: 0.9em;
+        }
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align items to the top */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .footer-column {
+            flex: 1;
+            min-width: 180px; /* Minimum width before wrapping */
+            margin-bottom: 20px; /* Space for wrapped items */
+            padding: 0 15px;
+        }
+        .footer-column h4 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: white;
+        }
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-column ul li {
+            margin-bottom: 8px;
+        }
+        .footer-column ul li a {
+            color: #e0e0e0; /* Lighter text for links */
+        }
+        .footer-column ul li a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        .footer-column p {
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .footer-column input[type="email"] {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .footer-column button.subscribe-btn {
+            padding: 10px;
+            background-color: #5a9a42; /* Darker green */
+            color: white;
+            border: 1px solid #5a9a42;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+         .footer-column button.subscribe-btn:hover {
+            background-color: #4c8a38;
+        }
+        .newsletter-form {
+            display: flex;
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .hero h1 { font-size: 2em; }
+            .hero p { font-size: 1em; }
+            .steps-container, .alerts-grid, .stats-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .step, .alert-card {
+                width: 80%;
+                max-width: 400px; /* Control max width on smaller screens */
+                margin-bottom: 20px;
+            }
+            .about-safepin .container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .about-icon { margin-bottom: 20px; }
+            .stats-container { gap: 15px; }
+            .safepin-stats-title { margin-right: 0; margin-bottom: 15px; }
+            .stat-item { flex-direction: row; align-items: center; justify-content: center; } /* if icons are on left */
+            .stat-item .label { margin-left: 5px; }
+        }
+
+        @media (max-width: 768px) {
+            header .container { flex-direction: column; gap:10px;}
+            nav ul { flex-direction: column; text-align: center; margin-top: 10px; }
+            nav ul li { margin: 10px 0; }
+            .report-info-grid { flex-direction: column; }
+            .logos-container img { height: 50px; }
+            .footer-container { flex-direction: column; text-align:center; }
+            .footer-column { width: 100%; text-align:center; padding: 0; }
+            .footer-column ul { display: inline-block; text-align: left;} /* Center the block, text left */
+            .newsletter-form { justify-content: center; }
+
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8em; }
+            .hero .btn-primary { font-size: 1em; padding: 12px 25px; }
+            .how-it-works h2 { font-size: 1.6em; }
+            .step h3 { font-size: 1.1em; }
+            .alert-card { width: 95%; }
+             .footer-column input[type="email"] {
+                width: 60%;
+            }
+            .footer-column button.subscribe-btn {
+                width: auto; /* Or a fixed percentage */
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <a href="#" class="logo">
+                <img src="https://via.placeholder.com/40x40.png?text=SP" alt="SafePin Logo"> SafePin
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#" class="nav-button">Authority Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+    <div class="container hero-content">
+        <div class="hero-map-icon">
+            <img src="https://via.placeholder.com/100x100/6ab04c/ffffff?Text=MapPin" alt="Map Pin Icon">
+        </div>
+        <h1>Creating Safer Communities</h1>
+        <p>SafePin empowers citizens to anonymously report incidents and stay informed about safety concerns in your community.</p>
+        <a href="Report Page.html" class="btn btn-primary">Report Incident</a>
+        <a href="#" class="check-status-link">Check Existing Report Status</a>
+    </div>
+</section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <h3><span class="step-number">1</span>Report</h3>
+                    <p>Citizens submit anonymous reports through the SafePin platform.</p>
+                </div>
+                <div class="step">
+                    <h3><span class="step-number">2</span>Verify</h3>
+                    <p>Submitted reports are verified by our dedicated team for authenticity.</p>
+                </div>
+                <div class="step">
+                    <h3><span class="step-number">3</span>Inform</h3>
+                    <p>Verified incidents are plotted on the map and alerts are sent to relevant users.</p>
+                </div>
+                <div class="step">
+                    <h3><span class="step-number">4</span>Act</h3>
+                    <p>Authorities are notified to take appropriate action based on the reports.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-safepin">
+        <div class="container">
+            <div class="about-icon">
+                <img src="https://via.placeholder.com/150x150/6ab04c/ffffff?Text=ShieldCheck" alt="SafePin Shield Icon"> </div>
+            <div class="about-text">
+                <h2>About SafePin</h2>
+                <p>SafePin is a community-driven safety platform designed to bridge the gap between citizens and authorities. By enabling anonymous reporting and information sharing, we aim to create a safer environment where sensitive information reaches the right people while keeping communities informed about critical safety concerns.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="statistics">
+        <div class="container stats-container">
+            <span class="safepin-stats-title">SafePin statistics</span>
+            <div class="stat-item">
+                <img src="https://via.placeholder.com/30x30/6ab04c/ffffff?Text=Pin" alt="Report Icon"> <span class="number">1,738</span>
+                <span class="label">Total Reports</span>
+            </div>
+            <div class="stat-item">
+                <img src="https://via.placeholder.com/30x30/6ab04c/ffffff?Text=User" alt="User Icon"> <span class="number">47</span>
+                <span class="label">Active Users</span>
+            </div>
+            <div class="stat-item">
+                <img src="https://via.placeholder.com/30x30/6ab04c/ffffff?Text=Auth" alt="Authorities Icon"> <span class="number">279</span> <span class="label">Total Incidents</span> </div>
+             <div class="stat-item">
+                <img src="https://via.placeholder.com/30x30/6ab04c/ffffff?Text=Police" alt="Authorities Icon"> <span class="number">9</span>
+                <span class="label">Participating Authorities</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="trusted-by">
+        <div class="container">
+            <h2>Trusted by Local Authorities & Organizations</h2>
+            <div class="logos-container">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=PNP" alt="PNP Logo">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=BFP" alt="BFP Logo">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=DILG" alt="DILG Logo">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=DSWD" alt="DSWD Logo">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=RED+CROSS" alt="Red Cross Logo">
+                <img src="https://via.placeholder.com/100x60/cccccc/888888?text=DICT" alt="DICT Logo">
+            </div>
+        </div>
+    </section>
+
+    <section class="recent-alerts">
+        <div class="container">
+            <h2>Recent Alerts</h2>
+            <div class="alerts-grid">
+                <div class="alert-card">
+                    <img src="https://via.placeholder.com/300x180/eeeeee/aaaaaa?text=Alert+Image+1" alt="Alert 1"> <div class="alert-content">
+                        <h3>Sunog sumiklab sa Maginhawa St. Quezon City</h3>
+                        <p>Isang sunog ang sumiklab...</p>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+                <div class="alert-card">
+                    <img src="https://via.placeholder.com/300x180/eeeeee/aaaaaa?text=Alert+Image+2" alt="Alert 2"> <div class="alert-content">
+                        <h3>2 lalaki na nangholdap at nanaksak, timbog sa Maynila</h3>
+                        <p>Nahuli ang dalawang suspek...</p>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+                <div class="alert-card">
+                    <img src="https://via.placeholder.com/300x180/eeeeee/aaaaaa?text=Alert+Image+3" alt="Alert 3"> <div class="alert-content">
+                        <h3>Rider ng scooter nasawi sa, tricycle sumalpok sa 2 sasakyan</h3>
+                        <p>Isang aksidente sa kalsada...</p>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-column">
+                <h4>SafePin</h4>
+                <p>&copy; 2024 SafePin. All rights reserved. Creating safer communities together.</p>
+            </div>
+            <div class="footer-column">
+                <h4>SafePin</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Report a Bug</a></li>
+                    <li><a href="#">Help Center</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Stay up to date</h4>
+                <p>Subscribe to our newsletter for the latest updates and safety alerts.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email">
+                    <button type="submit" class="subscribe-btn">→</button>
+                </form>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - SafePin</title>
+    <style>
+        /* General Styles (reused from previous pages) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        h1, h2, h3, p {
+            margin-top: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .btn-primary-green {
+            background-color: #6ab04c;
+            color: white;
+            border: none;
+        }
+        .btn-primary-green:hover {
+            background-color: #5a9a42;
+        }
+
+        /* Header Styles (reused) */
+        header {
+            background-color: white;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+        }
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #6ab04c;
+        }
+        .logo img {
+            height: 30px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        nav ul { list-style: none; padding: 0; margin: 0; display: flex; }
+        nav ul li { margin-left: 20px; }
+        nav ul li a { color: #555; font-size: 0.9em; }
+        nav ul li a:hover { color: #6ab04c; }
+        .nav-button { background-color: #6ab04c; color: white !important; padding: 8px 15px; border-radius: 5px; font-size: 0.9em; }
+        .nav-button:hover { background-color: #5a9a42; }
+
+        /* Page Title Section (reused) */
+        .page-title-section {
+            background-color: white;
+            padding: 20px 0 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .page-title-section h1 {
+            font-size: 2.2em;
+            color: #444;
+            font-weight: normal;
+        }
+
+        /* About SafePin Section */
+        .about-safepin-section {
+            background-color: white;
+            padding: 50px 0;
+            margin-top: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .about-safepin-section::before { /* Background gradient/image effect */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('https://via.placeholder.com/1200x400/e9f5e9/e9f5e9?text='); /* Light green background */
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+        .about-safepin-content {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            max-width: 900px;
+            z-index: 2;
+            padding: 0 20px; /* Add padding for smaller screens */
+        }
+        .about-safepin-icon {
+            flex-shrink: 0;
+            width: 150px;
+            height: 150px;
+            background-color: #6ab04c;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .about-safepin-icon img {
+            width: 80px;
+            height: 80px;
+        }
+        .about-safepin-text h2 {
+            font-size: 2.2em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .about-safepin-text p {
+            font-size: 1.1em;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        /* How It Works Section */
+        .how-it-works-section {
+            background-color: #f9f9f9;
+            padding: 60px 0;
+            text-align: center;
+        }
+        .how-it-works-section h2 {
+            font-size: 2.2em;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        .how-it-works-steps {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .how-it-works-step {
+            background-color: #6ab04c;
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 220px; /* Fixed width for steps */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: left;
+            position: relative;
+            overflow: hidden; /* For the number background */
+        }
+        .how-it-works-step::before { /* Large number background */
+            content: attr(data-step-number);
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 6em;
+            font-weight: bold;
+            color: rgba(255,255,255,0.1);
+            z-index: 0;
+        }
+        .how-it-works-step h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .how-it-works-step p {
+            font-size: 0.9em;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Meet the Team Section */
+        .meet-the-team-section {
+            background-color: white;
+            padding: 60px 0;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        .meet-the-team-section h2 {
+            font-size: 2.2em;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        .team-members {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .team-member-card {
+            background-color: #e9f5e9; /* Light green background */
+            border-radius: 12px;
+            padding: 20px;
+            width: 220px; /* Fixed width for cards */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .team-member-card::before { /* Top green curved background */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px; /* Height of the curved part */
+            background-color: #6ab04c;
+            border-bottom-left-radius: 50% 20%;
+            border-bottom-right-radius: 50% 20%;
+            z-index: 0;
+        }
+        .team-member-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .team-member-card h3 {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        .team-member-card p {
+            font-size: 0.9em;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Footer Styles (reused) */
+        footer {
+            background-color: #6ab04c;
+            color: white;
+            padding: 30px 0;
+            font-size: 0.9em;
+            margin-top: 30px;
+        }
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-column {
+            flex: 1;
+            min-width: 180px;
+            margin-bottom: 20px;
+            padding: 0 15px;
+        }
+        .footer-column h4 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: white;
+        }
+        .footer-column ul { list-style: none; padding: 0; margin: 0; }
+        .footer-column ul li { margin-bottom: 8px; }
+        .footer-column ul li a { color: #e0e0e0; }
+        .footer-column ul li a:hover { color: white; text-decoration: underline; }
+        .footer-column p { color: #e0e0e0; line-height: 1.6; }
+        .footer-column input[type="email"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .footer-column button.subscribe-btn {
+            padding: 10px;
+            background-color: #5a9a42;
+            color: white;
+            border: 1px solid #5a9a42;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .footer-column button.subscribe-btn:hover { background-color: #4c8a38; }
+        .newsletter-form { display: flex; }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .about-safepin-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+            .how-it-works-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            .how-it-works-step {
+                width: 80%; /* Adjust width for smaller screens */
+                max-width: 350px;
+            }
+            .team-members {
+                flex-direction: column;
+                align-items: center;
+            }
+            .team-member-card {
+                width: 80%; /* Adjust width for smaller screens */
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header .container { flex-direction: column; gap:10px;}
+            nav ul { flex-direction: column; text-align: center; margin-top: 10px; }
+            nav ul li { margin: 10px 0; }
+            .page-title-section h1,
+            .how-it-works-section h2,
+            .meet-the-team-section h2 {
+                font-size: 1.8em;
+                text-align: center;
+            }
+            .about-safepin-text h2 {
+                font-size: 1.8em;
+            }
+            .about-safepin-text p {
+                font-size: 1em;
+            }
+            .footer-container { flex-direction: column; text-align:center; }
+            .footer-column { width: 100%; text-align:center; padding: 0; }
+            .footer-column ul { display: inline-block; text-align: left;}
+            .newsletter-form { justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 15px 0; }
+            .about-safepin-section { padding: 40px 0; }
+            .about-safepin-icon { width: 100px; height: 100px; }
+            .about-safepin-icon img { width: 60px; height: 60px; }
+            .how-it-works-section { padding: 40px 0; }
+            .meet-the-team-section { padding: 40px 0; }
+            .how-it-works-step, .team-member-card {
+                width: 95%;
+            }
+            .footer-column input[type="email"] { width: calc(100% - 18px); padding: 8px; }
+            .footer-column button.subscribe-btn { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <a href="#" class="logo">
+                <img src="https://via.placeholder.com/40x40.png?text=SP" alt="SafePin Logo">
+                SafePin
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#" style="color: #6ab04c; font-weight: bold;">About Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#" class="nav-button">Authority Access</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-title-section">
+        <div class="container">
+            <h1>About Us</h1>
+        </div>
+    </section>
+
+    <section class="about-safepin-section">
+        <div class="about-safepin-content">
+            <div class="about-safepin-icon">
+                <img src="https://via.placeholder.com/80x80/ffffff/6ab04c?text=%E2%9C%93" alt="SafePin Icon">
+            </div>
+            <div class="about-safepin-text">
+                <h2>About SafePin</h2>
+                <p>SafePin is a community-driven safety platform designed to bridge the gap between citizens and authorities. By enabling anonymous reporting and implementing a structured visual access system, we ensure sensitive information reaches the right people while keeping communities informed about verified safety concerns.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works-section">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="how-it-works-steps">
+                <div class="how-it-works-step" data-step-number="1">
+                    <h3>Report</h3>
+                    <p>Anonymously report incidents by taking a picture or placing a pin on our interactive map and providing details about what happened.</p>
+                </div>
+                <div class="how-it-works-step" data-step-number="2">
+                    <h3>Verify</h3>
+                    <p>Local authorities review and verify reports to ensure accuracy before they become publicly visible.</p>
+                </div>
+                <div class="how-it-works-step" data-step-number="3">
+                    <h3>Inform</h3>
+                    <p>Verified reports appear on the public map, helping community members stay informed about safety concerns.</p>
+                </div>
+                <div class="how-it-works-step" data-step-number="4">
+                    <h3>Act</h3>
+                    <p>Community awareness leads to better decision-making, improved responses from authorities, and ultimately safer neighborhoods.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="meet-the-team-section">
+        <div class="container">
+            <h2>Meet the Team</h2>
+            <div class="team-members">
+                <div class="team-member-card">
+                    <img src="https://via.placeholder.com/120x120/cccccc/333333?text=Member+1" alt="Team Member 1">
+                    <h3>Charles Lawrence Aniciete</h3>
+                    <p>Co-founder</p>
+                </div>
+                <div class="team-member-card">
+                    <img src="https://via.placeholder.com/120x120/cccccc/333333?text=Member+2" alt="Team Member 2">
+                    <h3>Howard Mac M. Callanta</h3>
+                    <p>Co-founder</p>
+                </div>
+                <div class="team-member-card">
+                    <img src="https://via.placeholder.com/120x120/cccccc/333333?text=Member+3" alt="Team Member 3">
+                    <h3>Isaiah Ezekiel P. Vicencio</h3>
+                    <p>Co-founder</p>
+                </div>
+                <div class="team-member-card">
+                    <img src="https://via.placeholder.com/120x120/cccccc/333333?text=Member+4" alt="Team Member 4">
+                    <h3>Jian Edward A. Acob</h3>
+                    <p>Co-founder</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-column">
+                <h4><img src="https://via.placeholder.com/20x20.png?text=S" alt="" style="vertical-align: middle; margin-right: 5px;">SafePin</h4>
+                <p>Copyright © 2024 SafePin <br> All rights reserved.</p>
+                <div class="social-icons" style="margin-top:10px;">
+                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=in" alt="LinkedIn"></a>
+                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=X" alt="Twitter/X"></a>
+                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=yt" alt="YouTube"></a>
+                    <a href="#"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=ig" alt="Instagram"></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>SafePin</h4>
+                <ul>
+                    <li><a href="#">About us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Contact us</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help center</a></li>
+                    <li><a href="#">Terms of service</a></li>
+                    <li><a href="#">Privacy policy</a></li>
+                    <li><a href="#">Status</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Stay up to date</h4>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email address">
+                    <button type="submit" class="subscribe-btn"><img src="https://via.placeholder.com/16x16/ffffff/5a9a42?Text=%3E" alt="Send"></button>
+                </form>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
