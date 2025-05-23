@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Incident - SafePin</title>
+    <style>
+        :root {
+            --primary-color: #6ab04c;
+            --primary-dark: #5a9a42;
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --white: #ffffff;
+            --light-gray: #f4f4f4;
+            --border-color: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--white);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header Styles */
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: var(--text-medium);
+            font-weight: 500;
+            text-decoration: none;
+        }
+        
+        nav a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Main Content */
+        .verification-container {
+            padding: 3rem 0;
+        }
+        
+        .verification-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .verification-header h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-banner {
+            background-color: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .status-banner h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .step {
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+        }
+        
+        .step h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background-color: var(--light-gray);
+            padding: 3rem 0 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-column h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .newsletter-form {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .newsletter-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem 0 0 0.25rem;
+        }
+        
+        .newsletter-button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0 1.25rem;
+            border-radius: 0 0.25rem 0.25rem 0;
+            cursor: pointer;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+            
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="Landing Page.html" class="logo">SafePin</a>
+            <nav>
+                <ul>
+                    <li><a href="Landing Page.html">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="About Us.html">About Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Authority Access</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="verification-container">
+        <div class="container">
+            <div class="verification-header">
+                <h1>Verify Incident</h1>
+            </div>
+            
+            <div class="status-banner">
+                <h2>Status: Your report #01347659 is due for verification</h2>
+            </div>
+            
+            <div class="process-steps">
+                <div class="step">
+                    <h3>Report</h3>
+                    <p>Anonymous reports can be submitted by placing a pin on our interactive map and providing details about what happened.</p>
+                </div>
+                
+                <div class="step">
+                    <h3>Verify</h3>
+                    <p>Local authorities review and verify reports for accuracy using our verification tools.</p>
+                </div>
+                
+                <div class="step">
+                    <h3>Inform</h3>
+                    <p>Verified reports appear on the public map, helping community members stay informed about safety concerns.</p>
+                </div>
+                
+                <div class="step">
+                    <h3>Act</h3>
+                    <p>Community awareness leads to better decision-making, improved responses from authorities, and ultimately safer neighborhoods.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>SafePin</h4>
+                    <p>Copyright © 2022 SafePin<br>All rights reserved.</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>SafePin</h4>
+                    <ul class="footer-links">
+                        <li><a href="About Us.html">About us</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact us</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help center</a></li>
+                        <li><a href="#">Terms of service</a></li>
+                        <li><a href="#">Legal</a></li>
+                        <li><a href="#">Privacy policy</a></li>
+                        <li><a href="#">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Stay up to date</h4>
+                    <p>Subscribe to our newsletter for updates.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your email" class="newsletter-input" required>
+                        <button type="submit" class="newsletter-button">→</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2022 SafePin. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

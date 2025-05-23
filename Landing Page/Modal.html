@@ -294,15 +294,15 @@
 
     <header>
         <div class="container">
-            <a href="#" class="logo">
+            <a href="Landing Page.html" class="logo">
                 <img src="https://via.placeholder.com/40x40.png?text=SP" alt="SafePin Logo">
                 SafePin
             </a>
             <nav>
                 <ul>
-                    <li><a href="#">Home</a></li>
+                    <li><a href="Landing Page.html">Home</a></li>
                     <li><a href="#">Features</a></li>
-                    <li><a href="#">About Us</a></li>
+                    <li><a href="About Us.html">About Us</a></li>
                     <li><a href="#">FAQ</a></li>
                     <li><a href="#" class="nav-button">Authority Access</a></li>
                 </ul>
@@ -409,7 +409,7 @@
             <div class="footer-column">
                 <h4>SafePin</h4>
                 <ul>
-                    <li><a href="#">About us</a></li>
+                    <li><a href="About Us.html">About us</a></li>
                     <li><a href="#">FAQ</a></li>
                     <li><a href="#">Contact us</a></li>
                     <li><a href="#">Terms of Service</a></li>
@@ -508,10 +508,12 @@
         }
 
         if (closeSuccessModalBtn) {
-            closeSuccessModalBtn.addEventListener('click', function() {
-                hideModal(successModal);
-            });
-        }
+        closeSuccessModalBtn.addEventListener('click', function() {
+            hideModal(successModal);
+            // Redirect to Verification.html
+            window.location.href = "Verification.html";
+        });
+    }
 
         // Optional: Hide modal if clicked outside the modal content
         // This part would ideally be implemented with proper event delegation or specific checks
