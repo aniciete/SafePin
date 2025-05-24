@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Import Inter font */
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f6f8;
+            color: #000000;
+        }
+        /* Custom scrollbar for table container */
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #4caf50;
+            border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f9f9f9;
+            border-radius: 9999px;
+        }
+        /* Hide all content sections by default */
+        
+        .content-section {
+            display: none;
+        }
+        /* Show active content section */
+        
+        .content-section.active {
+            display: block;
+        }
+        /* Modal styles */
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f5f6f8] text-[#000000]">
+    <div class="min-h-screen flex flex-col md:flex-row">
+        <aside class="bg-[#7a869a] w-full md:w-64 flex flex-col p-6 space-y-8 rounded-tr-2xl rounded-br-2xl shadow-xl">
+            <div class="flex items-center space-x-2">
+                <img src="https://i.imgur.com/ywa5B5G.png" alt="SafePin Logo" class="h-8 w-auto">
+                <span class="text-white font-semibold text-lg select-none">SafePin</span>
+            </div>
+            <nav class="flex flex-col space-y-4 text-white text-sm font-medium">
+                <button id="overview-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-th-large text-white opacity-80"></i>
+                    <span>Overview</span>
+                </button>
+                <button id="reports-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-file-alt text-white opacity-70"></i>
+                    <span>Reports</span>
+                </button>
+                <button id="users-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-user text-white opacity-70"></i>
+                    <span>Users</span>
+                </button>
+                <button id="analytics-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-chart-bar text-white opacity-70"></i>
+                    <span>Analytics</span>
+                </button>
+                <button id="settings-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-cog text-white opacity-70"></i>
+                    <span>Settings</span>
+                </button>
+                <button id="help-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-question-circle text-white opacity-70"></i>
+                    <span>Help</span>
+                </button>
+                <button id="logout-btn" class="flex items-center space-x-2 rounded-md px-4 py-2 w-full cursor-pointer hover:bg-[#bfc3ca] hover:bg-opacity-40 transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt text-white opacity-70"></i>
+                    <span>Log out</span>
+                </button>
+            </nav>
+        </aside>
+
+        <div class="flex-1 p-6 md:p-10">
+            <div id="overview-content" class="content-section active space-y-8">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-start space-y-8 md:space-y-0 md:space-x-8">
+                    <section class="flex-1 space-y-6">
+                        <h1 class="font-bold text-lg md:text-xl">Admin Dashboard</h1>
+                        <div class="flex flex-col sm:flex-row sm:space-x-6 space-y-4 sm:space-y-0">
+                            <div class="flex flex-col items-center rounded-md border border-black border-opacity-20 w-40">
+                                <div class="bg-[#4caf50] rounded-t-md w-full text-center text-xs font-semibold text-black py-1">
+                                    Total Users:
+                                </div>
+                                <div class="py-2 text-sm">
+                                    78,257
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center rounded-md border border-black border-opacity-20 w-40">
+                                <div class="bg-[#4caf50] rounded-t-md w-full text-center text-xs font-semibold text-black py-1">
+                                    Active Users:
+                                </div>
+                                <div class="py-2 text-sm">
+                                    13,267
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center rounded-md border border-black border-opacity-20 w-40">
+                                <div class="bg-[#f87171] rounded-t-md w-full text-center text-xs font-semibold text-black py-1">
+                                    Active Admins:
+                                </div>
+                                <div class="py-2 text-sm">
+                                    24
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-black border-opacity-20 rounded-md">
+                            <div class="bg-[#4caf50] rounded-t-md text-center text-xs font-semibold text-black py-1">
+                                Report Statistics
+                            </div>
+                            <div class="p-4 flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
+                                <div class="flex-1 flex flex-col space-y-3 text-xs font-semibold">
+                                    <p class="text-[#4caf50]">
+                                        275 reports marked as verified
+                                    </p>
+                                    <p class="text-[#f59e0b]">
+                                        1,437 pending reports for approval
+                                    </p>
+                                    <p class="text-[#ef4444]">
+                                        26 reports marked as potentially misleading
+                                    </p>
+                                </div>
+                                <div class="flex-1 flex justify-center items-center">
+                                    <img alt="Pie chart showing report statistics with sections: Verified 15.8%, Potentially Misleading 1.5%, Pending for Approval 82.7%" class="max-w-full max-h-[150px]" height="150" src="https://storage.googleapis.com/a1aa/image/47b46217-ec13-4ad4-81e2-661726f25e87.jpg"
+                                        width="150" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-black border-opacity-20 rounded-md">
+                            <div class="bg-[#4caf50] rounded-t-md text-center text-xs font-semibold text-black py-1">
+                                System Health
+                            </div>
+                            <div class="p-4 flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
+                                <div class="flex-1 flex flex-col space-y-3 text-xs font-semibold w-40">
+                                    <div class="bg-[#fbbf24] rounded-md px-2 py-1 text-center">
+                                        API Response Time : [357ms ]
+                                    </div>
+                                    <div class="bg-[#166534] rounded-md px-2 py-1 text-center text-[#d1fae5]">
+                                        | 99.2% Uptime | System Operational
+                                    </div>
+                                </div>
+                                <div class="flex-1 flex flex-col justify-center space-y-2 text-xs">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 rounded-full bg-[#4caf50] border border-black border-opacity-20"></div>
+                                        <span>Good</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 rounded-full bg-[#fbbf24] border border-black border-opacity-20"></div>
+                                        <span>Warning</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 rounded-full bg-[#ef4444] border border-black border-opacity-20"></div>
+                                        <span>Critical</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 flex justify-center items-center">
+                                    <img alt="Line chart showing system health data with multiple lines and time labels" class="max-w-full max-h-[80px]" height="80" src="https://storage.googleapis.com/a1aa/image/e0a61e68-a28f-4586-4afb-de1723dbdeed.jpg" width="200" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-black border-opacity-20 rounded-md">
+                            <div class="bg-[#4caf50] rounded-t-md text-center text-xs font-semibold text-black py-1">
+                                Monitoring
+                            </div>
+                            <div class="p-4 text-xs font-semibold flex flex-col space-y-2">
+                                <div>
+                                    <span>Active Issues:</span>
+                                    <span class="text-[#ef4444]">3 Active issues</span>
+                                    <span>Server Load:</span>
+                                    <span class="text-[#f59e0b]">14%</span>
+                                </div>
+                                <div class="w-full bg-[#cbd5e1] rounded-full h-3 relative overflow-hidden">
+                                    <div aria-label="Storage usage progress bar" class="bg-[#3b82f6] h-3 rounded-full" style="width: 75%"></div>
+                                </div>
+                                <div class="text-xs text-right text-[#64748b]">
+                                    1.2 GB
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <aside class="w-full md:w-80 flex flex-col space-y-6">
+                        <div class="border border-black border-opacity-20 rounded-md">
+                            <div class="bg-[#d97706] rounded-t-md text-center text-xs font-semibold text-black py-1">
+                                <div class="grid grid-cols-2">
+                                    <div>Report#</div>
+                                    <div>Status</div>
+                                </div>
+                            </div>
+                            <div class="p-4 text-xs font-normal text-[#374151]">
+                                <div class="grid grid-cols-2 border-b border-black border-opacity-10 py-1">
+                                    <div>Report #01349251</div>
+                                    <div class="text-[#22c55e]">Verified</div>
+                                </div>
+                                <div class="grid grid-cols-2 border-b border-black border-opacity-10 py-1">
+                                    <div>Report #01347659</div>
+                                    <div class="text-[#f97316]">Flagged</div>
+                                </div>
+                                <div class="grid grid-cols-2 py-1">
+                                    <div>Report #01343418</div>
+                                    <div class="text-[#ef4444]">Removed</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center space-y-3">
+                            <div aria-label="Alert icon with exclamation mark" class="w-20 h-20 rounded-full bg-[#ef4444] flex justify-center items-center">
+                                <span class="text-white text-4xl font-extrabold select-none">!</span>
+                            </div>
+                            <div class="text-xs font-semibold text-[#ef4444] text-center">
+                                Critical: Database server down.
+                                <br />
+                                <span class="font-normal">05-02 17:52</span>
+                            </div>
+                        </div>
+                        <button id="manage-users-btn" class="flex items-center justify-center space-x-2 bg-[#4caf50] text-white font-semibold rounded-md py-2 px-4 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                            <i class="fas fa-users"></i>
+                            <span>Manage Users</span>
+                        </button>
+                        <button id="create-alert-overview-btn" class="flex items-center justify-center space-x-2 bg-[#4caf50] text-white font-semibold rounded-md py-2 px-4 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Alert</span>
+                        </button>
+                        <button id="review-flags-btn" class="flex items-center justify-center space-x-2 bg-[#4caf50] text-white font-semibold rounded-md py-2 px-4 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                            <i class="fas fa-flag"></i>
+                            <span>Review Flags</span>
+                        </button>
+                    </aside>
+                </div>
+            </div>
+
+            <div id="reports-content" class="content-section space-y-8">
+                <h1 class="font-bold text-lg md:text-xl mb-4">Admin Dashboard - Reports</h1>
+                <section class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                    <h2 class="font-semibold text-[13px] mb-1">Access Jurisdiction</h2>
+                    <p class="text-[13px] mb-2" id="current-jurisdiction">
+                        District: 3 - Santa Cruz
+                        <span class="inline-block ml-12">Barangay: 370</span>
+                    </p>
+                    <form class="flex flex-col sm:flex-row sm:items-center sm:space-x-8 space-y-4 sm:space-y-0 max-w-md">
+                        <div class="flex flex-col w-full sm:w-48">
+                            <label for="district" class="text-[11px] font-normal mb-1 text-[#4a4a4a]">District</label>
+                            <select id="district" name="district" class="border border-[#c4c4c4] rounded-md px-3 py-1 text-[13px] text-[#4a4a4a] focus:outline-none focus:ring-2 focus:ring-[#4caf50]">
+                                <option>District 1</option>
+                                <option>District 2</option>
+                                <option selected>District 3</option>
+                                <option>District 4</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col w-full sm:w-48">
+                            <label for="barangay" class="text-[11px] font-normal mb-1 text-[#4a4a4a]">Barangay</label>
+                            <select id="barangay" name="barangay" class="border border-[#c4c4c4] rounded-md px-3 py-1 text-[13px] text-[#4a4a4a] focus:outline-none focus:ring-2 focus:ring-[#4caf50]">
+                                <option selected>Barangay 370</option>
+                                <option>Barangay 371</option>
+                                <option>Barangay 372</option>
+                                <option>Barangay 373</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="overflow-x-auto border border-[#4caf50] rounded-tl-lg rounded-tr-lg scrollbar-thin">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-[#4caf50] text-[13px] text-black">
+                                    <th class="py-2 px-3 rounded-tl-lg text-left">ID#</th>
+                                    <th class="py-2 px-3 text-left">Street</th>
+                                    <th class="py-2 px-3 text-left">Wanted</th>
+                                    <th class="py-2 px-3 text-left">Progress</th>
+                                    <th class="py-2 px-3 text-left">Visibility</th>
+                                    <th class="py-2 px-3 rounded-tr-lg"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white text-[13px] text-[#4a4a4a]" id="reports-table-body">
+                                <tr class="border-b border-[#c4c4c4]">
+                                    <td class="py-2 px-3 align-middle">
+                                        <button aria-label="Edit #01349251" class="edit-report-btn text-[#4a4a4a] hover:text-[#2f855a]">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <span class="font-semibold ml-1">#01349251</span>
+                                    </td>
+                                    <td class="py-2 px-3 align-middle">Maceda St. Sta. Cruz</td>
+                                    <td class="py-2 px-3 align-middle">Unknown</td>
+                                    <td class="py-2 px-3 align-middle">Verified</td>
+                                    <td class="py-2 px-3 align-middle">Public</td>
+                                    <td class="py-2 px-3 align-middle text-center">
+                                        <button aria-label="Remove #01349251" class="remove-report-btn bg-[#e53e3e] text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-[#c4c4c4]">
+                                    <td class="py-2 px-3 align-middle">
+                                        <button aria-label="Edit #01347659" class="edit-report-btn text-[#4a4a4a] hover:text-[#2f855a]">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <span class="font-semibold ml-1">#01347659</span>
+                                    </td>
+                                    <td class="py-2 px-3 align-middle">Isagani St. Sta Cruz</td>
+                                    <td class="py-2 px-3 align-middle">Reyes Viloma</td>
+                                    <td class="py-2 px-3 align-middle">On-Watch</td>
+                                    <td class="py-2 px-3 align-middle">Authorities</td>
+                                    <td class="py-2 px-3 align-middle text-center">
+                                        <button aria-label="Remove #01347659" class="remove-report-btn bg-[#e53e3e] text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 align-middle">
+                                        <button aria-label="Edit #01343418" class="edit-report-btn text-[#4a4a4a] hover:text-[#2f855a]">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <span class="font-semibold ml-1">#01343418</span>
+                                    </td>
+                                    <td class="py-2 px-3 align-middle">Andrade St. Sta Cruz</td>
+                                    <td class="py-2 px-3 align-middle">Unknown</td>
+                                    <td class="py-2 px-3 align-middle">On-Watch</td>
+                                    <td class="py-2 px-3 align-middle">Admins</td>
+                                    <td class="py-2 px-3 align-middle text-center">
+                                        <button aria-label="Remove #01343418" class="remove-report-btn bg-[#e53e3e] text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-between mt-6 flex-wrap gap-4 max-w-md">
+                        <button id="create-alert-reports-btn" class="bg-[#4caf50] text-white rounded-full px-6 py-2 text-[13px] font-semibold hover:bg-[#3b82f6] transition-colors duration-200">
+                            Create Alert
+                        </button>
+                        <button id="transfer-jurisdiction-btn" class="bg-[#4caf50] text-white rounded-full px-6 py-2 text-[13px] font-semibold hover:bg-[#3b82f6] transition-colors duration-200">
+                            Transfer Jurisdiction
+                        </button>
+                    </div>
+                </section>
+
+                <section class="bg-white p-6 rounded-xl shadow-lg mt-8">
+                    <h2 class="font-semibold text-lg mb-4">Active Alerts</h2>
+                    <div id="active-alerts-container" class="space-y-4">
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md shadow-sm" role="alert">
+                            <p class="font-bold">System Maintenance</p>
+                            <p class="text-sm">Scheduled downtime for server updates on 2025-05-25 at 02:00 AM.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="users-content" class="content-section space-y-8">
+                <h1 class="font-bold text-lg md:text-xl mb-8">Admin Dashboard - User Management</h1>
+
+                <div class="overflow-x-auto border border-gray-400 rounded-md max-w-full max-h-[280px] scrollbar-thin bg-white rounded-xl shadow-lg">
+                    <table class="w-full border-collapse border border-gray-400 text-sm">
+                        <thead>
+                            <tr class="bg-white">
+                                <th class="border border-gray-400 px-3 py-2 text-left">Username</th>
+                                <th class="border border-gray-400 px-3 py-2 text-left">Status</th>
+                                <th class="border border-gray-400 px-3 py-2 text-left">Access Level</th>
+                                <th class="border border-gray-400 px-3 py-2 text-left">Last Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">node_user_27</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                    <span>Active</span>
+                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
+                                <td class="border border-gray-400 px-3 py-1">Today</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">sync_4210</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
+                                    <span>Inactive</span>
+                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
+                                <td class="border border-gray-400 px-3 py-1">2 hours ago</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">p_line_309</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
+                                    <span>Inactive</span>
+                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
+                                <td class="border border-gray-400 px-3 py-1">3 minutes ago</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">tmp_user_88</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                    <span>Active</span>
+                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
+                                <td class="border border-gray-400 px-3 py-1">Today</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">xval_1902</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
+                                    <span>Inactive</span>
+                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
+                                <td class="border border-gray-400 px-3 py-1">5 hours ago</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">shift_lock_73</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                    <span>Active</span>
+                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
+                                <td class="border border-gray-400 px-3 py-1">Today</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">net_run_11</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
+                                    <span>Inactive</span>
+                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
+                                <td class="border border-gray-400 px-3 py-1">10 days ago</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">jvxn_0034</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                    <span>Active</span>
+                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
+                                <td class="border border-gray-400 px-3 py-1">Today</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">bin_trace_62</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                    <span>Active</span>
+                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
+                                <td class="border border-gray-400 px-3 py-1">Today</td>
+                            </tr>
+                            <tr class="bg-gray-300">
+                                <td class="border border-gray-400 px-3 py-1">loop_set_59</td>
+                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
+                                    <span>Inactive</span>
+                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                                </td>
+                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
+                                <td class="border border-gray-400 px-3 py-1">10 minutes ago</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-4 items-start max-w-lg">
+                    <button id="createUserBtn" class="bg-[#4caf50] text-white font-bold px-5 py-2 rounded-full w-[200px] text-center hover:bg-[#3b82f6] transition-colors duration-200">
+                        Create User
+                    </button>
+                    <button id="changePasswordBtn" class="bg-[#4caf50] text-white font-bold px-5 py-2 rounded-full w-[200px] text-center hover:bg-[#3b82f6] transition-colors duration-200">
+                        Change Password
+                    </button>
+                    <button id="setAccessBtn" class="bg-[#4caf50] text-white font-bold px-5 py-2 rounded-full w-[200px] text-center hover:bg-[#3b82f6] transition-colors duration-200">
+                        Set Access
+                    </button>
+                    <button id="deactivateAccountBtn" class="bg-[#ef4444] text-white font-bold px-5 py-2 rounded-full w-[200px] text-center hover:bg-[#dc2626] transition-colors duration-200">
+                        Deactivate Account
+                    </button>
+                    <button id="reactivateAccountBtn" class="bg-blue-500 text-white font-bold px-5 py-2 rounded-full w-[200px] text-center hover:bg-[#3b82f6] transition-colors duration-200">
+                        Reactivate Account
+                    </button>
+                </div>
+            </div>
+
+            <div id="analytics-content" class="content-section space-y-8">
+                <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Analytics</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <section class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xs font-bold mb-2 text-black">
+                            Crimes Committed per Month in Metro Manila
+                        </h2>
+                        <canvas id="barChart" class="w-full h-56"></canvas>
+                        <div class="mt-4 space-y-2">
+                            <label class="block text-xs font-semibold text-black">Update Crime Data:</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-700" for="murderInput">Murder</label>
+                                    <input id="murderInput" type="number" min="0" value="8" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="kidnappingInput">Kidnapping</label>
+                                    <input id="kidnappingInput" type="number" min="0" value="12" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="sexualAssaultInput">Sexual Assault</label>
+                                    <input id="sexualAssaultInput" type="number" min="0" value="16" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="violenceInput">Violence</label>
+                                    <input id="violenceInput" type="number" min="0" value="20" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="theftInput">Theft</label>
+                                    <input id="theftInput" type="number" min="0" value="35" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                            </div>
+                            <button id="updateBarChart" class="mt-2 bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Update Chart
+                            </button>
+                        </div>
+                    </section>
+                    <section class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xs font-bold mb-2 text-black">
+                            Geographical Analysis of Crime in Metro Manila
+                        </h2>
+                        <canvas id="pieChart" class="w-full h-56"></canvas>
+                        <div class="mt-4 space-y-2">
+                            <label class="block text-xs font-semibold text-black">Update Crime Distribution (%):</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-700" for="safeOutlierInput">Safer Outlier</label>
+                                    <input id="safeOutlierInput" type="number" min="0" max="100" value="25" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="lowerOutlierInput">Lower Outlier</label>
+                                    <input id="lowerOutlierInput" type="number" min="0" max="100" value="35.7" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="keepCautionInput">Keep Caution</label>
+                                    <input id="keepCautionInput" type="number" min="0" max="100" value="17.9" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="extremeCautionInput">Extreme Caution</label>
+                                    <input id="extremeCautionInput" type="number" min="0" max="100" value="7.0" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="highCautionInput">High Caution</label>
+                                    <input id="highCautionInput" type="number" min="0" max="100" value="14.3" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                            </div>
+                            <button id="updatePieChart" class="mt-2 bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Update Chart
+                            </button>
+                        </div>
+                    </section>
+                    <section class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xs font-bold mb-2 text-black">SafePin System Performance</h2>
+                        <canvas id="radarChart" class="w-full h-56"></canvas>
+                        <div class="mt-4 space-y-2">
+                            <label class="block text-xs font-semibold text-black">Update Performance Scores (0-10):</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-700" for="performanceInput">Performance</label>
+                                    <input id="performanceInput" type="number" min="0" max="10" value="9" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="reliabilityInput">Reliability</label>
+                                    <input id="reliabilityInput" type="number" min="0" max="10" value="6" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="usabilityInput">Usability</label>
+                                    <input id="usabilityInput" type="number" min="0" max="10" value="8" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="securityInput">Security</label>
+                                    <input id="securityInput" type="number" min="0" max="10" value="7" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="scalabilityInput">Scalability</label>
+                                    <input id="scalabilityInput" type="number" min="0" max="10" value="6" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
+                                </div>
+                            </div>
+                            <button id="updateRadarChart" class="mt-2 bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Update Chart
+                            </button>
+                        </div>
+                    </section>
+                    <section class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xs font-bold mb-2 text-black">Response Time Analysis</h2>
+                        <canvas id="areaChart" class="w-full h-56"></canvas>
+                        <div class="mt-4 space-y-2">
+                            <label class="block text-xs font-semibold text-black">Update Response Times (minutes):</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-700" for="pnpInput">PNP</label>
+                                    <input id="pnpInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="bfpInput">BFP</label>
+                                    <input id="bfpInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="emsInput">EMS</label>
+                                    <input id="emsInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-700" for="pcgInput">PCG</label>
+                                    <input id="pcgInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
+                                </div>
+                            </div>
+                            <button id="updateAreaChart" class="mt-2 bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Update Chart
+                            </button>
+                        </div>
+                        <div class="mt-6 flex justify-center space-x-6">
+                            <button id="shareBtn" class="bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Share
+                            </button>
+                            <button id="downloadBtn" class="bg-[#4caf50] text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-[#3b82f6] transition-colors duration-200" type="button">
+                                Download
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="settings-content" class="content-section space-y-8">
+                <button aria-label="Back to dashboard" class="hidden mb-6 px-4 py-2 bg-gray-300 rounded text-gray-700 hover:bg-gray-400 transition-colors" id="settings-back-button" type="button">
+                    ← Back
+                </button>
+                <div id="settings-main-content">
+                </div>
+            </div>
+
+            <div id="help-content" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">SafePin Help Center</h2>
+                <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
+                    <div class="border-b pb-4">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">How do I report an incident?</h3>
+                        <p class="text-gray-700">To report an incident, navigate to the "Reports" section and use the "Create Alert" button. You can then provide details about the incident.</p>
+                    </div>
+                    <div class="border-b pb-4">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">How are reports verified?</h3>
+                        <p class="text-gray-700">Reports are reviewed by administrators. Once verified, they are marked as such in the system.</p>
+                    </div>
+                    <div class="border-b pb-4">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Can I report anonymously?</h3>
+                        <p class="text-gray-700">This dashboard is for administrative use and does not handle direct anonymous reporting. User reports are managed through the "Users" and "Reports" sections.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Who can access the data?</h3>
+                        <p class="text-gray-700">Access to incident data is role-based. Administrators have full access, while other users may have restricted views.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('messageModal')">&times;</span>
+            <p id="messageText"></p>
+            <button class="mt-4 bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="closeModal('messageModal')">OK</button>
+        </div>
+    </div>
+
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('promptModal')">&times;</span>
+            <p id="promptText"></p>
+            <input type="text" id="promptInput" class="border border-gray-300 rounded-md p-2 mt-2 w-full" />
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="promptCallback(null)">Cancel</button>
+                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="promptCallback(document.getElementById('promptInput').value)">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dropdownPromptModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('dropdownPromptModal')">&times;</span>
+            <p id="dropdownPromptText"></p>
+            <select id="dropdownPromptSelect" class="border border-gray-300 rounded-md p-2 mt-2 w-full"></select>
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="dropdownPromptCallback(null)">Cancel</button>
+                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="dropdownPromptCallback(document.getElementById('dropdownPromptSelect').value)">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('confirmModal')">&times;</span>
+            <p id="confirmText"></p>
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="confirmCallback(false)">Cancel</button>
+                <button class="bg-[#ef4444] text-white px-4 py-2 rounded-md hover:bg-[#dc2626] transition-colors duration-200" onclick="confirmCallback(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('alertDetailsModal')">&times;</span>
+            <h2 class="text-lg font-bold mb-4">Create New Alert</h2>
+            <label for="alertTitle" class="block text-sm font-medium text-gray-700">Alert Title:</label>
+            <input type="text" id="alertTitle" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <label for="alertDescription" class="block text-sm font-medium text-gray-700">Description:</label>
+            <textarea id="alertDescription" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full h-24"></textarea>
+
+            <label for="alertCategory" class="block text-sm font-medium text-gray-700">Category:</label>
+            <select id="alertCategory" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full">
+                <option value="System Health">System Health</option>
+                <option value="Security">Security</option>
+                <option value="Incident Report">Incident Report</option>
+                <option value="User Activity">User Activity</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('alertDetailsModal')">Cancel</button>
+                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="submitAlert()">Submit Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="transferJurisdictionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('transferJurisdictionModal')">&times;</span>
+            <h2 class="text-lg font-bold mb-4">Transfer Jurisdiction</h2>
+            <label for="transferDistrict" class="block text-sm font-medium text-gray-700">New District:</label>
+            <input type="text" id="transferDistrict" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <label for="transferBarangay" class="block text-sm font-medium text-gray-700">New Barangay:</label>
+            <input type="text" id="transferBarangay" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('transferJurisdictionModal')">Cancel</button>
+                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="submitJurisdictionTransfer()">Transfer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editReportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('editReportModal')">&times;</span>
+            <h2 class="text-lg font-bold mb-4">Edit Report</h2>
+            <label for="editReportId" class="block text-sm font-medium text-gray-700">Report ID:</label>
+            <input type="text" id="editReportId" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full bg-gray-100" readonly />
+
+            <label for="editStreet" class="block text-sm font-medium text-gray-700">Street:</label>
+            <input type="text" id="editStreet" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <label for="editWanted" class="block text-sm font-medium text-gray-700">Wanted:</label>
+            <input type="text" id="editWanted" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <label for="editProgress" class="block text-sm font-medium text-gray-700">Progress:</label>
+            <input type="text" id="editProgress" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <label for="editVisibility" class="block text-sm font-medium text-gray-700">Visibility:</label>
+            <input type="text" id="editVisibility" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('editReportModal')">Cancel</button>
+                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="submitEditedReport()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="userSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('userSelectionModal')">&times;</span>
+            <h2 class="text-lg font-bold mb-4">Select User</h2>
+            <input type="text" id="userSearchInput" placeholder="Search username..." class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
+            <div id="userListContainer" class="max-h-60 overflow-y-auto border border-gray-200 rounded-md p-2">
+            </div>
+            <div class="flex justify-end space-x-2 mt-4">
+                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="userSelectionCallback(null)">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Global variables for modal callbacks
+        let currentPromptCallback = null;
+        let currentConfirmCallback = null;
+        let currentDropdownPromptCallback = null;
+        let currentUserSelectionCallback = null;
+        let currentEditReportRow = null; // To store the row being edited
+
+        // Function to show custom message modal
+        function showMessageModal(message) {
+            document.getElementById('messageText').textContent = message;
+            document.getElementById('messageModal').style.display = 'flex';
+        }
+
+        // Function to show custom prompt modal (text input)
+        function showPromptModal(message, callback) {
+            document.getElementById('promptText').textContent = message;
+            document.getElementById('promptInput').value = ''; // Clear previous input
+            document.getElementById('promptModal').style.display = 'flex';
+            currentPromptCallback = callback;
+        }
+
+        // Callback for prompt modal
+        function promptCallback(value) {
+            document.getElementById('promptModal').style.display = 'none';
+            if (currentPromptCallback) {
+                currentPromptCallback(value);
+                currentPromptCallback = null;
+            }
+        }
+
+        // Function to show custom dropdown prompt modal
+        function showDropdownPromptModal(message, options, callback) {
+            document.getElementById('dropdownPromptText').textContent = message;
+            const selectElement = document.getElementById('dropdownPromptSelect');
+            selectElement.innerHTML = ''; // Clear previous options
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                selectElement.appendChild(opt);
+            });
+            document.getElementById('dropdownPromptModal').style.display = 'flex';
+            currentDropdownPromptCallback = callback;
+        }
+
+        // Callback for dropdown prompt modal
+        function dropdownPromptCallback(value) {
+            document.getElementById('dropdownPromptModal').style.display = 'none';
+            if (currentDropdownPromptCallback) {
+                currentDropdownPromptCallback(value);
+                currentDropdownPromptCallback = null;
+            }
+        }
+
+        // Function to show custom confirmation modal
+        function showConfirmModal(message, callback) {
+            document.getElementById('confirmText').textContent = message;
+            document.getElementById('confirmModal').style.display = 'flex';
+            currentConfirmCallback = callback;
+        }
+
+        // Callback for confirmation modal
+        function confirmCallback(result) {
+            document.getElementById('confirmModal').style.display = 'none';
+            if (currentConfirmCallback) {
+                currentConfirmCallback(result);
+                currentConfirmCallback = null;
+            }
+        }
+
+        // Function to show user selection modal
+        function showUserSelectionModal(callback) {
+            currentUserSelectionCallback = callback;
+            const userListContainer = document.getElementById('userListContainer');
+            userListContainer.innerHTML = ''; // Clear previous list
+
+            const usersTableBody = document.querySelector('#users-content tbody');
+            const userRows = Array.from(usersTableBody.querySelectorAll('tr'));
+            let allUsernames = userRows.map(row => row.cells[0].textContent);
+
+            function renderUserList(filterText = '') {
+                userListContainer.innerHTML = ''; // Clear current list
+                const filteredUsers = allUsernames.filter(username =>
+                    username.toLowerCase().includes(filterText.toLowerCase())
+                );
+
+                if (filteredUsers.length === 0) {
+                    userListContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No users found.</p>';
+                    return;
+                }
+
+                filteredUsers.forEach(username => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'p-2 cursor-pointer hover:bg-gray-100 rounded-md';
+                    userItem.textContent = username;
+                    userItem.addEventListener('click', () => {
+                        userSelectionCallback(username);
+                    });
+                    userListContainer.appendChild(userItem);
+                });
+            }
+
+            // Initial render
+            renderUserList();
+
+            // Search functionality
+            const userSearchInput = document.getElementById('userSearchInput');
+            userSearchInput.value = ''; // Clear previous search
+            userSearchInput.onkeyup = (event) => {
+                renderUserList(event.target.value);
+            };
+
+            document.getElementById('userSelectionModal').style.display = 'flex';
+        }
+
+        // Callback for user selection modal
+        function userSelectionCallback(username) {
+            document.getElementById('userSelectionModal').style.display = 'none';
+            if (currentUserSelectionCallback) {
+                currentUserSelectionCallback(username);
+                currentUserSelectionCallback = null;
+            }
+        }
+
+        // Function to close any modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Function to submit new alert
+        function submitAlert() {
+            const title = document.getElementById('alertTitle').value;
+            const description = document.getElementById('alertDescription').value;
+            const category = document.getElementById('alertCategory').value;
+
+            if (!title || !description) {
+                showMessageModal('Alert title and description are required.');
+                return;
+            }
+
+            const alertsContainer = document.getElementById('active-alerts-container');
+            const newAlert = document.createElement('div');
+
+            let alertClasses = 'p-4 rounded-md shadow-sm';
+            let alertRole = 'alert';
+
+            // Assign color based on category
+            switch (category) {
+                case 'System Health':
+                    alertClasses += ' bg-green-100 border-l-4 border-green-500 text-green-700';
+                    break;
+                case 'Security':
+                    alertClasses += ' bg-red-100 border-l-4 border-red-500 text-red-700';
+                    break;
+                case 'Incident Report':
+                    alertClasses += ' bg-orange-100 border-l-4 border-orange-500 text-orange-700';
+                    break;
+                case 'User Activity':
+                    alertClasses += ' bg-blue-100 border-l-4 border-blue-500 text-blue-700';
+                    break;
+                case 'Other':
+                default:
+                    alertClasses += ' bg-gray-100 border-l-4 border-gray-500 text-gray-700';
+                    break;
+            }
+
+            newAlert.className = alertClasses;
+            newAlert.setAttribute('role', alertRole);
+            newAlert.innerHTML = `
+                <p class="font-bold">${category}: ${title}</p>
+                <p class="text-sm">${description}</p>
+            `;
+            alertsContainer.appendChild(newAlert);
+
+            closeModal('alertDetailsModal');
+            showMessageModal('Alert created and displayed successfully!');
+        }
+
+        // Function to submit jurisdiction transfer
+        function submitJurisdictionTransfer() {
+            const newDistrict = document.getElementById('transferDistrict').value;
+            const newBarangay = document.getElementById('transferBarangay').value;
+
+            if (!newDistrict || !newBarangay) {
+                showMessageModal('New District and Barangay are required for transfer.');
+                return;
+            }
+
+            document.getElementById('current-jurisdiction').innerHTML = `
+                District: ${newDistrict}
+                <span class="inline-block ml-12">Barangay: ${newBarangay}</span>
+            `;
+
+            // Update the select dropdowns as well for consistency
+            const districtSelect = document.getElementById('district');
+            const barangaySelect = document.getElementById('barangay');
+
+            // Clear existing options and add new selected one, then re-add others if needed
+            // For simplicity, we'll just set the value if it exists, or add a new option
+            let districtFound = false;
+            for (let i = 0; i < districtSelect.options.length; i++) {
+                if (districtSelect.options[i].value === newDistrict) {
+                    districtSelect.value = newDistrict;
+                    districtFound = true;
+                    break;
+                }
+            }
+            if (!districtFound) {
+                const newOption = new Option(newDistrict, newDistrict, true, true);
+                districtSelect.add(newOption);
+            }
+
+            let barangayFound = false;
+            for (let i = 0; i < barangaySelect.options.length; i++) {
+                if (barangaySelect.options[i].value === newBarangay) {
+                    barangaySelect.value = newBarangay;
+                    barangayFound = true;
+                    break;
+                }
+            }
+            if (!barangayFound) {
+                const newOption = new Option(newBarangay, newBarangay, true, true);
+                barangaySelect.add(newOption);
+            }
+
+
+            closeModal('transferJurisdictionModal');
+            showMessageModal(`Jurisdiction transferred to District: ${newDistrict}, Barangay: ${newBarangay}.`);
+        }
+
+        // Function to open edit report modal
+        function openEditReportModal(row) {
+            currentEditReportRow = row;
+            const cells = row.children;
+            document.getElementById('editReportId').value = cells[0].querySelector('span').textContent;
+            document.getElementById('editStreet').value = cells[1].textContent;
+            document.getElementById('editWanted').value = cells[2].textContent;
+            document.getElementById('editProgress').value = cells[3].textContent;
+            document.getElementById('editVisibility').value = cells[4].textContent;
+            document.getElementById('editReportModal').style.display = 'flex';
+        }
+
+        // Function to submit edited report
+        function submitEditedReport() {
+            if (!currentEditReportRow) return;
+
+            const cells = currentEditReportRow.children;
+            cells[1].textContent = document.getElementById('editStreet').value;
+            cells[2].textContent = document.getElementById('editWanted').value;
+            cells[3].textContent = document.getElementById('editProgress').value;
+            cells[4].textContent = document.getElementById('editVisibility').value;
+
+            closeModal('editReportModal');
+            showMessageModal('Report updated successfully!');
+            currentEditReportRow = null;
+        }
+
+        // Analytics Chart Initialization and Update Logic
+        let barChart, pieChart, radarChart, areaChart;
+
+        function initializeCharts() {
+            // Destroy existing charts if they exist to prevent re-initialization errors
+            if (barChart) barChart.destroy();
+            if (pieChart) pieChart.destroy();
+            if (radarChart) radarChart.destroy();
+            if (areaChart) areaChart.destroy();
+
+            // Bar Chart - Crimes Committed per Month
+            const barCtx = document.getElementById("barChart").getContext("2d");
+            barChart = new Chart(barCtx, {
+                type: "bar",
+                data: {
+                    labels: [
+                        "Murder",
+                        "Kidnapping",
+                        "Sexual Assault",
+                        "Violence",
+                        "Theft",
+                    ],
+                    datasets: [{
+                        label: "Crimes Committed",
+                        data: [8, 12, 16, 20, 35],
+                        backgroundColor: [
+                            "#7dd3fc", // Murder - cyan-300
+                            "#22d3ee", // Kidnapping - cyan-400
+                            "#0284c7", // Sexual Assault - blue-700
+                            "#7c3aed", // Violence - purple-700
+                            "#1e40af", // Theft - blue-900
+                        ],
+                    }, ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        title: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5,
+                            },
+                        },
+                    },
+                },
+            });
+
+            // Pie Chart - Geographical Analysis
+            const pieCtx = document.getElementById("pieChart").getContext("2d");
+            pieChart = new Chart(pieCtx, {
+                type: "pie",
+                data: {
+                    labels: [
+                        "Safer Outlier",
+                        "Lower Outlier",
+                        "Keep Caution",
+                        "Extreme Caution",
+                        "High Caution",
+                    ],
+                    datasets: [{
+                        label: "Crime Distribution",
+                        data: [25, 35.7, 17.9, 7, 14.3],
+                        backgroundColor: [
+                            "#c6d8e6", // light blue
+                            "#fcd5b2", // light orange
+                            "#3b82f6", // blue-500
+                            "#ef4444", // red-500
+                            "#ea580c", // orange-600
+                        ],
+                    }, ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                        },
+                    },
+                },
+            });
+
+            // Radar Chart - SafePin System Performance
+            const radarCtx = document.getElementById("radarChart").getContext("2d");
+            radarChart = new Chart(radarCtx, {
+                type: "radar",
+                data: {
+                    labels: [
+                        "Performance",
+                        "Reliability",
+                        "Usability",
+                        "Security",
+                        "Scalability",
+                    ],
+                    datasets: [{
+                        label: "User Evaluation",
+                        data: [9, 6, 8, 7, 6],
+                        fill: true,
+                        backgroundColor: "rgba(29, 78, 216, 0.5)", // blue-700 with opacity
+                        borderColor: "#1d4ed8", // blue-700
+                        pointBackgroundColor: "#1d4ed8",
+                        pointBorderColor: "#fff",
+                        pointHoverBackgroundColor: "#fff",
+                        pointHoverBorderColor: "#1d4ed8",
+                    }, ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2,
+                                backdropColor: "transparent",
+                            },
+                        },
+                    },
+                    plugins: {
+                        legend: {
+                            position: "top",
+                        },
+                    },
+                },
+            });
+
+            // Area Chart - Response Time Analysis
+            const areaCtx = document.getElementById("areaChart").getContext("2d");
+            areaChart = new Chart(areaCtx, {
+                type: "line",
+                data: {
+                    labels: [
+                        "1 Min",
+                        "2 Mins",
+                        "3 Mins",
+                        "4 Mins",
+                        "5 Mins",
+                        "6 Mins",
+                        "7 Mins",
+                        "8 Mins",
+                        "9 Mins",
+                        "10 Mins",
+                    ],
+                    datasets: [{
+                        label: "PNP",
+                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                        fill: true,
+                        backgroundColor: "rgba(29, 78, 216, 0.7)", // blue-700
+                        borderColor: "#1d4ed8",
+                        tension: 0.4,
+                    }, {
+                        label: "BFP",
+                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                        fill: true,
+                        backgroundColor: "rgba(239, 68, 68, 0.7)", // red-500
+                        borderColor: "#ef4444",
+                        tension: 0.4,
+                    }, {
+                        label: "EMS",
+                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                        fill: true,
+                        backgroundColor: "rgba(20, 184, 166, 0.7)", // teal-500
+                        borderColor: "#14b8a6",
+                        tension: 0.4,
+                    }, {
+                        label: "PCG",
+                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                        fill: true,
+                        backgroundColor: "rgba(14, 165, 233, 0.7)", // sky-500
+                        borderColor: "#0ea5e9",
+                        tension: 0.4,
+                    }, ],
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: "nearest",
+                        intersect: false,
+                    },
+                    stacked: true,
+                    plugins: {
+                        legend: {
+                            position: "top",
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                        },
+                    },
+                },
+            });
+        }
+
+        // Update functions for each chart
+        function updateBarChart() {
+            const murder = parseInt(
+                document.getElementById("murderInput").value,
+                10
+            );
+            const kidnapping = parseInt(
+                document.getElementById("kidnappingInput").value,
+                10
+            );
+            const sexualAssault = parseInt(
+                document.getElementById("sexualAssaultInput").value,
+                10
+            );
+            const violence = parseInt(
+                document.getElementById("violenceInput").value,
+                10
+            );
+            const theft = parseInt(
+                document.getElementById("theftInput").value,
+                10
+            );
+
+            if (
+                [murder, kidnapping, sexualAssault, violence, theft].some(
+                    (v) => isNaN(v) || v < 0
+                )
+            ) {
+                showMessageModal("Please enter valid non-negative numbers for all crime categories.");
+                return;
+            }
+
+            barChart.data.datasets[0].data = [
+                murder,
+                kidnapping,
+                sexualAssault,
+                violence,
+                theft,
+            ];
+            barChart.update();
+        }
+
+        function updatePieChart() {
+            const safeOutlier = parseFloat(
+                document.getElementById("safeOutlierInput").value
+            );
+            const lowerOutlier = parseFloat(
+                document.getElementById("lowerOutlierInput").value
+            );
+            const keepCaution = parseFloat(
+                document.getElementById("keepCautionInput").value
+            );
+            const extremeCaution = parseFloat(
+                document.getElementById("extremeCautionInput").value
+            );
+            const highCaution = parseFloat(
+                document.getElementById("highCautionInput").value
+            );
+
+            const values = [
+                safeOutlier,
+                lowerOutlier,
+                keepCaution,
+                extremeCaution,
+                highCaution,
+            ];
+
+            if (
+                values.some(
+                    (v) => isNaN(v) || v < 0 || v > 100
+                )
+            ) {
+                showMessageModal("Please enter valid percentages between 0 and 100.");
+                return;
+            }
+
+            const total = values.reduce((a, b) => a + b, 0);
+            if (total > 100) {
+                showMessageModal("Total percentage cannot exceed 100.");
+                return;
+            }
+
+            pieChart.data.datasets[0].data = values;
+            pieChart.update();
+        }
+
+        function updateRadarChart() {
+            const performance = parseFloat(
+                document.getElementById("performanceInput").value
+            );
+            const reliability = parseFloat(
+                document.getElementById("reliabilityInput").value
+            );
+            const usability = parseFloat(
+                document.getElementById("usabilityInput").value
+            );
+            const security = parseFloat(
+                document.getElementById("securityInput").value
+            );
+            const scalability = parseFloat(
+                document.getElementById("scalabilityInput").value
+            );
+
+            const values = [
+                performance,
+                reliability,
+                usability,
+                security,
+                scalability,
+            ];
+
+            if (
+                values.some(
+                    (v) => isNaN(v) || v < 0 || v > 10
+                )
+            ) {
+                showMessageModal("Please enter valid scores between 0 and 10.");
+                return;
+            }
+
+            radarChart.data.datasets[0].data = values;
+            radarChart.update();
+        }
+
+        function updateAreaChart() {
+            function parseInput(inputId) {
+                const val = document.getElementById(inputId).value;
+                return val
+                    .split(",")
+                    .map((v) => parseFloat(v.trim()))
+                    .filter((v) => !isNaN(v) && v >= 0);
+            }
+
+            const pnpData = parseInput("pnpInput");
+            const bfpData = parseInput("bfpInput");
+            const emsData = parseInput("emsInput");
+            const pcgData = parseInput("pcgInput");
+
+            const lengths = [pnpData.length, bfpData.length, emsData.length, pcgData.length];
+            const minLen = Math.min(...lengths);
+            if (minLen === 0) {
+                showMessageModal("Please enter valid comma-separated numbers for all response time fields.");
+                return;
+            }
+
+            // Use the shortest length to sync labels and data
+            const labels = [];
+            for (let i = 1; i <= minLen; i++) {
+                labels.push(i + (i === 1 ? " Min" : " Mins"));
+            }
+
+            areaChart.data.labels = labels;
+            areaChart.data.datasets[0].data = pnpData.slice(0, minLen);
+            areaChart.data.datasets[1].data = bfpData.slice(0, minLen);
+            areaChart.data.datasets[2].data = emsData.slice(0, minLen);
+            areaChart.data.datasets[3].data = pcgData.slice(0, minLen);
+
+            areaChart.update();
+        }
+
+        // Share button functionality
+        function shareDashboard() {
+            if (navigator.share) {
+                navigator
+                    .share({
+                        title: "SafePin Admin Dashboard",
+                        text: "Check out the SafePin Admin Dashboard analytics.",
+                        url: window.location.href,
+                    })
+                    .then(() => showMessageModal("Dashboard shared successfully!"))
+                    .catch((error) => showMessageModal("Error sharing: " + error));
+            } else {
+                showMessageModal("Sharing not supported on this browser.");
+            }
+        }
+
+        // Download button functionality - downloads current chart data as JSON
+        function downloadDashboardData() {
+            const data = {
+                crimesCommitted: barChart.data.datasets[0].data,
+                geographicalCrimeDistribution: pieChart.data.datasets[0].data,
+                systemPerformance: radarChart.data.datasets[0].data,
+                responseTimeAnalysis: {
+                    labels: areaChart.data.labels,
+                    PNP: areaChart.data.datasets[0].data,
+                    BFP: areaChart.data.datasets[1].data,
+                    EMS: areaChart.data.datasets[2].data,
+                    PCG: areaChart.data.datasets[3].data,
+                },
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "safepin_dashboard_data.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessageModal("Dashboard data downloaded as JSON file.");
+        }
+
+
+        // Settings Tab Logic
+        const settingsDetails = {
+            "System Settings": [
+                "Manage system preferences",
+                "Configure system-wide options",
+                "Set default behaviors"
+            ],
+            "Map Configuration": [
+                "Set map default location",
+                "Manage map layers",
+                "Configure map zoom levels"
+            ],
+            "Notification Template": [
+                "Edit email templates",
+                "Edit SMS templates",
+                "Manage notification triggers"
+            ],
+            "Custom Fields": [
+                "Add new custom fields",
+                "Edit existing fields",
+                "Manage field visibility"
+            ],
+            "API Access": [
+                "Generate API keys",
+                "Set API permissions",
+                "View API usage logs"
+            ],
+            "Security Settings": [
+                "Manage user roles",
+                "Set password policies",
+                "Configure two-factor authentication"
+            ]
+        };
+
+        function renderSettingsDashboard() {
+            document.getElementById('settings-back-button').classList.add("hidden");
+            const settingsMainContent = document.getElementById("settings-main-content");
+            settingsMainContent.innerHTML = `
+                <h1 class="font-bold text-lg md:text-xl mb-8">Admin Dashboard - Settings</h1>
+                <section class="grid grid-cols-1 sm:grid-cols-3 gap-y-16 gap-x-24 max-w-5xl mx-auto">
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="System Settings" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black gear icon representing system settings" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/d53d346e-4e13-4b46-0eb6-48e0b67ca5fd.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">System Settings</p>
+                    </div>
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Map Configuration" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black map pin icon with shadow representing map configuration" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/bdc9a691-c1e1-4c11-5ca2-78498eb28f5d.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">Map Configuration</p>
+                    </div>
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Notification Template" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black bell icon representing notification template" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/c4c0deb1-453b-427a-2d11-99c9ccd8c1b2.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">Notification Template</p>
+                    </div>
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Custom Fields" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black edit icon representing custom fields" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/f4a10e92-e903-4e42-4f42-5ac8e4bc5793.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">Custom Fields</p>
+                    </div>
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="API Access" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black wifi signal icon representing API access" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/38f5684c-8cdf-4870-fb1b-ad858a54cbf9.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">API Access</p>
+                    </div>
+                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Security Settings" tabindex="0" role="button" aria-pressed="false">
+                        <img alt="Black lock icon representing security settings" class="w-12 h-12" height="48" src="https://storage.googleapis.com/a1aa/image/11e1618d-f207-40cf-45ae-052b6ceae03f.jpg" width="48"/>
+                        <p class="font-bold text-center text-sm">Security Settings</p>
+                    </div>
+                </section>
+            `;
+            attachSettingsNavLinkListeners();
+        }
+
+        function renderSettingsDetails(name) {
+            document.getElementById('settings-back-button').classList.remove("hidden");
+            const settingsMainContent = document.getElementById("settings-main-content");
+            const details = settingsDetails[name] || [];
+            settingsMainContent.innerHTML = `
+                <h2 class="text-lg font-bold mb-6">${name}</h2>
+                <ul class="list-disc list-inside space-y-2 max-w-3xl">
+                    ${details.map(item => `<li class="text-sm">${item}</li>`).join("")}
+                </ul>
+            `;
+        }
+
+        function attachSettingsNavLinkListeners() {
+            const settingsNavLinks = document.querySelectorAll(".settings-nav-link");
+            settingsNavLinks.forEach(link => {
+                link.addEventListener("click", () => {
+                    const name = link.getAttribute("data-name");
+                    renderSettingsDetails(name);
+                });
+                link.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        const name = link.getAttribute("data-name");
+                        renderSettingsDetails(name);
+                    }
+                });
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get buttons and content sections
+            const overviewBtn = document.getElementById('overview-btn');
+            const reportsBtn = document.getElementById('reports-btn');
+            const usersBtn = document.getElementById('users-btn');
+            const analyticsBtn = document.getElementById('analytics-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const helpBtn = document.getElementById('help-btn'); // Get help button
+            const logoutBtn = document.getElementById('logout-btn'); // Get logout button
+
+
+            const overviewContent = document.getElementById('overview-content');
+            const reportsContent = document.getElementById('reports-content');
+            const usersContent = document.getElementById('users-content');
+            const analyticsContent = document.getElementById('analytics-content');
+            const settingsContent = document.getElementById('settings-content');
+            const helpContent = document.getElementById('help-content'); // Get help content
+            // Removed logoutContent as it's now handled by confirmModal
+
+
+            const manageUsersBtn = document.getElementById('manage-users-btn');
+            const reviewFlagsBtn = document.getElementById('review-flags-btn');
+            const createAlertReportsBtn = document.getElementById('create-alert-reports-btn');
+            const transferJurisdictionBtn = document.getElementById('transfer-jurisdiction-btn');
+
+            // User management buttons
+            const createUserBtn = document.getElementById('createUserBtn');
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+            const setAccessBtn = document.getElementById('setAccessBtn');
+            const deactivateAccountBtn = document.getElementById('deactivateAccountBtn');
+            const reactivateAccountBtn = document.getElementById('reactivateAccountBtn');
+
+            let currentActiveTabName = 'Overview'; // Initialize with default active tab
+            let previousTabBeforeLogout = 'Overview'; // To store the tab to return to if logout is cancelled
+
+            // Function to set active tab
+            function setActiveTab(tabName) {
+                // Hide all content sections
+                document.querySelectorAll('.content-section').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Remove active styles from all sidebar buttons
+                [overviewBtn, reportsBtn, usersBtn, analyticsBtn, settingsBtn, helpBtn, logoutBtn].forEach(btn => {
+                    btn.classList.remove('bg-[#bfc3ca]', 'bg-opacity-40');
+                });
+
+                // Show the new active content and apply active style to its button
+                switch (tabName) {
+                    case 'Overview':
+                        overviewContent.classList.add('active');
+                        overviewBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        break;
+                    case 'Reports':
+                        reportsContent.classList.add('active');
+                        reportsBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        break;
+                    case 'Users':
+                        usersContent.classList.add('active');
+                        usersBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        break;
+                    case 'Analytics':
+                        analyticsContent.classList.add('active');
+                        analyticsBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        initializeCharts(); // Initialize charts when analytics tab is opened
+                        // Attach event listeners for analytics chart updates
+                        document.getElementById("updateBarChart").addEventListener("click", updateBarChart);
+                        document.getElementById("updatePieChart").addEventListener("click", updatePieChart);
+                        document.getElementById("updateRadarChart").addEventListener("click", updateRadarChart);
+                        document.getElementById("updateAreaChart").addEventListener("click", updateAreaChart);
+                        document.getElementById("shareBtn").addEventListener("click", shareDashboard);
+                        document.getElementById("downloadBtn").addEventListener("click", downloadDashboardData);
+                        break;
+                    case 'Settings':
+                        settingsContent.classList.add('active');
+                        settingsBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        renderSettingsDashboard();
+                        break;
+                    case 'Help':
+                        helpContent.classList.add('active');
+                        helpBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
+                        break;
+                    // 'Log out' is handled by a modal, not a content section switch
+                }
+                currentActiveTabName = tabName; // Update the current active tab name
+            }
+
+            // Set initial active state
+            setActiveTab('Overview');
+
+            // Event Listeners for sidebar navigation
+            overviewBtn.addEventListener('click', function() {
+                setActiveTab('Overview');
+            });
+
+            reportsBtn.addEventListener('click', function() {
+                setActiveTab('Reports');
+            });
+
+            usersBtn.addEventListener('click', function() {
+                setActiveTab('Users');
+            });
+
+            analyticsBtn.addEventListener('click', function() {
+                setActiveTab('Analytics');
+            });
+
+            settingsBtn.addEventListener('click', function() {
+                setActiveTab('Settings');
+            });
+
+            helpBtn.addEventListener('click', function() {
+                setActiveTab('Help');
+            });
+
+            logoutBtn.addEventListener('click', function() {
+                previousTabBeforeLogout = currentActiveTabName; // Store the current tab before logout prompt
+                showConfirmModal('Are you sure you want to log out?', (confirmed) => {
+                    if (confirmed) {
+                        showMessageModal('You have been logged out.');
+                        setActiveTab('Overview'); // Go to overview after logging out
+                    } else {
+                        showMessageModal('Logout cancelled.');
+                        setActiveTab(previousTabBeforeLogout); // Return to the tab that was active before the logout prompt
+                    }
+                });
+            });
+
+            // Event Listener for settings back button
+            document.getElementById('settings-back-button').addEventListener('click', function() {
+                renderSettingsDashboard();
+            });
+
+
+            // Event Listeners for buttons on Overview page
+            manageUsersBtn.addEventListener('click', function() {
+                setActiveTab('Users');
+            });
+
+            reviewFlagsBtn.addEventListener('click', function() {
+                setActiveTab('Reports');
+            });
+
+            // Event Listeners for functional buttons in Reports tab
+            createAlertReportsBtn.addEventListener('click', function() {
+                document.getElementById('alertTitle').value = ''; // Clear previous input
+                document.getElementById('alertDescription').value = ''; // Clear previous input
+                document.getElementById('alertDetailsModal').style.display = 'flex';
+            });
+
+            transferJurisdictionBtn.addEventListener('click', function() {
+                document.getElementById('transferDistrict').value = ''; // Clear previous input
+                document.getElementById('transferBarangay').value = ''; // Clear previous input
+                document.getElementById('transferJurisdictionModal').style.display = 'flex';
+            });
+
+            // Event Listener for Create Alert button on Overview page
+            document.getElementById('create-alert-overview-btn').addEventListener('click', function() {
+                document.getElementById('alertTitle').value = ''; // Clear previous input
+                document.getElementById('alertDescription').value = ''; // Clear previous input
+                document.getElementById('alertDetailsModal').style.display = 'flex';
+            });
+
+            // Event listeners for remove and edit buttons in reports table
+            document.getElementById('reports-table-body').addEventListener('click', function(event) {
+                const target = event.target.closest('button');
+                if (!target) return;
+
+                const row = target.closest('tr');
+                if (!row) return;
+
+                if (target.classList.contains('remove-report-btn')) {
+                    const reportId = row.cells[0].querySelector('span').textContent;
+                    showConfirmModal(`Are you sure you want to remove report "${reportId}"?`, (confirmed) => {
+                        if (confirmed) {
+                            row.remove();
+                            showMessageModal(`Report "${reportId}" removed successfully.`);
+                        }
+                    });
+                } else if (target.classList.contains('edit-report-btn')) {
+                    openEditReportModal(row);
+                }
+            });
+
+
+            // User management functionality (from Admin Page 3.html)
+            createUserBtn.addEventListener('click', () => {
+                showPromptModal('Enter new username:', (username) => {
+                    if (!username) {
+                        showMessageModal('Username is required.');
+                        return;
+                    }
+                    showPromptModal('Enter access level (e.g., Level 1, Level 2, Level 3):', (accessLevel) => {
+                        if (!accessLevel) {
+                            showMessageModal('Access level is required.');
+                            return;
+                        }
+                        const tbody = document.querySelector('#users-content tbody');
+                        const tr = document.createElement('tr');
+                        tr.className = 'bg-gray-300';
+                        tr.innerHTML = `
+                            <td class="border border-gray-400 px-3 py-1">${username}</td>
+                            <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
+                                <span>Active</span>
+                                <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                            </td>
+                            <td class="border border-400 px-3 py-1">${accessLevel}</td>
+                            <td class="border border-400 px-3 py-1">Today</td>
+                        `;
+                        tbody.appendChild(tr);
+                        showMessageModal(`User "${username}" created successfully.`);
+                    });
+                });
+            });
+
+            changePasswordBtn.addEventListener('click', () => {
+                showUserSelectionModal((username) => {
+                    if (!username) {
+                        showMessageModal('No username selected.');
+                        return;
+                    }
+                    const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
+                        row.cells[0].textContent === username
+                    );
+                    if (!userRow) {
+                        showMessageModal(`User "${username}" not found.`);
+                        return;
+                    }
+                    showPromptModal(`Enter new password for "${username}":`, (newPassword) => {
+                        if (!newPassword) {
+                            showMessageModal('Password cannot be empty.');
+                            return;
+                        }
+                        showMessageModal(`Password for "${username}" changed successfully.`);
+                    });
+                });
+            });
+
+            setAccessBtn.addEventListener('click', () => {
+                showUserSelectionModal((username) => {
+                    if (!username) {
+                        showMessageModal('No username selected.');
+                        return;
+                    }
+                    const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
+                        row.cells[0].textContent === username
+                    );
+                    if (!userRow) {
+                        showMessageModal(`User "${username}" not found.`);
+                        return;
+                    }
+                    showDropdownPromptModal(`Select new access level for "${username}":`, ['Level 1', 'Level 2', 'Level 3'], (newAccess) => {
+                        if (!newAccess) {
+                            showMessageModal('Access level cannot be empty.');
+                            return;
+                        }
+                        userRow.cells[2].textContent = newAccess;
+                        showMessageModal(`Access level for "${username}" updated to "${newAccess}".`);
+                    });
+                });
+            });
+
+            deactivateAccountBtn.addEventListener('click', () => {
+                showUserSelectionModal((username) => {
+                    if (!username) {
+                        showMessageModal('No username selected.');
+                        return;
+                    }
+                    const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
+                        row.cells[0].textContent === username
+                    );
+                    if (!userRow) {
+                        showMessageModal(`User "${username}" not found.`);
+                        return;
+                    }
+                    showConfirmModal(`Are you sure you want to deactivate "${username}"? This action cannot be undone.`, (confirmed) => {
+                        if (confirmed) {
+                            const statusCell = userRow.cells[1];
+                            statusCell.innerHTML = `
+                                <span class="font-semibold text-red-600">Inactive</span>
+                                <div class="w-4 h-4 rounded-full bg-red-600"></div>
+                            `;
+                            showMessageModal(`Account for "${username}" has been deactivated.`);
+                        } else {
+                            showMessageModal(`Deactivation of "${username}" cancelled.`);
+                        }
+                    });
+                });
+            });
+
+            // Reactivate Account button functionality
+            reactivateAccountBtn.addEventListener('click', () => {
+                showUserSelectionModal((username) => {
+                    if (!username) {
+                        showMessageModal('No username selected.');
+                        return;
+                    }
+                    const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
+                        row.cells[0].textContent === username
+                    );
+                    if (!userRow) {
+                        showMessageModal(`User "${username}" not found.`);
+                        return;
+                    }
+                    showConfirmModal(`Are you sure you want to reactivate "${username}"?`, (confirmed) => {
+                        if (confirmed) {
+                            const statusCell = userRow.cells[1];
+                            statusCell.innerHTML = `
+                                <span class="font-semibold text-green-600">Active</span>
+                                <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                            `;
+                            showMessageModal(`Account for "${username}" has been reactivated.`);
+                        } else {
+                            showMessageModal(`Reactivation of "${username}" cancelled.`);
+                        }
+                    });
+                });
+            });
+
+
+            // Gemini API Integration for Help Assistant
+            // The AI assistant section has been removed from the HTML.
+            // Therefore, the JavaScript code related to it is no longer needed.
+            // Keeping it commented out for reference in case it needs to be re-added.
+            /*
+            const askAiBtn = document.getElementById('ask-ai-btn');
+            const aiQuestionInput = document.getElementById('ai-question-input');
+            const aiResponseContainer = document.getElementById('ai-response-container');
+            const aiResponseText = document.getElementById('ai-response-text');
+            const aiLoadingIndicator = document.getElementById('ai-loading-indicator');
+
+            askAiBtn.addEventListener('click', async () => {
+                const userQuestion = aiQuestionInput.value.trim();
+                if (!userQuestion) {
+                    showMessageModal('Please enter a question for the AI assistant.');
+                    return;
+                }
+
+                aiResponseContainer.classList.remove('hidden');
+                aiResponseText.textContent = '';
+                aiLoadingIndicator.classList.remove('hidden');
+
+                try {
+                    // Construct the prompt for the LLM
+                    const prompt = `As an AI assistant for an Admin Dashboard named SafePin, answer the following question about the dashboard's functionalities. Keep your answer concise and directly address the question. If the question is outside the scope of a typical admin dashboard, state that you cannot answer it.
+
+                    Dashboard functionalities include:
+                    - Overview: Displays total users, active users, active admins, report statistics (verified, pending, misleading), system health (API response time, uptime), and monitoring (active issues, server load, storage usage). It also shows recent reports and alerts.
+                    - Reports: Allows viewing and managing reports, including jurisdiction selection, editing, and removing reports. Also allows creating new alerts and transferring jurisdiction.
+                    - Users: Manages user accounts (create, change password, set access level, deactivate, reactivate).
+                    - Analytics: Provides charts for crimes committed per month, geographical crime distribution, system performance, and response time analysis. Data can be updated, shared, and downloaded.
+                    - Settings: Manages system preferences, map configuration, notification templates, custom fields, API access, and security settings.
+                    - Help: Provides answers to common questions and includes this AI assistant.
+                    - Log out: Allows users to log out of the dashboard.
+
+                    User Question: ${userQuestion}`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Leave as-is, Canvas will provide it at runtime
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        aiResponseText.textContent = text;
+                    } else {
+                        aiResponseText.textContent = "Sorry, I couldn't generate a response. Please try again.";
+                        console.error("Gemini API response structure unexpected:", result);
+                    }
+                } catch (error) {
+                    aiResponseText.textContent = "An error occurred while contacting the AI assistant. Please try again later.";
+                    console.error("Error calling Gemini API:", error);
+                } finally {
+                    aiLoadingIndicator.classList.add('hidden');
+                }
+            });
+            */
+        });
+    </script>
+</body>
+
+</html>
