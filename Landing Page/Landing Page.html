@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         function openModal() {
             document.getElementById('authorityModal').style.display = 'block';
         }
@@ -207,11 +207,26 @@
         }
 
         function redirectTo(type) {
+            let folderName = '';
+            let fileName = '';
+
             if (type === 'admin') {
-                alert('Redirecting to Admin Login...');
+                folderName = 'Admin Page';
+                fileName = 'Admin-Page.html';
             } else if (type === 'authority') {
-                alert('Redirecting to Authority Login...');
+                folderName = 'Authority Page';
+                fileName = 'Authority-Page.html';
+            } else {
+                alert('Unknown login type');
+                return;
             }
+
+            const targetPath = '../' + encodeURIComponent(folderName) + '/' + fileName;
+            console.log('Redirecting to:', targetPath);
+
+            // Redirect
+            window.location.href = targetPath;
+
             closeModal();
         }
 
@@ -221,7 +236,7 @@
             if (event.target === modal) {
                 closeModal();
             }
-        }
+        };
     </script>
 
 </body>

@@ -1,21 +1,40 @@
 // Function to open the modal
 function openModal() {
-    document.getElementById("authorityModal").style.display = "flex"; // Use "flex" for centering
+    console.log("Opening modal...");
+    document.getElementById("authorityModal").style.display = "flex";
 }
 
 // Function to close the modal
 function closeModal() {
+    console.log("Closing modal...");
     document.getElementById("authorityModal").style.display = "none";
 }
 
 // Function to redirect based on button clicked
 function redirectTo(type) {
+    console.log("redirectTo called with type:", type);
+    console.log("Current location:", window.location.href);
+
+    let folderName = "";
+    let fileName = "";
+
     if (type === 'admin') {
-        window.location.href = "/Admin Page (Official).html"; // Path to your Admin Login page
+        folderName = "Admin Page";
+        fileName = "Admin-Page.html";
     } else if (type === 'authority') {
-        window.location.href = "/SafePin Level 2 V5.4.html"; // Path to your Authority Login page
+        folderName = "Authority Page";
+        fileName = "Authority-Page.html";
+    } else {
+        console.error("Unknown type:", type);
+        return;
     }
-    closeModal(); // Close the modal after redirection
+
+    const targetPath = "../" + encodeURIComponent(folderName) + "/" + fileName;
+    console.log("Redirecting to:", targetPath);
+
+    window.location.href = targetPath;
+
+    closeModal();
 }
 
 // Close the modal if the user clicks outside of it
