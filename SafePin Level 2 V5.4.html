@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePin V1 - Authorized Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom animation for the pulse effect on the status circle */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 flex font-sans antialiased">
+
+    <aside class="w-64 bg-black p-6 flex flex-col justify-between rounded-r-3xl shadow-xl">
+        <div>
+            <div class="flex items-center mb-10">
+                <img src="https://i.imgur.com/ywa5B5G.png" alt="SafePin Logo" class="w-8 h-8 mr-2 rounded-full">
+                <h1 class="text-2xl font-bold text-white">SafePin</h1>
+            </div>
+            <nav class="space-y-4">
+                <button id="overview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 bg-green-600 text-white shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home mr-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span class="font-medium">Overview</span>
+                </button>
+                <button id="reports-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell mr-3"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <span class="font-medium">Reports</span>
+                </button>
+                <button id="mapview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-3"><path d="M12 12.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"/><path d="M19 12c0 7-7 9-7 9s-7-2-7-9a7 7 0 0 1 14 0Z"/><path d="M12 2v.01"/></svg>
+                    <span class="font-medium">Map View</span>
+                </button>
+                <button id="profile-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user mr-3"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="font-medium">Profile</span>
+                </button>
+                <button id="settings-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings mr-3"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span class="font-medium">Settings</span>
+                </button>
+                <button id="help-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle mr-3"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    <span class="font-medium">Help</span>
+                </button>
+            </nav>
+        </div>
+        <div>
+            <button id="logout-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out mr-3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                <span class="font-medium">Log out</span>
+            </button>
+            </div>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <header class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Authorized Dashboard</h2>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-600">Access Jurisdiction</span>
+                <div class="flex items-center bg-white p-3 rounded-xl shadow-md">
+                    <span class="text-gray-700 font-medium mr-2">District :</span>
+                    <span id="district-name" class="text-green-600 font-semibold"></span>
+                </div>
+                <div class="flex items-center bg-white p-3 rounded-xl shadow-md">
+                    <span class="text-gray-700 font-medium mr-2">Barangay :</span>
+                    <span id="barangay-name" class="text-green-600 font-semibold"></span>
+                </div>
+            </div>
+        </header>
+
+        <section id="overview-content" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg col-span-2">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Reports in Jurisdiction</h3>
+                <div id="reports-in-jurisdiction-list" class="space-y-4">
+                    </div>
+                <button id="reports-in-jurisdiction-see-more" class="text-green-600 hover:underline mt-2">See more ..</button>
+            </div>
+
+            <div class="flex flex-col items-center justify-center bg-white p-6 rounded-xl shadow-lg">
+                <div class="relative w-40 h-40 rounded-full bg-yellow-500 flex items-center justify-center text-center text-white font-bold text-lg shadow-inner">
+                    <span class="relative z-10">MONITOR AREAS REPORTED</span>
+                    <div class="absolute inset-0 rounded-full border-4 border-yellow-400 animate-pulse-custom"></div>
+                </div>
+                <p class="text-gray-600 mt-4 text-xl font-semibold">Status</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg col-span-2">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Pending Verifications</h3>
+                <div id="pending-verifications-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Resolved Incidents</h3>
+                <div class="text-center mb-4">
+                    <p id="resolved-incidents-total" class="text-5xl font-bold text-green-600"></p>
+                </div>
+                <ul id="resolved-incidents-breakdown" class="space-y-2 text-gray-700">
+                    </ul>
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <p class="text-gray-700 font-medium">Crime Apprehension Rate :</p>
+                    <p id="crime-apprehension-rate" class="text-3xl font-bold text-purple-600 mt-2"></p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg col-span-full">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                <div id="recent-activity-list" class="space-y-2 max-h-32 overflow-y-hidden">
+                    </div>
+            </div>
+        </section>
+
+        <section id="reports-content" class="hidden">
+            <div class="flex justify-end mb-4">
+                <button class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                    Send Report
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="grid grid-cols-4 gap-4 bg-green-600 text-white font-semibold p-4 rounded-t-lg">
+                    <span>ID#</span>
+                    <span>Street</span>
+                    <span>Wanted</span>
+                    <span>Progress</span>
+                </div>
+                <div id="reports-table-body" class="divide-y divide-gray-200">
+                    </div>
+            </div>
+        </section>
+
+        <section id="profile-content" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Authorized Profile</h2>
+            <div class="bg-green-600 text-white p-6 rounded-xl shadow-lg flex items-center mb-8">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mr-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user text-gray-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                    <h3 id="profile-name" class="text-2xl font-bold"></h3>
+                    <p id="profile-role" class="text-lg"></p>
+                </div>
+                <div class="ml-auto text-right">
+                    <p class="text-lg font-semibold">Code : <span id="profile-code"></span></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                    Account Information
+                </button>
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                    Notification Preferences
+                </button>
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                    Jurisdiction Settings
+                </button>
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                    Activity History
+                </button>
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2">
+                    Security Settings
+                </button>
+            </div>
+        </section>
+
+        <section id="settings-content" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Authorized Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                    General Settings
+                </button>
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                    Notification Settings
+                </button>
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                    Privacy Settings
+                </button>
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                    Jurisdiction Management
+                </button>
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2">
+                    Security & Authentication
+                </button>
+            </div>
+        </section>
+
+        <section id="help-content" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">SafePin Help Center</h2>
+            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
+                <div class="border-b pb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">How do I report an incident?</h3>
+                    <p class="text-gray-700">To report an incident, navigate to the "Map View" section and drop a pin on the location of the incident. You can then provide details about the crime, hazard, or emergency.</p>
+                </div>
+                <div class="border-b pb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">How are reports verified?</h3>
+                    <p class="text-gray-700">Barangay officials (Level 2 users) have access to a dedicated dashboard where they can review and verify submitted reports. This ensures the accuracy and reliability of the data.</p>
+                </div>
+                <div class="border-b pb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Can I report anonymously?</h3>
+                    <p class="text-gray-700">Yes, SafePin V1 is designed to allow residents to anonymously report incidents. Your identity will be protected.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Who can access the data?</h3>
+                    <p class="text-gray-700">Access to incident data is role-based. Barangay officials can only view data relevant to their specific jurisdiction.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="logout-content" class="hidden flex flex-col items-center justify-center h-96 bg-white rounded-xl shadow-lg text-gray-800 text-2xl">
+            <p class="mb-8 font-semibold">You are about to log out..</p>
+            <div class="flex space-x-6">
+                <button id="confirm-logout-btn" class="bg-green-600 text-white py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 text-xl font-semibold">
+                    Confirm
+                </button>
+                <button id="cancel-logout-btn" class="bg-gray-400 text-white py-3 px-8 rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200 text-xl font-semibold">
+                    Cancel
+                </button>
+            </div>
+        </section>
+
+        <section id="report-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
+            <button id="back-from-report-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                &larr; Back to Reports
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Incident Details: <span id="detail-report-id"></span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+                <p><span class="font-semibold">Category:</span> <span id="detail-report-category"></span></p>
+                <p><span class="font-semibold">Location:</span> <span id="detail-report-location"></span></p>
+                <p><span class="font-semibold">Date & Time:</span> <span id="detail-report-datetime"></span></p>
+                <p><span class="font-semibold">Suspect Info:</span> <span id="detail-report-suspect"></span></p>
+                <p><span class="font-semibold">Status:</span> <span id="detail-report-status" class="font-medium text-green-700"></span></p>
+                <p><span class="font-semibold">Reported By:</span> <span id="detail-report-reporter"></span></p>
+                <p class="md:col-span-2"><span class="font-semibold">Description:</span> <span id="detail-report-description"></span></p>
+                <p class="md:col-span-2"><span class="font-semibold">Verification Status:</span> <span id="detail-report-verification"></span></p>
+                <div id="detail-report-official-notes-container" class="md:col-span-2 hidden">
+                    <p class="font-semibold">Official Notes:</p>
+                    <p id="detail-report-official-notes" class="bg-gray-100 p-3 rounded-lg mt-2"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="verification-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
+            <button id="back-from-verification-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                &larr; Back to Overview
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Verification Details: <span id="detail-verification-id"></span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+                <p><span class="font-semibold">Report ID:</span> <span id="detail-verification-report-id"></span></p>
+                <p><span class="font-semibold">Category:</span> <span id="detail-verification-category"></span></p>
+                <p><span class="font-semibold">Location:</span> <span id="detail-verification-location"></span></p>
+                <p><span class="font-semibold">Report Date:</span> <span id="detail-verification-date"></span></p>
+                <p><span class="font-semibold">Anonymous ID:</span> <span id="detail-verification-anonymous-id"></span></p>
+                <p><span class="font-semibold">Status:</span> <span id="detail-verification-status" class="font-medium text-blue-700"></span></p>
+                <p class="md:col-span-2"><span class="font-semibold">Description:</span> <span id="detail-verification-description"></span></p>
+            </div>
+            <div class="mt-8 flex space-x-4">
+                <button class="bg-green-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">Verify</button>
+                <button class="bg-yellow-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-yellow-600 transition-colors duration-200">Request More Info</button>
+                <button class="bg-red-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200">Reject</button>
+            </div>
+        </section>
+
+        <section id="activity-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
+            <button id="back-from-activity-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                &larr; Back to Overview
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Activity Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+                <p><span class="font-semibold">Activity:</span> <span id="detail-activity-description"></span></p>
+                <p><span class="font-semibold">Date & Time:</span> <span id="detail-activity-datetime"></span></p>
+                <p><span class="font-semibold">User:</span> <span id="detail-activity-user"></span></p>
+            </div>
+        </section>
+
+        <div id="other-tabs-content" class="hidden flex items-center justify-center h-96 bg-white rounded-xl shadow-lg text-gray-500 text-2xl">
+            Content Coming Soon!
+        </div>
+    </main>
+
+    <script>
+        // Mock data
+        const mockData = {
+            jurisdiction: {
+                district: '3 - Santa Cruz',
+                barangay: '370',
+            },
+            reportsInJurisdiction: [
+                { id: '#01343418', street: 'Andrade St.', date: 'April 25, 2025 7:05 P.M', type: 'Crime', category: 'Theft', description: 'Suspected theft from a sari-sari store. Multiple witnesses reported a male individual fleeing the scene with a bag of goods.', suspect: 'Unknown', status: 'On-Watch', verification: 'Pending' },
+                { id: '#01349251', street: 'Maceda St.', date: 'May 6, 2025 7:05 P.M', type: 'Crime', category: 'Vandalism', description: 'Report of graffiti and property damage on a public wall. Suspects seen fleeing the area.', suspect: 'N/A', status: 'Resolved', verification: 'Verified', officialNotes: 'Vandalism reported to local authorities. Area cleaned and surveillance increased.' },
+            ],
+            pendingVerifications: [
+                { id: '#01349251', location: 'Maceda St. Sta. Cruz', anonymousId: 'Anonymous02931', date: 'May 8, 2025 10:20 P.M', type: 'Crime', category: 'Public Nuisance', description: 'Report of excessive noise from a late-night gathering disturbing the peace in the neighborhood.', status: 'Pending Verification' },
+                { id: '#01349252', location: 'P. Florentino St. Sta. Cruz', anonymousId: 'Anonymous02952', date: 'May 10, 2025 11:03 P.M', type: 'Crime', category: 'Reckless Driving', description: 'Witness reported a vehicle driving erratically and nearly causing an accident.', status: 'Pending Verification' },
+                { id: '#01349253', location: 'New Antipolo St. Sta. Cruz', anonymousId: 'Anonymous02953', date: 'May 12, 2025 09:00 A.M', type: 'Crime', category: 'Illegal Parking', description: 'Vehicle obstructing traffic flow due to illegal parking in a no-parking zone.', status: 'Pending Verification' },
+                { id: '#01349254', location: 'Cavite St. Sta. Cruz', anonymousId: 'Anonymous02954', date: 'May 13, 2025 02:30 P.M', type: 'Crime', category: 'Noise Complaint', description: 'Loud music coming from a residence affecting nearby houses during quiet hours.', status: 'Pending Verification' },
+            ],
+            recentActivity: [
+                { type: 'login', description: 'Logged In', date: 'May 10, 2025 11:50 P.M', user: 'Isko H. Versosa' },
+                { type: 'report_submitted', description: 'Report #01343418 submitted', date: 'May 10, 2025 11:45 P.M', user: 'Anonymous' },
+                { type: 'report_verified', description: 'Report #01349251 verified', date: 'May 10, 2025 11:30 P.M', user: 'Isko H. Versosa' },
+                { type: 'logout', description: 'Logged Out', date: 'May 10, 2025 11:55 P.M', user: 'Isko H. Versosa' },
+                { type: 'report_submitted', description: 'Report #01347659 submitted', date: 'May 9, 2025 09:00 A.M', user: 'Anonymous' },
+            ],
+            resolvedIncidents: {
+                total: 23,
+                breakdown: [
+                    { type: 'Thefts', count: 13 },
+                    { type: 'Assaults', count: 5 },
+                    { type: 'Vandalism', count: 5 },
+                ],
+                crimeApprehensionRate: 96,
+            },
+        };
+
+        // Mock data for Reports section
+        const reportsData = [
+            { id: '#01349251', street: 'Maceda St. Sta. Cruz', wanted: 'Unknown', progress: 'On-Watch', type: 'Crime', category: 'Vandalism', description: 'Suspected loitering and vandalism by a group of teenagers near the park. Residents reported noise disturbance and minor property damage.', verification: 'Pending', date: 'May 11, 2025 08:00 A.M', reporter: 'Anonymous' },
+            { id: '#01347659', street: 'Isagani St. Sta Cruz', wanted: 'Reyes Viloma', progress: 'On-Watch', type: 'Crime', category: 'Domestic Disturbance', description: 'Reported domestic disturbance at house number 123. Loud arguments heard by neighbors. Police assistance requested.', verification: 'Pending', date: 'May 10, 2025 07:30 P.M', reporter: 'Anonymous' },
+            { id: '#01343418', street: 'Andrade St. Sta Cruz', wanted: 'Unknown', progress: 'On-Watch', type: 'Crime', category: 'Public Nuisance', description: 'Complaint about illegal dumping of trash in a vacant lot, attracting pests and causing foul odor.', verification: 'Pending', date: 'May 9, 2025 04:00 P.M', reporter: 'Anonymous' },
+            { id: '#01349255', street: 'Hizon St. Sta. Cruz', wanted: 'John Doe', progress: 'On-Watch', type: 'Crime', category: 'Physical Assault', description: 'Report of a physical altercation between two individuals outside a convenience store. One person sustained minor injuries.', verification: 'Pending', date: 'May 14, 2025 10:00 A.M', reporter: 'Anonymous' },
+            { id: '#01349256', street: 'M. Natividad St. Sta. Cruz', wanted: 'Jane Smith', progress: 'On-Watch', type: 'Crime', category: 'Robbery', description: 'Armed robbery reported at a small grocery store. Suspect fled with cash and valuables.', verification: 'Pending', date: 'May 15, 2025 01:15 P.M', reporter: 'Anonymous' },
+            { id: '#01349257', street: 'New Antipolo St. Sta. Cruz', wanted: 'Unknown', progress: 'On-Watch', type: 'Crime', category: 'Drug-related Incident', description: 'Suspicious activity reported near an abandoned building, possibly related to illegal drug transactions.', verification: 'Pending', date: 'May 16, 2025 08:45 P.M', reporter: 'Anonymous' },
+            { id: '#01349258', street: 'Cavite St. Sta. Cruz', wanted: 'Group of individuals', progress: 'On-Watch', type: 'Crime', category: 'Public Disturbance', description: 'A group of individuals causing a disturbance and blocking pedestrian traffic on the sidewalk.', verification: 'Pending', date: 'May 17, 2025 03:00 P.M', reporter: 'Anonymous' },
+        ];
+
+        // Mock data for Profile section
+        const profileData = {
+            name: 'Isko H. Versosa',
+            role: 'Barangay 370 Chairman (Level 2 SafePin Access)',
+            code: '102-121-320'
+        };
+
+
+        /**
+         * Renders the dashboard content using mock data.
+         */
+        function renderDashboardContent() {
+            // Jurisdiction
+            document.getElementById('district-name').textContent = mockData.jurisdiction.district;
+            document.getElementById('barangay-name').textContent = mockData.jurisdiction.barangay;
+
+            // Reports in Jurisdiction (Overview Card)
+            const reportsInJurisdictionList = document.getElementById('reports-in-jurisdiction-list');
+            reportsInJurisdictionList.innerHTML = ''; // Clear previous content
+            mockData.reportsInJurisdiction.forEach(report => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-yellow-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-yellow-200';
+                div.innerHTML = `
+                    <span class="font-semibold text-yellow-800">${report.id}</span>
+                    <span class="text-gray-700">${report.street}</span>
+                    <span class="text-gray-500 text-sm">${report.date}</span>
+                `;
+                div.addEventListener('click', () => showReportDetail(report));
+                reportsInJurisdictionList.appendChild(div);
+            });
+
+            // "See more" button for Reports in Jurisdiction
+            document.getElementById('reports-in-jurisdiction-see-more').addEventListener('click', () => handleTabClick('Reports'));
+
+
+            // Pending Verifications
+            const pendingList = document.getElementById('pending-verifications-list');
+            pendingList.innerHTML = ''; // Clear previous content
+            mockData.pendingVerifications.forEach(verification => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-blue-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-blue-200';
+                div.innerHTML = `
+                    <span class="font-semibold text-blue-800">${verification.location}</span>
+                    <span class="text-gray-700">${verification.anonymousId}</span>
+                    <span class="text-gray-500 text-sm">${verification.date}</span>
+                `;
+                div.addEventListener('click', () => showVerificationDetail(verification));
+                pendingList.appendChild(div);
+            });
+
+            // Resolved Incidents
+            document.getElementById('resolved-incidents-total').textContent = mockData.resolvedIncidents.total;
+            const resolvedBreakdownList = document.getElementById('resolved-incidents-breakdown');
+            resolvedBreakdownList.innerHTML = ''; // Clear previous content
+            mockData.resolvedIncidents.breakdown.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center';
+                li.innerHTML = `
+                    <span>${item.count} ${item.type}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                `;
+                resolvedBreakdownList.appendChild(li);
+            });
+            document.getElementById('crime-apprehension-rate').textContent = `${mockData.resolvedIncidents.crimeApprehensionRate}%`;
+
+            // Recent Activity
+            const recentActivityList = document.getElementById('recent-activity-list');
+            recentActivityList.innerHTML = ''; // Clear previous content
+            mockData.recentActivity.forEach(activity => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-gray-50 p-2 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100';
+                div.innerHTML = `
+                    <span class="font-semibold text-gray-800">${activity.description}</span>
+                    <span class="text-gray-500 text-sm">${activity.date}</span>
+                `;
+                div.addEventListener('click', () => showActivityDetail(activity));
+                recentActivityList.appendChild(div);
+            });
+
+            // Reports Table (for Reports section)
+            const reportsTableBody = document.getElementById('reports-table-body');
+            reportsTableBody.innerHTML = ''; // Clear previous content
+            reportsData.forEach(report => {
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-4 gap-4 p-4 hover:bg-gray-50 cursor-pointer';
+                div.innerHTML = `
+                    <span>${report.id}</span>
+                    <span>${report.street}</span>
+                    <span>${report.wanted}</span>
+                    <span class="font-medium text-green-700">${report.progress}</span>
+                `;
+                div.addEventListener('click', () => showReportDetail(report, 'Reports')); // Pass 'Reports' to know where to go back
+                reportsTableBody.appendChild(div);
+            });
+
+            // Profile Section
+            document.getElementById('profile-name').textContent = profileData.name;
+            document.getElementById('profile-role').textContent = profileData.role;
+            document.getElementById('profile-code').textContent = profileData.code;
+        }
+
+        /**
+         * Hides all main content sections and detail sections.
+         */
+        function hideAllContentSections() {
+            const contentSections = [
+                document.getElementById('overview-content'),
+                document.getElementById('reports-content'),
+                document.getElementById('profile-content'),
+                document.getElementById('settings-content'),
+                document.getElementById('help-content'),
+                document.getElementById('logout-content'),
+                document.getElementById('report-detail-content'),
+                document.getElementById('verification-detail-content'),
+                document.getElementById('activity-detail-content'),
+                document.getElementById('other-tabs-content')
+            ];
+            contentSections.forEach(section => section.classList.add('hidden'));
+        }
+
+        /**
+         * Handles sidebar button clicks to switch between tabs.
+         * @param {string} tabName - The name of the tab to activate.
+         */
+        function handleTabClick(tabName) {
+            // Remove active styles from all buttons
+            document.querySelectorAll('nav button').forEach(button => {
+                button.classList.remove('bg-green-600', 'text-white', 'shadow-md');
+                button.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
+            });
+
+            // Add active styles to the clicked button
+            const clickedButton = document.getElementById(`${tabName.toLowerCase().replace(' ', '-')}-btn`); // Handle "Map View"
+            if (clickedButton) {
+                clickedButton.classList.add('bg-green-600', 'text-white', 'shadow-md');
+                clickedButton.classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
+            }
+
+            hideAllContentSections(); // Hide all sections first
+
+            // Show the relevant content section based on tabName
+            if (tabName === 'Overview') {
+                document.getElementById('overview-content').classList.remove('hidden');
+            } else if (tabName === 'Reports') {
+                document.getElementById('reports-content').classList.remove('hidden');
+            } else if (tabName === 'Profile') {
+                document.getElementById('profile-content').classList.remove('hidden');
+            } else if (tabName === 'Settings') {
+                document.getElementById('settings-content').classList.remove('hidden');
+            } else if (tabName === 'Help') {
+                document.getElementById('help-content').classList.remove('hidden');
+            } else if (tabName === 'Log out') {
+                document.getElementById('logout-content').classList.remove('hidden');
+            }
+            else {
+                document.getElementById('other-tabs-content').classList.remove('hidden');
+                document.getElementById('other-tabs-content').textContent = `${tabName} Content Coming Soon!`;
+            }
+        }
+
+        /**
+         * Displays the detailed view for a report.
+         * @param {object} report - The report data object.
+         * @param {string} [returnToTab='Overview'] - The tab to return to (e.g., 'Overview' or 'Reports').
+         */
+        function showReportDetail(report, returnToTab = 'Overview') {
+            hideAllContentSections();
+            document.getElementById('report-detail-content').classList.remove('hidden');
+
+            document.getElementById('detail-report-id').textContent = report.id;
+            document.getElementById('detail-report-category').textContent = report.category; // Display category
+            document.getElementById('detail-report-location').textContent = report.street;
+            document.getElementById('detail-report-datetime').textContent = report.date;
+            document.getElementById('detail-report-suspect').textContent = report.wanted || report.suspect;
+            document.getElementById('detail-report-status').textContent = report.progress || report.status;
+            document.getElementById('detail-report-reporter').textContent = report.reporter || 'Anonymous';
+            document.getElementById('detail-report-description').textContent = report.description;
+            document.getElementById('detail-report-verification').textContent = report.verification;
+
+            const officialNotesContainer = document.getElementById('detail-report-official-notes-container');
+            const officialNotes = document.getElementById('detail-report-official-notes');
+            if (report.officialNotes) {
+                officialNotes.textContent = report.officialNotes;
+                officialNotesContainer.classList.remove('hidden');
+            } else {
+                officialNotesContainer.classList.add('hidden');
+            }
+
+            // Set the back button behavior
+            const backButton = document.getElementById('back-from-report-detail');
+            backButton.textContent = `← Back to ${returnToTab}`;
+            backButton.onclick = () => handleTabClick(returnToTab);
+        }
+
+        /**
+         * Displays the detailed view for a pending verification.
+         * @param {object} verification - The verification data object.
+         */
+        function showVerificationDetail(verification) {
+            hideAllContentSections();
+            document.getElementById('verification-detail-content').classList.remove('hidden');
+
+            document.getElementById('detail-verification-id').textContent = verification.id || 'N/A';
+            document.getElementById('detail-verification-report-id').textContent = verification.id;
+            document.getElementById('detail-verification-category').textContent = verification.category; // Display category
+            document.getElementById('detail-verification-location').textContent = verification.location;
+            document.getElementById('detail-verification-date').textContent = verification.date;
+            document.getElementById('detail-verification-anonymous-id').textContent = verification.anonymousId;
+            document.getElementById('detail-verification-status').textContent = verification.status;
+            document.getElementById('detail-verification-description').textContent = verification.description;
+
+            // Set the back button behavior
+            document.getElementById('back-from-verification-detail').onclick = () => handleTabClick('Overview');
+        }
+
+        /**
+         * Displays the detailed view for a recent activity.
+         * @param {object} activity - The activity data object.
+         */
+        function showActivityDetail(activity) {
+            hideAllContentSections();
+            document.getElementById('activity-detail-content').classList.remove('hidden');
+
+            document.getElementById('detail-activity-description').textContent = activity.description;
+            document.getElementById('detail-activity-datetime').textContent = activity.date;
+            document.getElementById('detail-activity-user').textContent = activity.user;
+
+            // Set the back button behavior
+            document.getElementById('back-from-activity-detail').onclick = () => handleTabClick('Overview');
+        }
+
+
+        // Add event listeners to sidebar buttons and render content on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('overview-btn').addEventListener('click', () => handleTabClick('Overview'));
+            document.getElementById('reports-btn').addEventListener('click', () => handleTabClick('Reports'));
+            document.getElementById('mapview-btn').addEventListener('click', () => handleTabClick('Map View'));
+            document.getElementById('profile-btn').addEventListener('click', () => handleTabClick('Profile'));
+            document.getElementById('settings-btn').addEventListener('click', () => handleTabClick('Settings'));
+            document.getElementById('help-btn').addEventListener('click', () => handleTabClick('Help'));
+            document.getElementById('logout-btn').addEventListener('click', () => handleTabClick('Log out'));
+
+            // Event listeners for logout confirmation buttons
+            document.getElementById('confirm-logout-btn').addEventListener('click', () => {
+                console.log('User confirmed logout');
+                // In a real application, you would perform the logout action here
+                handleTabClick('Overview'); // Go back to overview after "logging out"
+            });
+
+            document.getElementById('cancel-logout-btn').addEventListener('click', () => {
+                console.log('User cancelled logout');
+                document.getElementById('logout-content').classList.add('hidden');
+                handleTabClick('Overview'); // Go back to the previous view, e.g., Overview
+            });
+
+            // Render content initially (default to Overview)
+            renderDashboardContent();
+            handleTabClick('Overview'); // Ensure Overview is active on load
+        });
+    </script>
+</body>
+</html>
