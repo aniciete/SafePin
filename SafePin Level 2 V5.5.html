@@ -225,7 +225,7 @@
         </section>
 
         <section id="logout-content" class="hidden flex flex-col items-center justify-center h-96 bg-white rounded-xl shadow-lg text-gray-800 text-2xl">
-            <p class="mb-8 font-semibold">You are about to log out..</p>
+            <p class="mb-8 font-semibold">You are about to log out.</p>
             <div class="flex space-x-6">
                 <button id="confirm-logout-btn" class="bg-green-600 text-white py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 text-xl font-semibold">
                     Confirm
@@ -587,7 +587,7 @@
             document.getElementById('confirm-logout-btn').addEventListener('click', () => {
                 console.log('User confirmed logout');
                 // Redirect to Landing Page.html
-                window.location.href = 'Landing Page.html';
+                window.location.href = 'Landing Page/Landing Page.html';
             });
 
             document.getElementById('cancel-logout-btn').addEventListener('click', () => {

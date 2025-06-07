@@ -893,15 +893,16 @@ document.addEventListener('DOMContentLoaded', function() {
         previousTabBeforeLogout = currentActiveTabName; // Store the current tab before logout prompt
         showConfirmModal('Are you sure you want to log out?', (confirmed) => {
             if (confirmed) {
-                showMessageModal('You have been logged out.');
-                setActiveTab('Overview'); // Go to overview after logging out
+                // Show logout message with callback to redirect after user clicks OK
+                showMessageModalWithCallback('You have been logged out.', () => {
+                    window.location.href = '../../Landing Page/Landing Page.html';
+                });
             } else {
                 showMessageModal('Logout cancelled.');
                 setActiveTab(previousTabBeforeLogout); // Return to the tab that was active before the logout prompt
             }
         });
     });
-
     // Event Listener for settings back button
     document.getElementById('settings-back-button').addEventListener('click', function() {
         renderSettingsDashboard();

@@ -19,8 +19,8 @@ function redirectTo(type) {
     let fileName = "";
 
     if (type === 'admin') {
-        folderName = "Admin Page";
-        fileName = "Admin-Page.html";
+        folderName = "Admin Page/Project";
+        fileName = "index.html";
     } else if (type === 'authority') {
         folderName = "Authority Page";
         fileName = "Authority-Page.html";
