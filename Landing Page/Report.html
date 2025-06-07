@@ -4,7 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Incident with Modal - SafePin</title>
-    <link rel="stylesheet" href="style.css"> </head>
+    <link rel="stylesheet" href="style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        /* Map specific styles */
+        #map {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .map-area {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .map-address-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 6px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 1000;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .current-location-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .current-location-btn:hover {
+            background: #0056b3;
+        }
+        
+        .location-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        
+        /* Custom marker popup styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+        
+        .incident-marker {
+            background: #ff4444;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
 <body>
 
     <header>
@@ -63,12 +133,14 @@
         <div class="container form-container">
             <form action="#" method="POST" id="reportIncidentForm">
                 <div class="map-area">
-                    <img src="https://via.placeholder.com/800x350/e0e0e0/cccccc?text=Map+Goes+Here" alt="Map Placeholder" class="map-placeholder-img">
-                    <div class="map-address-bar">
+                    <div id="map"></div>
+                    <div class="map-address-bar" id="addressBar">
                         **2511 Isagani St, Santa Cruz, Manila, Metro Manila**
                     </div>
-                    <button type="button" class="current-location-btn">
-                        <img src="https://via.placeholder.com/16x16/007bff/ffffff?Text=L" alt="Location icon">
+                    <button type="button" class="current-location-btn" id="currentLocationBtn">
+                        <svg class="location-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
                         Using current location
                     </button>
                 </div>
@@ -182,10 +254,132 @@
         </div>
     </div>
 
+    <!-- Leaflet JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
     <script>
-        // Basic JavaScript to toggle modal (for demonstration)
-        // In a real application, you might handle form submission via AJAX after confirmation.
+        // Map variables
+        let map;
+        let incidentMarker;
+        let currentLocation = { lat: 14.6042, lng: 120.9822 }; // Manila coordinates as default
 
+        // Initialize map
+        function initMap() {
+            // Create map centered on Manila
+            map = L.map('map').setView([currentLocation.lat, currentLocation.lng], 15);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add click event listener for placing incident markers
+            map.on('click', function(e) {
+                placeIncidentMarker(e.latlng);
+                updateAddress(e.latlng);
+            });
+
+            // Try to get user's current location
+            getCurrentLocation();
+        }
+
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        currentLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Update map view to current location
+                        map.setView([currentLocation.lat, currentLocation.lng], 16);
+                        
+                        // Place initial marker at current location
+                        placeIncidentMarker(L.latLng(currentLocation.lat, currentLocation.lng));
+                        updateAddress(L.latLng(currentLocation.lat, currentLocation.lng));
+                    },
+                    function(error) {
+                        console.log('Geolocation error:', error);
+                        // Fallback to Manila coordinates
+                        placeIncidentMarker(L.latLng(currentLocation.lat, currentLocation.lng));
+                        updateAddress(L.latLng(currentLocation.lat, currentLocation.lng));
+                    }
+                );
+            } else {
+                console.log('Geolocation not supported');
+                // Fallback to Manila coordinates
+                placeIncidentMarker(L.latLng(currentLocation.lat, currentLocation.lng));
+                updateAddress(L.latLng(currentLocation.lat, currentLocation.lng));
+            }
+        }
+
+        // Place incident marker on map
+        function placeIncidentMarker(latlng) {
+            // Remove existing marker if any
+            if (incidentMarker) {
+                map.removeLayer(incidentMarker);
+            }
+
+            // Create custom red marker
+            const incidentIcon = L.divIcon({
+                className: 'incident-marker',
+                html: '<div style="background: #ff4444; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            });
+
+            // Add new marker
+            incidentMarker = L.marker(latlng, { 
+                icon: incidentIcon,
+                draggable: true 
+            }).addTo(map);
+
+            // Add popup to marker
+            incidentMarker.bindPopup('<b>Incident Location</b><br>Click and drag to adjust position').openPopup();
+
+            // Update address when marker is dragged
+            incidentMarker.on('dragend', function(e) {
+                updateAddress(e.target.getLatLng());
+            });
+
+            // Store coordinates for form submission
+            currentLocation = { lat: latlng.lat, lng: latlng.lng };
+        }
+
+        // Update address display (simplified version)
+        function updateAddress(latlng) {
+            // In a real application, you would use a geocoding service like Nominatim or Google Geocoding API
+            // For now, we'll just show coordinates
+            const addressBar = document.getElementById('addressBar');
+            addressBar.innerHTML = `**Lat: ${latlng.lat.toFixed(6)}, Lng: ${latlng.lng.toFixed(6)}**`;
+            
+            // Optional: Use reverse geocoding for actual address
+            // This example uses Nominatim (OpenStreetMap's geocoding service)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        addressBar.innerHTML = `**${data.display_name}**`;
+                    }
+                })
+                .catch(error => {
+                    console.log('Geocoding error:', error);
+                });
+        }
+
+        // Current location button handler
+        document.getElementById('currentLocationBtn').addEventListener('click', function() {
+            getCurrentLocation();
+        });
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+
+        // Modal functionality (unchanged from original)
         const confirmModal = document.getElementById('confirmModal');
         const successModal = document.getElementById('successModal');
         const openConfirmModalBtn = document.getElementById('openConfirmModalBtn');
@@ -193,19 +387,17 @@
         const triggerSuccessModalBtn = document.getElementById('triggerSuccessModalBtn');
         const closeSuccessModalBtn = document.getElementById('closeSuccessModalBtn');
 
-
         function showModal(modalElement) {
-            modalElement.classList.add('active'); // Add active class to show it
+            modalElement.classList.add('active');
         }
 
         function hideModal(modalElement) {
-            modalElement.classList.remove('active'); // Remove active class to hide it
+            modalElement.classList.remove('active');
         }
 
         if (openConfirmModalBtn) {
             openConfirmModalBtn.addEventListener('click', function(event) {
-                // event.preventDefault(); // Prevent default form submission if it's a submit button
-                hideModal(successModal); // Ensure success modal is hidden if somehow active
+                hideModal(successModal);
                 showModal(confirmModal);
             });
         }
@@ -218,29 +410,17 @@
 
         if (triggerSuccessModalBtn) {
             triggerSuccessModalBtn.addEventListener('click', function() {
-                hideModal(confirmModal); // Hide confirm modal first
-                showModal(successModal); // Then show success modal
+                hideModal(confirmModal);
+                showModal(successModal);
             });
         }
 
         if (closeSuccessModalBtn) {
-        closeSuccessModalBtn.addEventListener('click', function() {
-            hideModal(successModal);
-            // Redirect to Verification.html
-            window.location.href = "Verification.html";
-        });
-    }
-
-        // Optional: Hide modal if clicked outside the modal content
-        // This part would ideally be implemented with proper event delegation or specific checks
-        // window.addEventListener('click', function(event) {
-        // if (event.target === confirmModal) {
-        // hideModal(confirmModal);
-        // }
-        // if (event.target === successModal) {
-        // hideModal(successModal);
-        // }
-        // });
+            closeSuccessModalBtn.addEventListener('click', function() {
+                hideModal(successModal);
+                window.location.href = "Verification.html";
+            });
+        }
     </script>
 
 </body>

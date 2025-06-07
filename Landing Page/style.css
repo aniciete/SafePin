@@ -215,6 +215,11 @@ nav ul li a:hover {
 
 .hero-content {
     max-width: 600px;
+    /* Added styles for stacking buttons */
+    display: flex;
+    flex-direction: column; /* Stacks children vertically */
+    align-items: center; /* Centers items horizontally */
+    text-align: center; /* Centers text within the hero content */
 }
 
 .hero-map-icon {
@@ -234,9 +239,18 @@ nav ul li a:hover {
     line-height: 1.6;
 }
 
+/* Style for the larger Report Incident button */
+.btn-report-incident {
+    padding: 18px 35px; /* Increase padding for a larger button */
+    font-size: 1.2em; /* Increase font size */
+    margin-bottom: 20px; /* Add space below the button to separate it from the link */
+    width: auto; /* Allow the button to size based on its content and padding */
+    min-width: 200px; /* Ensures a minimum width for the button */
+}
+
 .check-status-link {
     display: inline-block;
-    margin-top: 15px;
+    margin-top: 15px; /* Adjusted to allow space after the new larger button */
     color: #6ab04c;
     text-decoration: underline;
 }
@@ -931,7 +945,8 @@ footer {
     display: flex;
 }
 
-.modal-content {
+/* Changed .modal-content here for the new modal (Success/Error modal) */
+.modal-overlay .modal-content {
     background-color: white;
     padding: 30px;
     border-radius: 8px;
@@ -939,6 +954,7 @@ footer {
     width: 90%;
     max-width: 400px;
     text-align: center;
+    margin: auto; /* Override previous margin for this specific modal */
 }
 
 .modal-icon img {
