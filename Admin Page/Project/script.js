@@ -889,20 +889,30 @@ document.addEventListener('DOMContentLoaded', function() {
         setActiveTab('Settings');
     });
 
-    logoutBtn.addEventListener('click', function() {
-        previousTabBeforeLogout = currentActiveTabName; // Store the current tab before logout prompt
-        showConfirmModal('Are you sure you want to log out?', (confirmed) => {
-            if (confirmed) {
-                // Show logout message with callback to redirect after user clicks OK
-                showMessageModalWithCallback('You have been logged out.', () => {
+logoutBtn.addEventListener('click', function() {
+    previousTabBeforeLogout = currentActiveTabName;
+    showConfirmModal('Are you sure you want to log out?', (confirmed) => {
+        if (confirmed) {
+            showMessageModalWithCallback('You have been logged out.', () => {
+                console.log('Attempting to redirect...');
+                console.log('Current location:', window.location.href);
+                console.log('Target path:', '../../Landing Page/Landing Page.html');
+                
+                try {
                     window.location.href = '../../Landing Page/Landing Page.html';
-                });
-            } else {
-                showMessageModal('Logout cancelled.');
-                setActiveTab(previousTabBeforeLogout); // Return to the tab that was active before the logout prompt
-            }
-        });
+                } catch (error) {
+                    console.error('Redirect failed:', error);
+                    // Fallback
+                    window.location.replace('../../Landing Page/Landing Page.html');
+                }
+            });
+        } else {
+            showMessageModal('Logout cancelled.');
+            setActiveTab(previousTabBeforeLogout);
+        }
     });
+});
+
     // Event Listener for settings back button
     document.getElementById('settings-back-button').addEventListener('click', function() {
         renderSettingsDashboard();

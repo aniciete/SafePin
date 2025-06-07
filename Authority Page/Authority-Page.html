@@ -583,11 +583,11 @@
             document.getElementById('help-btn').addEventListener('click', () => handleTabClick('Help'));
             document.getElementById('logout-btn').addEventListener('click', () => handleTabClick('Log out'));
 
-            // Event listeners for logout confirmation buttons
+           // Event listeners for logout confirmation buttons
             document.getElementById('confirm-logout-btn').addEventListener('click', () => {
                 console.log('User confirmed logout');
-                // In a real application, you would perform the logout action here
-                handleTabClick('Overview'); // Go back to overview after "logging out"
+                // Redirect to Landing Page (go up one directory level, then into Landing Page folder)
+                window.location.href = '../Landing Page/Landing Page.html';
             });
 
             document.getElementById('cancel-logout-btn').addEventListener('click', () => {
