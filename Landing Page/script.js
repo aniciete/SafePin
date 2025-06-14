@@ -20,7 +20,7 @@ function redirectTo(type) {
 
     if (type === 'admin') {
         folderName = "Admin Page/Project";
-        fileName = "index.html";
+        fileName = "Admin-Page.html";
     } else if (type === 'authority') {
         folderName = "Authority Page";
         fileName = "Authority-Page.html";
