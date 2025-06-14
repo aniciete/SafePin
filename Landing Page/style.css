@@ -261,14 +261,14 @@ nav ul li a:hover {
 
 /* How It Works Section (Landing Page variant) */
 .how-it-works {
-    background-color: #f9f9f9;
+    background-color: #6ab04c;
     padding: 60px 0;
     text-align: center;
 }
 
 .how-it-works h2 {
     font-size: 2.2em;
-    color: #333;
+    color: #ffff;
     margin-bottom: 40px;
 }
 
