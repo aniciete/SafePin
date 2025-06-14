@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Import Inter font */
-        
+
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
@@ -19,33 +19,33 @@
             color: #000000;
         }
         /* Custom scrollbar for table container */
-        
+
         .scrollbar-thin::-webkit-scrollbar {
             height: 6px;
             width: 6px;
         }
-        
+
         .scrollbar-thin::-webkit-scrollbar-thumb {
             background-color: #4caf50;
             border-radius: 10px;
         }
-        
+
         .scrollbar-thin::-webkit-scrollbar-track {
             background: #f9f9f9;
             border-radius: 9999px;
         }
         /* Hide all content sections by default */
-        
+
         .content-section {
             display: none;
         }
         /* Show active content section */
-        
+
         .content-section.active {
             display: block;
         }
         /* Modal styles */
-        
+
         .modal {
             display: none;
             position: fixed;
@@ -59,7 +59,7 @@
             justify-content: center;
             align-items: center;
         }
-        
+
         .modal-content {
             background-color: #fefefe;
             margin: auto;
@@ -71,14 +71,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        
+
         .close-button {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
-        
+
         .close-button:hover,
         .close-button:focus {
             color: black;
@@ -86,7 +86,7 @@
             cursor: pointer;
         }
         /* Custom animation for the pulse effect on the status circle */
-        
+
         @keyframes pulse {
             0%,
             100% {
@@ -98,12 +98,12 @@
                 opacity: 0.7;
             }
         }
-        
+
         .animate-pulse-custom {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         /* Admin Dashboard Distinction */
-        
+
         .admin-dashboard-bg {
             background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
             /* Subtle pattern */
@@ -734,7 +734,7 @@
 
     <div id="promptModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeModal('promptModal')">&times;</span>
+            <span class="close-button" onclick="promptCallback(null)">&times;</span>
             <p id="promptText"></p>
             <input type="text" id="promptInput" class="border border-gray-300 rounded-md p-2 mt-2 w-full" />
             <div class="flex justify-end space-x-2 mt-4">
@@ -746,7 +746,7 @@
 
     <div id="dropdownPromptModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeModal('dropdownPromptModal')">&times;</span>
+            <span class="close-button" onclick="dropdownPromptCallback(null)">&times;</span>
             <p id="dropdownPromptText"></p>
             <select id="dropdownPromptSelect" class="border border-gray-300 rounded-md p-2 mt-2 w-full"></select>
             <div class="flex justify-end space-x-2 mt-4">
@@ -758,7 +758,7 @@
 
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeModal('confirmModal')">&times;</span>
+            <span class="close-button" onclick="confirmCallback(false)">&times;</span>
             <p id="confirmText"></p>
             <div class="flex justify-end space-x-2 mt-4">
                 <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="confirmCallback(false)">Cancel</button>
@@ -853,7 +853,7 @@
 
     <div id="userSelectionModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeModal('userSelectionModal')">&times;</span>
+            <span class="close-button" onclick="userSelectionCallback(null)">&times;</span>
             <h2 class="text-lg font-bold mb-4">Select User</h2>
             <input type="text" id="userSearchInput" placeholder="Search username..." class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
             <div id="userListContainer" class="max-h-60 overflow-y-auto border border-gray-200 rounded-md p-2">
@@ -872,7 +872,7 @@
         let currentPromptCallback = null;
         let currentConfirmCallback = null;
         let currentDropdownPromptCallback = null;
-        let currentUserSelectionCallback = null;
+        let currentUserSelectionCallback = null; // Stores the callback from the action button (e.g., change password)
         let currentEditReportRow = null; // To store the row being edited
 
         // Mock data for new sections and reports table
@@ -1152,11 +1152,14 @@
 
         // Function to show user selection modal
         function showUserSelectionModal(callback) {
+            // Store the provided callback
             currentUserSelectionCallback = callback;
+
             const userListContainer = document.getElementById('userListContainer');
             userListContainer.innerHTML = ''; // Clear previous list
 
             const usersTableBody = document.querySelector('#users-content tbody');
+            // Get current usernames from the table
             const userRows = Array.from(usersTableBody.querySelectorAll('tr'));
             let allUsernames = userRows.map(row => row.cells[0].textContent);
 
@@ -1175,8 +1178,15 @@
                     const userItem = document.createElement('div');
                     userItem.className = 'p-2 cursor-pointer hover:bg-gray-100 rounded-md';
                     userItem.textContent = username;
+                    // When a user is clicked, execute the stored callback with the selected username
                     userItem.addEventListener('click', () => {
-                        userSelectionCallback(username);
+                        // Close the modal first
+                        document.getElementById('userSelectionModal').style.display = 'none';
+                        // Execute the stored callback with the selected username
+                        if (currentUserSelectionCallback) {
+                            currentUserSelectionCallback(username);
+                            currentUserSelectionCallback = null; // Clear the stored callback after use
+                        }
                     });
                     userListContainer.appendChild(userItem);
                 });
@@ -1195,13 +1205,9 @@
             document.getElementById('userSelectionModal').style.display = 'flex';
         }
 
-        // Callback for user selection modal
-        function userSelectionCallback(username) {
-            document.getElementById('userSelectionModal').style.display = 'none';
-            if (currentUserSelectionCallback) {
-                currentUserSelectionCallback = null;
-            }
-        }
+        // NOTE: The previous global userSelectionCallback function is now refactored.
+        // The modal's close button now directly calls userSelectionCallback(null) to indicate cancellation.
+        // The list item clicks now handle their own closure and callback execution.
 
         // Function to close any modal
         function closeModal(modalId) {
@@ -1685,7 +1691,7 @@
             );
             const usability = parseFloat(
                 document.getElementById("usabilityInput").value
-            );
+                );
             const security = parseFloat(
                 document.getElementById("securityInput").value
             );
@@ -2107,10 +2113,6 @@
                 showConfirmModal('Are you sure you want to log out?', (confirmed) => {
                     if (confirmed) {
                         showMessageModalWithCallback('You have been logged out.', () => {
-                            console.log('Attempting to redirect...');
-                            console.log('Current location:', window.location.href);
-                            console.log('Target path:', '../../Landing Page/Landing Page.html');
-                            
                             try {
                                 window.location.href = '../../Landing Page/Landing Page.html';
                             } catch (error) {
@@ -2246,9 +2248,11 @@
 
             if (changePasswordBtn) {
                 changePasswordBtn.addEventListener('click', () => {
+                    // Pass a callback function to showUserSelectionModal
                     showUserSelectionModal((username) => {
+                        console.log('User selected for change password:', username); // Debugging
                         if (!username) {
-                            showMessageModal('No username selected.');
+                            showMessageModal('No username selected for password change.');
                             return;
                         }
                         const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
@@ -2263,6 +2267,7 @@
                                 showMessageModal('Password cannot be empty.');
                                 return;
                             }
+                            // In a real application, you would send this to a backend for password hashing and storage.
                             showMessageModal(`Password for "${username}" changed successfully.`);
                         });
                     });
@@ -2271,9 +2276,11 @@
 
             if (setAccessBtn) {
                 setAccessBtn.addEventListener('click', () => {
+                    // Pass a callback function to showUserSelectionModal
                     showUserSelectionModal((username) => {
+                        console.log('User selected for set access:', username); // Debugging
                         if (!username) {
-                            showMessageModal('No username selected.');
+                            showMessageModal('No username selected for access level change.');
                             return;
                         }
                         const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
@@ -2289,7 +2296,8 @@
                                 return;
                             }
                             userRow.cells[2].textContent = newAccess;
-                            showMessageModal(`Access level for "${username}" updated to "${newAccess}".`);
+                            // In a real application, you would send this to a backend for persistent storage.
+                            showMessageModal(`Access level for "${username}" updated to "${newAccess}" .`);
                         });
                     });
                 });
@@ -2297,9 +2305,11 @@
 
             if (deactivateAccountBtn) {
                 deactivateAccountBtn.addEventListener('click', () => {
+                    // Pass a callback function to showUserSelectionModal
                     showUserSelectionModal((username) => {
+                        console.log('User selected for deactivation:', username); // Debugging
                         if (!username) {
-                            showMessageModal('No username selected.');
+                            showMessageModal('No username selected for deactivation.');
                             return;
                         }
                         const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
@@ -2316,7 +2326,8 @@
                                     <span class="font-semibold text-red-600">Inactive</span>
                                     <div class="w-4 h-4 rounded-full bg-red-600"></div>
                                 `;
-                                showMessageModal(`Account for "${username}" has been deactivated.`);
+                                // In a real application, you would send this to a backend for persistent storage.
+                                showMessageModal(`Account for "${username}" has been deactivated .`);
                             } else {
                                 showMessageModal(`Deactivation of "${username}" cancelled.`);
                             }
@@ -2328,9 +2339,11 @@
             // Reactivate Account button functionality
             if (reactivateAccountBtn) {
                 reactivateAccountBtn.addEventListener('click', () => {
+                    // Pass a callback function to showUserSelectionModal
                     showUserSelectionModal((username) => {
+                        console.log('User selected for reactivation:', username); // Debugging
                         if (!username) {
-                            showMessageModal('No username selected.');
+                            showMessageModal('No username selected for reactivation.');
                             return;
                         }
                         const userRow = Array.from(document.querySelectorAll('#users-content tbody tr')).find(row =>
@@ -2347,6 +2360,7 @@
                                     <span class="font-semibold text-green-600">Active</span>
                                     <div class="w-4 h-4 rounded-full bg-green-500"></div>
                                 `;
+                                // In a real application, you would send this to a backend for persistent storage.
                                 showMessageModal(`Account for "${username}" has been reactivated.`);
                             } else {
                                 showMessageModal(`Reactivation of "${username}" cancelled.`);
