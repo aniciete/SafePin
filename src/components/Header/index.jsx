@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -24,7 +24,7 @@ function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <img src={SafePinLogo} alt="SafePin Logo" className="h-8 w-8" />
+            <img src={SafePinLogo} alt="SafePin Logo" className="h-8 w-auto" />
             <span className="text-2xl font-bold text-green-600">SafePin</span>
           </Link>
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,55 +7,45 @@ import {
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import SafePinMapLogo from '@assets/SafePin Map Logo.png';
-import Alert1 from '@assets/News/Alert 1.png';
-import Hero from '@components/Hero';
-import Statistics from '@components/Statistics';
-import AlertCard from '@components/AlertCard';
-
-// Import authority logos
-import DICTLogo from '@assets/Authorities/Department_of_Information_and_Communications_Technology_(DICT).svg';
-import DILGLogo from '@assets/Authorities/Department_of_the_Interior_and_Local_Government_(DILG)_Seal_-_Logo.svg';
-import NBILogo from '@assets/Authorities/National_Bureau_of_Investigation_(NBI).svg';
-import PDEALogo from '@assets/Authorities/PDEA_seal.svg';
-import PNPLogo from '@assets/Authorities/Philippine_National_Police_seal.svg';
-import RedCrossLogo from '@assets/Authorities/Philippine_Red_Cross_Emblem.svg';
-import DSWDLogo from '@assets/Authorities/Seal_of_the_Department_of_Social_Welfare_and_Development.svg';
 
 function Home() {
-  const recentAlerts = [
-    {
-      image: Alert1,
-      title: "3 sugatan sa banggaan ng 2 motorsiklo sa QC",
-      description: "Tatlo ang sugatan sa banggaan ng dalawang motorsiklo sa Quezon City...",
-      link: "https://www.abs-cbn.com/news/nation/2025/6/13/tv-patrol-3-sugatan-sa-banggaan-ng-2-motorsiklo-sa-qc-2022"
-    },
-    {
-      image: Alert1,
-      title: "Lalaking naaresto sa pagsusugal, nahulihan ng baril nang kapkapan ng pulis",
-      description: "Arestado ang 25-anyos na lalaki matapos mahuling nagsusugal...",
-      link: "https://www.abs-cbn.com/news/nation/2025/6/13/lalaking-naaresto-sa-pagsusugal-nahulihan-ng-baril-nang-kapkapan-ng-pulis-1252"
-    },
-    {
-      image: Alert1,
-      title: "Higit 1 toneladang shabu na nakuha sa dagat galing sa Sam Gor syndicate",
-      description: "Ibinunyag ng Philippine Drug Enforcement Agency na konektado...",
-      link: "https://www.abs-cbn.com/news/nation/2025/6/11/tv-patrol-higit-1-toneladang-shabu-na-nakuha-sa-dagat-galing-sa-sam-gor-syndicate-pdea-2139"
-    }
-  ];
-
-  const authorities = [
-    { name: 'PNP', logo: PNPLogo },
-    { name: 'NBI', logo: NBILogo },
-    { name: 'DILG', logo: DILGLogo },
-    { name: 'DSWD', logo: DSWDLogo },
-    { name: 'Red Cross', logo: RedCrossLogo },
-    { name: 'DICT', logo: DICTLogo },
-    { name: 'PDEA', logo: PDEALogo }
-  ];
-
   return (
     <div>
-      <Hero />
+      {/* Hero Section */}
+      <section className="bg-white py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <img
+              src={SafePinMapLogo}
+              alt="SafePin Map Logo"
+              className="w-32 h-32 mx-auto mb-8 rounded-lg shadow-lg"
+            />
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              Creating Safer Communities
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              SafePin empowers citizens to anonymously report incidents and stay informed
+              about safety concerns in your community.
+            </p>
+            <div className="space-y-4">
+              <Link
+                to="/report"
+                className="inline-block bg-green-600 text-white px-8 py-4 rounded-md text-lg font-semibold hover:bg-green-700 transition-colors"
+              >
+                Report Incident
+              </Link>
+              <div>
+                <Link
+                  to="/verify"
+                  className="inline-block text-green-600 hover:text-green-700 transition-colors"
+                >
+                  Check Existing Report Status
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* How It Works Section */}
       <section className="py-16 bg-gray-50">
@@ -136,27 +125,45 @@ function Home() {
         </div>
       </section>
 
-      <Statistics />
-
-      {/* Trusted Authorities Section */}
+      {/* Statistics Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Trusted by Local Authorities & Organizations
+            SafePin Statistics
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8 items-center justify-items-center">
-            {authorities.map((authority) => (
-              <div
-                key={authority.name}
-                className="w-24 h-24 flex items-center justify-center"
-              >
-                <img
-                  src={authority.logo}
-                  alt={`${authority.name} Logo`}
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <FontAwesomeIcon
+                icon={faMapMarkerAlt}
+                className="h-8 w-8 text-green-600 mb-4"
+              />
+              <div className="text-3xl font-bold text-gray-900 mb-2">1,738</div>
+              <div className="text-gray-600">Total Reports</div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <FontAwesomeIcon
+                icon={faUsers}
+                className="h-8 w-8 text-green-600 mb-4"
+              />
+              <div className="text-3xl font-bold text-gray-900 mb-2">47</div>
+              <div className="text-gray-600">Active Users</div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <FontAwesomeIcon
+                icon={faShieldAlt}
+                className="h-8 w-8 text-green-600 mb-4"
+              />
+              <div className="text-3xl font-bold text-gray-900 mb-2">279</div>
+              <div className="text-gray-600">Total Incidents</div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <FontAwesomeIcon
+                icon={faCheckCircle}
+                className="h-8 w-8 text-green-600 mb-4"
+              />
+              <div className="text-3xl font-bold text-gray-900 mb-2">9</div>
+              <div className="text-gray-600">Participating Authorities</div>
+            </div>
           </div>
         </div>
       </section>
@@ -168,15 +175,75 @@ function Home() {
             Recent Alerts
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {recentAlerts.map((alert, index) => (
-              <AlertCard
-                key={index}
-                image={alert.image}
-                title={alert.title}
-                description={alert.description}
-                link={alert.link}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <img
+                src="https://od2-image-api.abs-cbn.com/prod/20250613130620/5babc293462ef2bee1831a07fa07bdd858c85184c1c0ac7dc139131757ecb32a.jpg"
+                alt="Motorcycle crash"
+                className="w-full h-48 object-cover"
               />
-            ))}
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  3 sugatan sa banggaan ng 2 motorsiklo sa QC
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Tatlo ang sugatan sa banggaan ng dalawang motorsiklo sa Quezon City...
+                </p>
+                <a
+                  href="https://www.abs-cbn.com/news/nation/2025/6/13/tv-patrol-3-sugatan-sa-banggaan-ng-2-motorsiklo-sa-qc-2022"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 transition-colors"
+                >
+                  Read More →
+                </a>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <img
+                src="https://od2-image-api.abs-cbn.com/prod/20250613010640/99bc67940a8ae9a983e6b9714c1696ea46279812c2485cb1a7b5d8a298a41a06.jpg"
+                alt="Arrest in Manila"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Lalaking naaresto sa pagsusugal, nahulihan ng baril
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Arestado ang 25-anyos na lalaki matapos mahuling nagsusugal...
+                </p>
+                <a
+                  href="https://www.abs-cbn.com/news/nation/2025/6/13/lalaking-naaresto-sa-pagsusugal-nahulihan-ng-baril-nang-kapkapan-ng-pulis-1252"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 transition-colors"
+                >
+                  Read More →
+                </a>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <img
+                src="https://od2-image-api.abs-cbn.com/prod/20250611140636/65ca9f803a900067dbc9564bf0e0c4625e60ebe9ace494916cd8183f704b94ff.jpg"
+                alt="Drug seizure"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Higit 1 toneladang shabu na nakuha sa dagat
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Ibinunyag ng Philippine Drug Enforcement Agency na konektado...
+                </p>
+                <a
+                  href="https://www.abs-cbn.com/news/nation/2025/6/11/tv-patrol-higit-1-toneladang-shabu-na-nakuha-sa-dagat-galing-sa-sam-gor-syndicate-pdea-2139"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 transition-colors"
+                >
+                  Read More →
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
