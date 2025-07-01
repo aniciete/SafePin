@@ -73,6 +73,222 @@
             border-radius: 50%;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
+
+        /* --- Modern Report Form Styles --- */
+        .report-form-section {
+            background: linear-gradient(120deg, #f9f9f9 60%, #eafbe7 100%);
+            padding: 60px 0 80px 0;
+            margin-top: 40px; /* Prevent overlap with sticky header */
+        }
+        .report-form-card {
+            background: var(--color-white);
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--border-radius-lg);
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: relative;
+        }
+        .report-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .report-form-header .icon {
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        .report-form-header h2 {
+            font-size: 2rem;
+            color: var(--color-primary-dark);
+            font-weight: 700;
+            margin: 0;
+        }
+        .report-form-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem 2rem;
+        }
+        .report-form-fields .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .report-form-fields .full-width {
+            grid-column: 1 / -1;
+        }
+        .report-form-fields label {
+            font-weight: 500;
+            color: var(--color-text-secondary);
+        }
+        .report-form-fields select,
+        .report-form-fields textarea {
+            font-size: 1rem;
+        }
+        .report-form-fields textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+        .map-area {
+            grid-column: 1 / -1;
+            margin-bottom: 0;
+        }
+        .submit-button-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        .btn.btn-primary-green {
+            background: var(--color-primary);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius-md);
+            padding: 0.9rem 2.2rem;
+            box-shadow: var(--shadow-sm);
+            border: none;
+            transition: background var(--transition-base);
+        }
+        .btn.btn-primary-green:hover {
+            background: var(--color-primary-dark);
+        }
+        @media (max-width: 700px) {
+            .report-form-card {
+                padding: 1.2rem 0.5rem;
+            }
+            .report-form-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* --- Modern Status Steps Styles --- */
+        .status-steps-modern {
+            background: var(--color-white);
+            padding: 2.5rem 0 2rem 0;
+        }
+        .status-steps-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .status-step {
+            background: #f4f4f4;
+            border-radius: var(--border-radius-md);
+            padding: 2rem 1rem 1.5rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        }
+        .status-step.active {
+            background: var(--color-primary);
+            color: #fff;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-8px) scale(1.04);
+        }
+        .status-step .step-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.7rem;
+            display: inline-block;
+        }
+        .status-step .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .status-step .step-desc {
+            font-size: 0.98rem;
+            color: inherit;
+            opacity: 0.85;
+        }
+        .status-step:not(.active) .step-title,
+        .status-step:not(.active) .step-desc {
+            color: var(--color-text-secondary);
+        }
+        .status-step:not(.active) .step-icon {
+            color: var(--color-primary);
+            opacity: 0.3;
+        }
+        @media (max-width: 900px) {
+            .status-steps-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.2rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .status-steps-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* --- Modal Overlay Fix --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--color-overlay);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--color-white);
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+        .modal-icon {
+            margin-bottom: 1.2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .modal-icon .icon-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        .modal-icon .icon-success {
+            background: #d4edda;
+            color: #155724;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            box-shadow: var(--shadow-md);
+        }
     </style>
 </head>
 <body>
@@ -89,7 +305,7 @@
                     <li><a href="#">Features</a></li>
                     <li><a href="About Us.html">About Us</a></li>
                     <li><a href="#">FAQ</a></li>
-                    <li><a href="#" class="nav-button">Authority Access</a></li>
+                    <li><a href="#" class="nav-button" onclick="openModal()">Authority Access</a></li>
                 </ul>
             </nav>
         </div>
@@ -101,51 +317,54 @@
         </div>
     </section>
 
-    <section class="status-steps-section">
+    <!-- Modern Status Steps Section -->
+    <section class="status-steps-modern">
         <div class="container">
-            <div class="status-header">Status: You are **reporting an incident**</div>
-            <div class="steps-indicator-container">
-                <div class="step-indicator active">
-                    <span class="step-number-indicator">1</span>
-                    <h3>Report</h3>
-                    <p>Anonymously report incidents by taking a picture or placing a pin on the map. Provide accurate details about what happened.</p>
+            <div class="status-steps-container">
+                <div class="status-step active">
+                    <div class="step-icon">📝</div>
+                    <div class="step-title">Report</div>
+                    <div class="step-desc">Anonymously report incidents by taking a picture or placing a pin on the map. Provide accurate details about what happened.</div>
                 </div>
-                <div class="step-indicator">
-                    <span class="step-number-indicator">2</span>
-                    <h3>Verify</h3>
-                    <p>Local authorities may call to verify reports to ensure accuracy before they become publicly visible.</p>
+                <div class="status-step">
+                    <div class="step-icon">🔎</div>
+                    <div class="step-title">Verify</div>
+                    <div class="step-desc">Local authorities may call to verify reports to ensure accuracy before they become publicly visible.</div>
                 </div>
-                <div class="step-indicator">
-                    <span class="step-number-indicator">3</span>
-                    <h3>Inform</h3>
-                    <p>Verified incidents appear on the in-app map, helping community members stay informed about safety concerns.</p>
+                <div class="status-step">
+                    <div class="step-icon">📢</div>
+                    <div class="step-title">Inform</div>
+                    <div class="step-desc">Verified incidents appear on the in-app map, helping community members stay informed about safety concerns.</div>
                 </div>
-                <div class="step-indicator">
-                    <span class="step-number-indicator">4</span>
-                    <h3>Act</h3>
-                    <p>Community awareness leads to better decision-making, improved safety measures & ultimately safer neighborhoods.</p>
+                <div class="status-step">
+                    <div class="step-icon">🤝</div>
+                    <div class="step-title">Act</div>
+                    <div class="step-desc">Community awareness leads to better decision-making, improved safety measures & ultimately safer neighborhoods.</div>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="report-form-section">
-        <div class="container form-container">
+        <div class="report-form-card">
+            <div class="report-form-header">
+                <span class="icon">📝</span>
+                <h2>Submit a Safety Report</h2>
+            </div>
             <form action="#" method="POST" id="reportIncidentForm">
-                <div class="map-area">
-                    <div id="map"></div>
-                    <div class="map-address-bar" id="addressBar">
-                        **2511 Isagani St, Santa Cruz, Manila, Metro Manila**
+                <div class="report-form-fields">
+                    <div class="map-area">
+                        <div id="map"></div>
+                        <div class="map-address-bar" id="addressBar">
+                            **2511 Isagani St, Santa Cruz, Manila, Metro Manila**
+                        </div>
+                        <button type="button" class="current-location-btn" id="currentLocationBtn">
+                            <svg class="location-icon" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            Using current location
+                        </button>
                     </div>
-                    <button type="button" class="current-location-btn" id="currentLocationBtn">
-                        <svg class="location-icon" viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                        </svg>
-                        Using current location
-                    </button>
-                </div>
-
-                <div class="form-fields">
                     <div class="form-group">
                         <label for="incident-type">Incident Type</label>
                         <select id="incident-type" name="incident_type">
@@ -169,14 +388,13 @@
                             <option value="critical">Critical</option>
                         </select>
                     </div>
-                     <div class="form-group full-width">
+                    <div class="form-group full-width">
                         <label for="description">Description Field</label>
                         <textarea id="description" name="description" placeholder="Describe what happened..."></textarea>
                     </div>
-                </div>
-
-                <div class="submit-button-container">
-                    <button type="button" class="btn btn-primary-green" id="openConfirmModalBtn">Submit for Verification</button>
+                    <div class="submit-button-container">
+                        <button type="button" class="btn btn-primary-green" id="openConfirmModalBtn">Submit for Verification</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -226,11 +444,11 @@
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-content">
             <div class="modal-icon">
-                <img src="https://via.placeholder.com/60x60/6ab04c/ffffff?Text=!" alt="Warning Icon">
+                <span class="icon-warning">⚠️</span>
             </div>
             <h3 class="modal-title">Are you sure you want to submit?</h3>
             <div class="modal-body">
-                <p>Once submitted, you acknowledge that your report is **final** and that you have the right to **withdraw at any time.**</p>
+                <p>Once submitted, you acknowledge that your report is <b>final</b> and that you have the right to <b>withdraw at any time.</b></p>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary-grey" id="cancelConfirmBtn">Cancel</button>
@@ -242,15 +460,52 @@
     <div class="modal-overlay" id="successModal">
         <div class="modal-content">
             <div class="modal-icon">
-                <img src="https://via.placeholder.com/70x70/6ab04c/ffffff?Text=%E2%9C%93" alt="Checkmark Icon">
+                <span class="icon-success">✅</span>
             </div>
             <h3 class="modal-title">Report Submitted!</h3>
             <div class="modal-body">
-                <p>Thank you. Your report **#01347659** has been successfully submitted to be reviewed by proper authorities. You may now close this window.</p>
+                <p>Thank you. Your report <b>#01347659</b> has been successfully submitted to be reviewed by proper authorities. You may now close this window.</p>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-confirm-ok" id="closeSuccessModalBtn">OK</button>
             </div>
+        </div>
+    </div>
+
+    <div id="authorityModal" class="modal">
+        <div class="modal-content">
+            <h2>Authority Access</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+            
+            <div id="auth-status" class="auth-status"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
+                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <select id="authorityType" required>
+                    <option value="">Select Authority Type</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire Department</option>
+                    <option value="medical">Medical Services</option>
+                    <option value="government">Government Agency</option>
+                </select>
+                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+            </div>
+
+            <button class="close-button" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
@@ -421,6 +676,139 @@
                 window.location.href = "Verification.html";
             });
         }
+    </script>
+
+    <!-- Auth Module Script -->
+    <script type="module">
+        import { signUpWithEmail, signInWithEmail, signInWithGoogle, signOutUser, onAuthStateChange } from '../auth.js';
+
+        // Make auth functions available globally
+        window.handleAuthorityLogin = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const result = await signInWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful login
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        window.handleAuthoritySignUp = async () => {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const authorityType = document.getElementById('authorityType').value;
+            
+            try {
+                const result = await signUpWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful signup
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        window.handleAuthorityGoogleSignIn = async () => {
+            try {
+                const result = await signInWithGoogle();
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful Google sign-in
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        // Modal functions
+        window.openModal = () => {
+            document.getElementById('authorityModal').style.display = 'flex';
+        };
+
+        window.closeModal = () => {
+            document.getElementById('authorityModal').style.display = 'none';
+        };
+
+        window.switchTab = (tab) => {
+            // Update tab buttons
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update forms
+            if (tab === 'login') {
+                document.getElementById('loginForm').style.display = 'flex';
+                document.getElementById('signupForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'flex';
+            }
+        };
+
+        window.redirectTo = (type) => {
+            if (type === 'admin') {
+                window.location.href = '../Admin Page/Admin-Page.html';
+            } else if (type === 'authority') {
+                window.location.href = '../Authority Page/Authority-Page.html';
+            }
+            closeModal();
+        };
+
+        // Update auth status display
+        function updateAuthStatus({ user, error }) {
+            const statusDiv = document.getElementById('auth-status');
+            if (user) {
+                statusDiv.textContent = 'Authentication successful! Redirecting...';
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+            } else if (error) {
+                statusDiv.textContent = `Error: ${error}`;
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('authorityModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
     </script>
 
 </body>

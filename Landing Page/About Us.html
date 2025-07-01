@@ -33,13 +33,15 @@
     </section>
 
     <section class="about-safepin-section">
-        <div class="about-safepin-content">
-            <div class="about-safepin-icon">
-                <img src="/Landing Page/SafePin Logo Green.svg" alt="SafePin Icon">
-            </div>
-            <div class="about-safepin-text">
-                <h2>About SafePin</h2>
-                <p>SafePin is a community-driven safety platform designed to bridge the gap between citizens and authorities. By enabling anonymous reporting and implementing a structured visual access system, we ensure sensitive information reaches the right people while keeping communities informed about verified safety concerns.</p>
+        <div class="container">
+            <div class="about-safepin-content">
+                <div class="about-safepin-icon">
+                    <img src="SafePin Logo Green.svg" alt="SafePin Icon">
+                </div>
+                <div class="about-safepin-text">
+                    <h2>About SafePin</h2>
+                    <p>SafePin is a community-driven safety platform designed to bridge the gap between citizens and authorities. By enabling anonymous reporting and implementing a structured visual access system, we ensure sensitive information reaches the right people while keeping communities informed about verified safety concerns.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -73,22 +75,22 @@
             <h2>Meet the Team</h2>
             <div class="team-members">
                 <div class="team-member-card">
-                    <img src="/Assets/ID.png" alt="Team Member 1">
+                    <img src="/Assets/ID.png" alt="Charles Lawrence Aniciete">
                     <h3>Charles Lawrence Aniciete</h3>
                     <p>Co-founder</p>
                 </div>
                 <div class="team-member-card">
-                    <img src="/Assets/Howard.jpg" alt="Team Member 2">
+                    <img src="/Assets/Howard.jpg" alt="Howard Mac M. Callanta">
                     <h3>Howard Mac M. Callanta</h3>
                     <p>Co-founder</p>
                 </div>
                 <div class="team-member-card">
-                    <img src="/Assets/Isaiah.jpg" alt="Team Member 3">
+                    <img src="/Assets/Isaiah.jpg" alt="Isaiah Ezekiel P. Vicencio">
                     <h3>Isaiah Ezekiel P. Vicencio</h3>
                     <p>Co-founder</p>
                 </div>
                 <div class="team-member-card">
-                    <img src="/Assets/Jian.jpg" alt="Team Member 4">
+                    <img src="/Assets/Jian.jpg" alt="Jian Edward A. Acob">
                     <h3>Jian Edward A. Acob</h3>
                     <p>Co-founder</p>
                 </div>
@@ -139,60 +141,170 @@
 
     <div id="authorityModal" class="modal">
         <div class="modal-content">
-            <h2>Choose Login Type</h2>
-            <button onclick="redirectTo('admin')">Admin Login</button>
-            <button onclick="redirectTo('authority')">Authority Login</button>
+            <h2>Authority Access</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+            
+            <div id="auth-status" class="auth-status"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
+                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <select id="authorityType" required>
+                    <option value="">Select Authority Type</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire Department</option>
+                    <option value="medical">Medical Services</option>
+                    <option value="government">Government Agency</option>
+                </select>
+                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+            </div>
+
             <button class="close-button" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
-    <script>
-        // Function to open the modal
-        function openModal() {
-            console.log("Opening modal...");
-            document.getElementById("authorityModal").style.display = "flex";
-        }
+    <!-- Auth Module Script -->
+    <script type="module">
+        import { signUpWithEmail, signInWithEmail, signInWithGoogle, signOutUser, onAuthStateChange } from '../auth.js';
 
-        // Function to close the modal
-        function closeModal() {
-            console.log("Closing modal...");
-            document.getElementById("authorityModal").style.display = "none";
-        }
-
-        // Function to redirect based on button clicked
-        function redirectTo(type) {
-            console.log("redirectTo called with type:", type);
-            console.log("Current location:", window.location.href);
-
-            let folderName = "";
-            let fileName = "";
-
-            if (type === 'admin') {
-                folderName = "Admin Page";
-                fileName = "Admin-Page.html";
-            } else if (type === 'authority') {
-                folderName = "Authority Page";
-                fileName = "Authority-Page.html";
-            } else {
-                console.error("Unknown type:", type);
-                return;
+        // Make auth functions available globally
+        window.handleAuthorityLogin = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const result = await signInWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful login
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
             }
+        };
 
-            // This assumes your "Admin Page" and "Authority Page" folders are at the same level as your HTML files.
-            // If they are nested differently, you might need to adjust the path.
-            const targetPath = "../" + encodeURIComponent(folderName) + "/" + fileName;
-            console.log("Redirecting to:", targetPath);
+        window.handleAuthoritySignUp = async () => {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const authorityType = document.getElementById('authorityType').value;
+            
+            try {
+                const result = await signUpWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful signup
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
 
-            window.location.href = targetPath;
+        window.handleAuthorityGoogleSignIn = async () => {
+            try {
+                const result = await signInWithGoogle();
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful Google sign-in
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
 
+        // Modal functions
+        window.openModal = () => {
+            document.getElementById('authorityModal').style.display = 'flex';
+        };
+
+        window.closeModal = () => {
+            document.getElementById('authorityModal').style.display = 'none';
+        };
+
+        window.switchTab = (tab) => {
+            // Update tab buttons
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update forms
+            if (tab === 'login') {
+                document.getElementById('loginForm').style.display = 'flex';
+                document.getElementById('signupForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'flex';
+            }
+        };
+
+        window.redirectTo = (type) => {
+            if (type === 'admin') {
+                window.location.href = '../Admin Page/Admin-Page.html';
+            } else if (type === 'authority') {
+                window.location.href = '../Authority Page/Authority-Page.html';
+            }
             closeModal();
+        };
+
+        // Update auth status display
+        function updateAuthStatus({ user, error }) {
+            const statusDiv = document.getElementById('auth-status');
+            if (user) {
+                statusDiv.textContent = 'Authentication successful! Redirecting...';
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+            } else if (error) {
+                statusDiv.textContent = `Error: ${error}`;
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+            }
         }
 
-        // Close the modal if the user clicks outside of it
+        // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById("authorityModal");
+            const modal = document.getElementById('authorityModal');
             if (event.target === modal) {
-                modal.style.display = "none";
+                modal.style.display = 'none';
             }
         };
     </script>

@@ -38,7 +38,6 @@
         </div>
     </section>
 
-
     <section class="how-it-works">
         <div class="container">
             <h2>How It Works</h2>
@@ -190,74 +189,187 @@
     
     <div id="authorityModal" class="modal">
         <div class="modal-content">
-            <h2>Choose Login Type</h2>
-            <button onclick="redirectTo('admin')">Admin Login</button>
-            <button onclick="redirectTo('authority')">Authority Login</button>
+            <h2>Authority Access</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+            
+            <div id="auth-status" class="auth-status"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
+                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <select id="authorityType" required>
+                    <option value="">Select Authority Type</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire Department</option>
+                    <option value="medical">Medical Services</option>
+                    <option value="government">Government Agency</option>
+                </select>
+                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+            </div>
+
             <button class="close-button" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
-<script>
-    // Function to open the modal
-    function openModal() {
-        console.log("Opening modal...");
-        document.getElementById("authorityModal").style.display = "flex";
-    }
+    <!-- Auth Module Script -->
+    <script type="module">
+        import { signUpWithEmail, signInWithEmail, signInWithGoogle, signOutUser, onAuthStateChange } from '../auth.js';
 
-    // Function to close the modal
-    function closeModal() {
-        console.log("Closing modal...");
-        document.getElementById("authorityModal").style.display = "none";
-    }
+        // Make auth functions available globally
+        window.handleAuthorityLogin = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const result = await signInWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful login
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
 
-    // Function to redirect based on button clicked
-    function redirectTo(type) {
-        console.log("redirectTo called with type:", type);
-        console.log("Current location:", window.location.href);
+        window.handleAuthoritySignUp = async () => {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const authorityType = document.getElementById('authorityType').value;
+            
+            if (!authorityType) {
+                updateAuthStatus({
+                    user: null,
+                    error: "Please select an authority type"
+                });
+                return;
+            }
 
-        let folderName = "";
-        let fileName = "";
+            try {
+                const result = await signUpWithEmail(email, password);
+                if (result.user) {
+                    // Here you would typically store the authority type in your database
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful signup
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
 
-        if (type === 'admin') {
-            folderName = "Admin Page/Project";
-            fileName = "Admin-Page.html";
-        } else if (type === 'authority') {
-            folderName = "Authority Page";
-            fileName = "Authority-Page.html";
-        } else {
-            console.error("Unknown type:", type);
-            return;
+        window.handleAuthorityGoogleSignIn = async () => {
+            try {
+                const result = await signInWithGoogle();
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful Google sign-in
+                    setTimeout(() => {
+                        window.location.href = '../Authority Page/Authority-Page.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        function updateAuthStatus(result) {
+            const statusDiv = document.getElementById('auth-status');
+            if (result.error) {
+                statusDiv.textContent = `Error: ${result.error}`;
+                statusDiv.style.color = 'red';
+            } else if (result.user) {
+                statusDiv.textContent = `Welcome, ${result.user.email}!`;
+                statusDiv.style.color = 'green';
+            }
         }
 
-        // This assumes your "Admin Page" and "Authority Page" folders are at the same level as your HTML files.
-        // If they are nested differently, you might need to adjust the path.
-        // For landing page, paths are relative to its location. If it's in the root, and Admin Page is a subfolder,
-        // the path might be "./Admin Page/Admin-Page.html" or "Admin Page/Admin-Page.html"
-        // The original path from about-us.html was "../Admin Page/Admin-Page.html"
-        // Assuming Landing Page.html is in the root and "Admin Page" / "Authority Page" are folders also in the root:
-        const targetPath = "./" + encodeURIComponent(folderName) + "/" + fileName; // Adjusted path
-        // If Landing Page.html is in a subfolder itself, and Admin Page/Authority Page are siblings to *that* subfolder,
-        // then "../" + encodeURIComponent(folderName) + "/" + fileName; would be correct.
-        // Given the original path in about us.html, it implies about us.html might be in a subfolder.
-        // For now, I will retain the logic from about us.html which is "../"
-        // This implies that Landing Page.html is expected to be in a similar directory level as about us.html
-        // (e.g. both in root, or both in a 'pages' subfolder, etc., relative to "Admin Page" and "Authority Page" folders)
-        const originalTargetPath = "../" + encodeURIComponent(folderName) + "/" + fileName;
-        console.log("Redirecting to:", originalTargetPath);
+        // Tab switching functionality
+        window.switchTab = (tab) => {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const tabs = document.querySelectorAll('.auth-tab');
+            
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+            }
+        };
 
-        window.location.href = originalTargetPath;
+        // Modal functionality
+        window.openModal = () => {
+            document.getElementById('authorityModal').style.display = 'flex';
+        };
 
-        closeModal();
-    }
+        window.closeModal = () => {
+            document.getElementById('authorityModal').style.display = 'none';
+        };
 
-    // Close the modal if the user clicks outside of it
-    window.onclick = function(event) {
-        const modal = document.getElementById("authorityModal");
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    };
-</script>
+        window.redirectTo = (type) => {
+            if (type === 'admin') {
+                window.location.href = '../Admin Page/Project/Admin-Page.html';
+            }
+        };
+
+        // Close modal when clicking outside
+        window.onclick = (event) => {
+            const modal = document.getElementById('authorityModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Check auth state on page load
+        onAuthStateChange((user) => {
+            if (user) {
+                console.log('User is signed in:', user.email);
+            } else {
+                console.log('No user signed in');
+            }
+        });
+    </script>
 
 </body>
 </html>
