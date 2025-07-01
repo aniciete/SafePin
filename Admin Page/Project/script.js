@@ -1,3 +1,6 @@
+import * as UI from '../../modules/ui.js';
+import * as Charts from '../../modules/charts.js';
+
 // Global variables for modal callbacks
 let currentPromptCallback = null;
 let currentConfirmCallback = null;

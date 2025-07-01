@@ -1,3 +1,8 @@
+import { openModal, closeModal, redirectTo, setupModalCloseOnOutsideClick } from '../modules/ui.js';
+
+// Optionally, call setupModalCloseOnOutsideClick() on page load if needed
+setupModalCloseOnOutsideClick();
+
 // Function to open the modal
 function openModal() {
     console.log("Opening modal...");

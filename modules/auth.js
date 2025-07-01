@@ -1,5 +1,4 @@
-export * from './modules/auth.js';
-
+import { auth } from './firebase-init.js';
 import { 
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
