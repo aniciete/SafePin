@@ -31,4 +31,6 @@ export default defineConfig({
       },
     },
   },
+  assetsInclude: ['**/*.svg'],
+  publicDir: 'public',
 }); 
