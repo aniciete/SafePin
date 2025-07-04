@@ -20,7 +20,7 @@
                     <li><a href="#">Features</a></li>
                     <li><a href="landing-page/about-us.html">About Us</a></li>
                     <li><a href="#">FAQ</a></li>
-                    <li><a href="#" class="nav-button" onclick="openModal()">Authority Access</a></li>
+                    <li><a href="login.html" class="nav-button">Authority Access</a></li>
                 </ul>
             </nav>
         </div>
@@ -187,42 +187,7 @@
         </div>
     </footer>
     
-    <div id="authorityModal" class="modal">
-        <div class="modal-content">
-            <h2>Authority Access</h2>
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
-            </div>
-            
-            <div id="auth-status" class="auth-status"></div>
-            
-            <!-- Login Form -->
-            <div id="loginForm" class="auth-form">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button onclick="handleAuthorityLogin()">Login as Authority</button>
-                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
-                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
-            </div>
 
-            <!-- Sign Up Form -->
-            <div id="signupForm" class="auth-form" style="display: none;">
-                <input type="email" id="signupEmail" placeholder="Email" required>
-                <input type="password" id="signupPassword" placeholder="Password" required>
-                <select id="authorityType" required>
-                    <option value="">Select Authority Type</option>
-                    <option value="police">Police</option>
-                    <option value="fire">Fire Department</option>
-                    <option value="medical">Medical Services</option>
-                    <option value="government">Government Agency</option>
-                </select>
-                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
-            </div>
-
-            <button class="close-button" onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
 
     <!-- Auth Module Script -->
     <script type="module">
@@ -319,45 +284,9 @@
             }
         }
 
-        // Tab switching functionality
-        window.switchTab = (tab) => {
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
-            const tabs = document.querySelectorAll('.auth-tab');
-            
-            if (tab === 'login') {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-            } else {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
-                tabs[0].classList.remove('active');
-                tabs[1].classList.add('active');
-            }
-        };
-
-        // Modal functionality
-        window.openModal = () => {
-            document.getElementById('authorityModal').style.display = 'flex';
-        };
-
-        window.closeModal = () => {
-            document.getElementById('authorityModal').style.display = 'none';
-        };
-
         window.redirectTo = (type) => {
             if (type === 'admin') {
                 window.location.href = 'admin-page/project/index.html';
-            }
-        };
-
-        // Close modal when clicking outside
-        window.onclick = (event) => {
-            const modal = document.getElementById('authorityModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
             }
         };
 
