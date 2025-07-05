@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Incident - SafePin</title>
+    <link rel="stylesheet" href="/landing-page/verification-styles.css">
+</head>
+<body>
+    <!-- Header Container -->
+    <div id="header-container"></div>
+
+    <main class="verification-container">
+        <div class="container">
+            <div class="verification-header">
+                <h1>Verify Incident</h1>
+            </div>
+        
+            <div class="status-banner">
+                <h2>Status: Your report #01347659 is due for verification</h2>
+            </div>
+            
+            <div class="process-steps">
+                <div class="step">
+                    <h3>Report</h3>
+                    <p>Anonymous reports can be submitted by placing a pin on our interactive map and providing details about what happened.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Verify</h3>
+                    <p>Local authorities review and verify reports for accuracy using our verification tools.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Inform</h3>
+                    <p>Verified reports appear on the public map, helping community members stay informed about safety concerns.</p>
+                </div>
+                
+                <div class="step">
+                    <h3>Act</h3>
+                    <p>Community awareness leads to better decision-making, improved responses from authorities, and ultimately safer neighborhoods.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
+
+
+
+    <div id="authorityModal" class="modal">
+        <div class="modal-content">
+            <h2>Authority Access</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+            
+            <div id="auth-status" class="auth-status"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
+                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <select id="authorityType" required>
+                    <option value="">Select Authority Type</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire Department</option>
+                    <option value="medical">Medical Services</option>
+                    <option value="government">Government Agency</option>
+                </select>
+                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+            </div>
+
+            <button class="close-button" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Module Scripts -->
+    <script type="module" src="/modules/header.js"></script>
+    <script type="module" src="/modules/footer.js"></script>
+    <script type="module" src="/landing-page/verification.js"></script>
+
+</body>
+</html>

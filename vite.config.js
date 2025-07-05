@@ -1,0 +1,22 @@
+import { resolve } from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  root: 'src',
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'src/index.html'),
+        login: resolve(__dirname, 'src/login.html'),
+        adminProject: resolve(__dirname, 'src/admin-page/project/index.html'),
+        authority: resolve(__dirname, 'src/authority-page/index.html'),
+        about: resolve(__dirname, 'src/landing-page/about-us.html'),
+        report: resolve(__dirname, 'src/landing-page/report.html'),
+        verification: resolve(__dirname, 'src/landing-page/verification.html'),
+        '404': resolve(__dirname, 'src/404.html'),
+      },
+    },
+  },
+});

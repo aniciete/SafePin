@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Incident with Modal - SafePin</title>
+    <link rel="stylesheet" href="/landing-page/style.css">
+    <link rel="stylesheet" href="/landing-page/report-styles.css">
+</head>
+<body>
+
+    <!-- Header Container -->
+    <div id="header-container"></div>
+
+    <section class="page-title-section">
+        <div class="container">
+            <h1>Report Incident</h1>
+        </div>
+    </section>
+
+    <!-- Modern Status Steps Section -->
+    <section class="status-steps-modern">
+        <div class="container">
+            <div class="status-steps-container">
+                <div class="status-step active">
+                    <div class="step-icon">📝</div>
+                    <div class="step-title">Report</div>
+                    <div class="step-desc">Anonymously report incidents by taking a picture or placing a pin on the map. Provide accurate details about what happened.</div>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon">🔎</div>
+                    <div class="step-title">Verify</div>
+                    <div class="step-desc">Local authorities may call to verify reports to ensure accuracy before they become publicly visible.</div>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon">📢</div>
+                    <div class="step-title">Inform</div>
+                    <div class="step-desc">Verified incidents appear on the in-app map, helping community members stay informed about safety concerns.</div>
+                </div>
+                <div class="status-step">
+                    <div class="step-icon">🤝</div>
+                    <div class="step-title">Act</div>
+                    <div class="step-desc">Community awareness leads to better decision-making, improved safety measures & ultimately safer neighborhoods.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="report-form-section">
+        <div class="report-form-card">
+            <div class="report-form-header">
+                <span class="icon">📝</span>
+                <h2>Submit a Safety Report</h2>
+            </div>
+            <form action="#" method="POST" id="reportIncidentForm">
+                <div class="report-form-fields">
+                    <div class="map-area">
+                        <div id="map"></div>
+                        <div class="map-address-bar" id="addressBar">
+                            **2511 Isagani St, Santa Cruz, Manila, Metro Manila**
+                        </div>
+                        <button type="button" class="current-location-btn" id="currentLocationBtn">
+                            <svg class="location-icon" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            Using current location
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label for="incident-type">Incident Type</label>
+                        <select id="incident-type" name="incident_type">
+                            <option value="">Select Incident Type</option>
+                            <option value="theft">Theft/Robbery</option>
+                            <option value="assault">Assault</option>
+                            <option value="vandalism">Vandalism</option>
+                            <option value="suspicious_activity">Suspicious Activity</option>
+                            <option value="accident">Accident</option>
+                            <option value="fire">Fire</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="severity-level">Severity Level</label>
+                        <select id="severity-level" name="severity_level">
+                            <option value="">Select Severity Level</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">Description Field</label>
+                        <textarea id="description" name="description" placeholder="Describe what happened..."></textarea>
+                    </div>
+                    <div class="submit-button-container">
+                        <button type="button" class="btn btn-primary-green" id="openConfirmModalBtn">Submit for Verification</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
+
+
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <span class="icon-warning">⚠️</span>
+            </div>
+            <h3 class="modal-title">Are you sure you want to submit?</h3>
+            <div class="modal-body">
+                <p>Once submitted, you acknowledge that your report is <b>final</b> and that you have the right to <b>withdraw at any time.</b></p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary-grey" id="cancelConfirmBtn">Cancel</button>
+                <button type="button" class="btn btn-primary-green" id="triggerSuccessModalBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <span class="icon-success">✅</span>
+            </div>
+            <h3 class="modal-title">Report Submitted!</h3>
+            <div class="modal-body">
+                <p>Thank you. Your report <b>#01347659</b> has been successfully submitted to be reviewed by proper authorities. You may now close this window.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-confirm-ok" id="closeSuccessModalBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="authorityModal" class="modal">
+        <div class="modal-content">
+            <h2>Authority Access</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+            
+            <div id="auth-status" class="auth-status"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
+                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <select id="authorityType" required>
+                    <option value="">Select Authority Type</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire Department</option>
+                    <option value="medical">Medical Services</option>
+                    <option value="government">Government Agency</option>
+                </select>
+                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+            </div>
+
+            <button class="close-button" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Module Scripts -->
+    <script type="module" src="/modules/header.js"></script>
+    <script type="module" src="/modules/footer.js"></script>
+    <script type="module" src="/landing-page/report.js"></script>
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful login
+                    setTimeout(() => {
+                        window.location.href = '../authority-page/index.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        window.handleAuthoritySignUp = async () => {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const authorityType = document.getElementById('authorityType').value;
+            
+            try {
+                const result = await signUpWithEmail(email, password);
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful signup
+                    setTimeout(() => {
+                        window.location.href = '../authority-page/index.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        window.handleAuthorityGoogleSignIn = async () => {
+            try {
+                const result = await signInWithGoogle();
+                if (result.user) {
+                    updateAuthStatus({
+                        user: result.user,
+                        error: null
+                    });
+                    // Redirect to authority page after successful Google sign-in
+                    setTimeout(() => {
+                        window.location.href = '../authority-page/index.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                updateAuthStatus({
+                    user: null,
+                    error: error.message
+                });
+            }
+        };
+
+        // Modal functions
+        window.openModal = () => {
+            document.getElementById('authorityModal').style.display = 'flex';
+        };
+
+        window.closeModal = () => {
+            document.getElementById('authorityModal').style.display = 'none';
+        };
+
+        window.switchTab = (tab) => {
+            // Update tab buttons
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update forms
+            if (tab === 'login') {
+                document.getElementById('loginForm').style.display = 'flex';
+                document.getElementById('signupForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'flex';
+            }
+        };
+
+        window.redirectTo = (type) => {
+            if (type === 'admin') {
+                window.location.href = '../admin-page/project/index.html';
+            } else if (type === 'authority') {
+                window.location.href = '../authority-page/index.html';
+            }
+            closeModal();
+        };
+
+        // Update auth status display
+        function updateAuthStatus({ user, error }) {
+            const statusDiv = document.getElementById('auth-status');
+            if (user) {
+                statusDiv.textContent = 'Authentication successful! Redirecting...';
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+            } else if (error) {
+                statusDiv.textContent = `Error: ${error}`;
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('authorityModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    </script>
+
+</body>
+</html>

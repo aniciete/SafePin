@@ -8,8 +8,8 @@ import {
     signInWithPopup,
     sendEmailVerification,
     getAdditionalUserInfo
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 // Sign up with email and password
 export const signUpWithEmail = async (email, password, role) => {

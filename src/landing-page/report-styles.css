@@ -1,0 +1,281 @@
+/* Map specific styles */
+#map {
+    height: 350px;
+    width: 100%;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+}
+
+.map-area {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.map-address-bar {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 15px;
+    border-radius: 6px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.current-location-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.current-location-btn:hover {
+    background: #0056b3;
+}
+
+.location-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+/* Custom marker popup styles */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+}
+
+.incident-marker {
+    background: #ff4444;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* --- Modern Report Form Styles --- */
+.report-form-section {
+    background: linear-gradient(120deg, #f9f9f9 60%, #eafbe7 100%);
+    padding: 60px 0 80px 0;
+    margin-top: 40px; /* Prevent overlap with sticky header */
+}
+.report-form-card {
+    background: var(--color-white);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--border-radius-lg);
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: relative;
+}
+.report-form-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.report-form-header .icon {
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: var(--shadow-md);
+}
+.report-form-header h2 {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    margin: 0;
+}
+.report-form-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2rem;
+}
+.report-form-fields .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.report-form-fields .full-width {
+    grid-column: 1 / -1;
+}
+.report-form-fields label {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+.report-form-fields select,
+.report-form-fields textarea {
+    font-size: 1rem;
+}
+.report-form-fields textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+.map-area {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+.submit-button-container {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+.btn.btn-primary-green {
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: var(--border-radius-md);
+    padding: 0.9rem 2.2rem;
+    box-shadow: var(--shadow-sm);
+    border: none;
+    transition: background var(--transition-base);
+}
+.btn.btn-primary-green:hover {
+    background: var(--color-primary-dark);
+}
+@media (max-width: 700px) {
+    .report-form-card {
+        padding: 1.2rem 0.5rem;
+    }
+    .report-form-fields {
+        grid-template-columns: 1fr;
+    }
+}
+/* --- Modern Status Steps Styles --- */
+.status-steps-modern {
+    background: var(--color-white);
+    padding: 2.5rem 0 2rem 0;
+}
+.status-steps-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.status-step {
+    background: #f4f4f4;
+    border-radius: var(--border-radius-md);
+    padding: 2rem 1rem 1.5rem 1rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.status-step.active {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-8px) scale(1.04);
+}
+.status-step .step-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.7rem;
+    display: inline-block;
+}
+.status-step .step-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.status-step .step-desc {
+    font-size: 0.98rem;
+    color: inherit;
+    opacity: 0.85;
+}
+.status-step:not(.active) .step-title,
+.status-step:not(.active) .step-desc {
+    color: var(--color-text-secondary);
+}
+.status-step:not(.active) .step-icon {
+    color: var(--color-primary);
+    opacity: 0.3;
+}
+@media (max-width: 900px) {
+    .status-steps-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+    }
+}
+@media (max-width: 600px) {
+    .status-steps-container {
+        grid-template-columns: 1fr;
+    }
+}
+/* --- Modal Overlay Fix --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--color-overlay);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.active {
+    display: flex;
+}
+.modal-content {
+    background: var(--color-white);
+    padding: 2.5rem 2rem 2rem 2rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+}
+.modal-icon {
+    margin-bottom: 1.2rem;
+    display: flex;
+    justify-content: center;
+}
+.modal-icon .icon-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: var(--shadow-md);
+}
+.modal-icon .icon-success {
+    background: #d4edda;
+    color: #155724;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    box-shadow: var(--shadow-md);
+}

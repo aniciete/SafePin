@@ -4,7 +4,9 @@
   "description": "**SafePin** is a web-based crime-reporting platform designed to empower citizens to anonymously report crimes and threats via an interactive map. It strengthens public safety efforts by structuring access to reports based on user roles—ensuring privacy, increasing community awareness, and improving authority response.",
   "main": "auth.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -13,12 +15,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/aniciete/SafePin/issues"
   },
   "homepage": "https://github.com/aniciete/SafePin#readme",
   "dependencies": {
-    "firebase": "^11.10.0"
+    "firebase": "^11.10.0",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "vite": "^7.0.2"
   }
 }
