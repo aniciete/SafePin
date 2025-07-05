@@ -83,32 +83,6 @@
             font-weight: 700;
             color: white;
         }
-
-        .auth-status {
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-size: 14px;
-            display: block;
-            min-height: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -153,7 +127,7 @@
             <div id="auth-status" class="auth-status"></div>
             
             <!-- Login Form -->
-            <form id="loginForm" class="auth-form" onsubmit="event.preventDefault(); handleAuthorityLogin(); return false;">
+            <form id="loginForm" class="auth-form" onsubmit="event.preventDefault(); handleAuthorityLogin();">
                 <div class="auth-input-group">
                     <input type="email" id="loginEmail" placeholder="Enter your email" required>
                 </div>
@@ -162,7 +136,15 @@
                     <input type="password" id="loginPassword" placeholder="Enter your password" required>
                 </div>
                 
-                <button type="submit" class="auth-button auth-primary-btn">
+                <div class="auth-input-group">
+                    <select id="loginRole" required>
+                        <option value="">Select Role</option>
+                        <option value="authority">Authority</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <button onclick="handleAuthorityLogin()" class="auth-button auth-primary-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                         <polyline points="10,17 15,12 10,7"></polyline>
@@ -192,13 +174,21 @@
             </div>
 
             <!-- Sign Up Form -->
-            <form id="signupForm" class="auth-form" style="display: none;" onsubmit="event.preventDefault(); handleAuthoritySignUp(); return false;">
+            <form id="signupForm" class="auth-form" style="display: none;" onsubmit="event.preventDefault(); handleAuthoritySignUp();">
                 <div class="auth-input-group">
                     <input type="email" id="signupEmail" placeholder="Enter your email" required>
                 </div>
                 
                 <div class="auth-input-group">
                     <input type="password" id="signupPassword" placeholder="Create a password" required>
+                </div>
+                
+                <div class="auth-input-group">
+                    <select id="signupRole" required>
+                        <option value="">Select Role</option>
+                        <option value="authority">Authority</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
                 
                 <div class="auth-input-group">
@@ -212,7 +202,7 @@
                     </select>
                 </div>
                 
-                <button type="submit" class="auth-button auth-primary-btn">
+                <button onclick="handleAuthoritySignUp()" class="auth-button auth-primary-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -231,25 +221,16 @@
 
         // Make auth functions available globally
         window.handleAuthorityLogin = async () => {
-            const email = document.getElementById('loginEmail').value.trim();
+            const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            const loginButton = document.querySelector('#loginForm button[type="submit"]');
-            
-            // Disable button and show loading state
-            loginButton.disabled = true;
-            loginButton.innerHTML = '<div class="spinner"></div> Logging in...';
-            
-            // Clear previous errors
-            document.getElementById('auth-status').textContent = '';
+            const role = document.getElementById('loginRole').value;
             
             // Input validation
-            if (!email || !password) {
+            if (!email || !password || !role) {
                 updateAuthStatus({
                     user: null,
                     error: 'Please enter both email and password'
                 });
-                loginButton.disabled = false;
-                loginButton.innerHTML = 'Login as Authority';
                 return;
             }
             
@@ -262,7 +243,11 @@
                     });
                     // Redirect to authority page after successful login
                     setTimeout(() => {
-                        window.location.href = 'authority-page/index.html';
+                        if (role === 'admin') {
+                            window.location.href = 'admin-page/project/index.html';
+                        } else {
+                            window.location.href = 'authority-page/index.html';
+                        }
                     }, 1500);
                 } else if (result.error) {
                     // Handle error from signInWithEmail
@@ -270,8 +255,6 @@
                         user: null,
                         error: result.error
                     });
-                    loginButton.disabled = false;
-                    loginButton.innerHTML = 'Login as Authority';
                 }
             } catch (error) {
                 // Handle any unexpected errors
@@ -285,51 +268,34 @@
                     errorMessage = 'Too many failed login attempts. Please try again later.';
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = 'Please enter a valid email address';
-                } else if (error.message) {
-                    errorMessage = error.message;
                 }
                 
                 updateAuthStatus({
                     user: null,
                     error: errorMessage
                 });
-                
-                loginButton.disabled = false;
-                loginButton.innerHTML = 'Login as Authority';
             }
         };
 
         window.handleAuthoritySignUp = async () => {
-            const email = document.getElementById('signupEmail').value.trim();
+            const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
+            const role = document.getElementById('signupRole').value;
             const authorityType = document.getElementById('authorityType').value;
-            const signupButton = document.querySelector('#signupForm button[type="submit"]');
             
-            // Disable button and show loading state
-            signupButton.disabled = true;
-            signupButton.innerHTML = '<div class="spinner"></div> Creating account...';
-            
-            // Clear previous errors
-            document.getElementById('auth-status').textContent = '';
-            
-            // Input validation
-            if (!email || !password) {
+            if (!role) {
                 updateAuthStatus({
                     user: null,
-                    error: 'Please fill in all required fields'
+                    error: "Please select a role"
                 });
-                signupButton.disabled = false;
-                signupButton.innerHTML = 'Sign Up as Authority';
                 return;
             }
-            
-            if (!authorityType) {
+            // authorityType is kept for additional classification.
+            if (!authorityType && role === 'authority') {
                 updateAuthStatus({
                     user: null,
                     error: "Please select an authority type"
                 });
-                signupButton.disabled = false;
-                signupButton.innerHTML = 'Sign Up as Authority';
                 return;
             }
 
@@ -343,41 +309,27 @@
                     });
                     // Redirect to authority page after successful signup
                     setTimeout(() => {
-                        window.location.href = 'authority-page/index.html';
+                        if (role === 'admin') {
+                            window.location.href = 'admin-page/project/index.html';
+                        } else {
+                            window.location.href = 'authority-page/index.html';
+                        }
                     }, 1500);
-                } else if (result.error) {
-                    updateAuthStatus({
-                        user: null,
-                        error: result.error
-                    });
-                    signupButton.disabled = false;
-                    signupButton.innerHTML = 'Sign Up as Authority';
                 }
             } catch (error) {
-                console.error('Signup error:', error);
-                let errorMessage = 'An error occurred during signup. Please try again.';
-                
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'An account with this email already exists. Please log in instead.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Password should be at least 6 characters long.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Please enter a valid email address.';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-                
                 updateAuthStatus({
                     user: null,
-                    error: errorMessage
+                    error: error.message
                 });
-                
-                signupButton.disabled = false;
-                signupButton.innerHTML = 'Sign Up as Authority';
             }
         };
 
         window.handleAuthorityGoogleSignIn = async () => {
+            const role = document.getElementById('loginRole').value;
+            if (!role) {
+                updateAuthStatus({ user: null, error: 'Please select a role before continuing' });
+                return;
+            }
             try {
                 const result = await signInWithGoogle();
                 if (result.user) {
@@ -387,7 +339,11 @@
                     });
                     // Redirect to authority page after successful Google sign-in
                     setTimeout(() => {
-                        window.location.href = 'authority-page/index.html';
+                        if (role === 'admin') {
+                            window.location.href = 'admin-page/project/index.html';
+                        } else {
+                            window.location.href = 'authority-page/index.html';
+                        }
                     }, 1500);
                 }
             } catch (error) {
