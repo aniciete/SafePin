@@ -3,407 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafePin - Authority Login</title>
+    <title>SafePin - Authority Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="modules/auth-styles.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .login-header {
-            background: linear-gradient(135deg, #6ab04c 0%, #5a9a42 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .login-header h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .login-header p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-
-        .login-body {
-            padding: 2.5rem;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #6ab04c;
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            transition: color 0.2s ease;
-        }
-
-        .back-link:hover {
-            color: #5a9a42;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .logo img {
-            width: 32px;
-            height: 32px;
-        }
-
-        .logo span {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-    </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <div class="logo">
-                <img src="assets/SafePin Logo Green.svg" alt="SafePin Logo">
-                <span>SafePin</span>
-            </div>
-            <h1>Authority Access</h1>
-            <p>Sign in to your SafePin authority account</p>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Authority Access Portal</h1>
+            <p>Sign in with your organization account</p>
         </div>
         
-        <div class="login-body">
-            <a href="index.html" class="back-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Back to Home
-            </a>
+        <div id="auth-status"></div>
+        
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form" onsubmit="event.preventDefault(); handleLogin();">
+            <input type="email" id="loginEmail" placeholder="Organization Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+            <div class="auth-divider">OR</div>
+            <button type="button" class="google-signin-btn" onclick="handleGoogleSignIn()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+                Sign in with Google
+            </button>
+        </form>
 
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchTab('login')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10,17 15,12 10,7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
-                    </svg>
-                    Login
-                </button>
-                <button class="auth-tab" onclick="switchTab('signup')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    Sign Up
-                </button>
-            </div>
-            
-            <div id="auth-status" class="auth-status"></div>
-            
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form" onsubmit="event.preventDefault(); handleAuthorityLogin();">
-                <div class="auth-input-group">
-                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
-                </div>
-                
-                <div class="auth-input-group">
-                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                </div>
-                
-                <div class="auth-input-group">
-                    <select id="loginRole" required>
-                        <option value="">Select Role</option>
-                        <option value="authority">Authority</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                
-                <button onclick="handleAuthorityLogin()" class="auth-button auth-primary-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10,17 15,12 10,7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
-                    </svg>
-                    Login as Authority
-                </button>
-                
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                
-                <button onclick="handleAuthorityGoogleSignIn()" class="auth-button auth-google-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                    </svg>
-                    Sign in with Google
-                </button>
-                
-                <button onclick="redirectTo('admin')" class="auth-button auth-admin-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15-.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    Admin Login
-                </button>
-            </div>
+        <script type="module">
+            import { auth } from './modules/firebase-init.js';
+            import { 
+                signInWithEmailAndPassword,
+                GoogleAuthProvider,
+                signInWithPopup
+            } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
 
-            <!-- Sign Up Form -->
-            <form id="signupForm" class="auth-form" style="display: none;" onsubmit="event.preventDefault(); handleAuthoritySignUp();">
-                <div class="auth-input-group">
-                    <input type="email" id="signupEmail" placeholder="Enter your email" required>
-                </div>
+            // Login handler
+            window.handleLogin = async () => {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
                 
-                <div class="auth-input-group">
-                    <input type="password" id="signupPassword" placeholder="Create a password" required>
-                </div>
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    window.location.href = 'authority-page/index.html';
+                } catch (error) {
+                    document.getElementById('auth-status').textContent = 'Authentication failed. Please use your organization credentials.';
+                }
+            };
+
+            // Google Sign-In handler
+            window.handleGoogleSignIn = async () => {
+                const provider = new GoogleAuthProvider();
                 
-                <div class="auth-input-group">
-                    <select id="signupRole" required>
-                        <option value="">Select Role</option>
-                        <option value="authority">Authority</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                
-                <div class="auth-input-group">
-                    <select id="authorityType" required>
-                        <option value="">Select Authority Type</option>
-                        <option value="police">Police Department</option>
-                        <option value="fire">Fire Department</option>
-                        <option value="medical">Medical Services</option>
-                        <option value="government">Government Agency</option>
-                        <option value="ngo">NGO/Non-Profit</option>
-                    </select>
-                </div>
-                
-                <button onclick="handleAuthoritySignUp()" class="auth-button auth-primary-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    Sign Up as Authority
-                </button>
-            </div>
-        </div>
+                try {
+                    await signInWithPopup(auth, provider);
+                    window.location.href = 'authority-page/index.html';
+                } catch (error) {
+                    document.getElementById('auth-status').textContent = 'Google sign-in failed. Please try again.';
+                }
+            };
+        </script>
     </div>
-
-    <!-- Auth Module Script -->
-    <script type="module">
-        import { signUpWithEmail, signInWithEmail, signInWithGoogle, signOutUser, onAuthStateChange } from 'modules/auth.js';
-
-        // Make auth functions available globally
-        window.handleAuthorityLogin = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const role = document.getElementById('loginRole').value;
-            
-            // Input validation
-            if (!email || !password || !role) {
-                updateAuthStatus({
-                    user: null,
-                    error: 'Please enter both email and password'
-                });
-                return;
-            }
-            
-            try {
-                const result = await signInWithEmail(email, password);
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful login
-                    setTimeout(() => {
-                        if (role === 'admin') {
-                            window.location.href = 'admin-page/project/index.html';
-                        } else {
-                            window.location.href = 'authority-page/index.html';
-                        }
-                    }, 1500);
-                } else if (result.error) {
-                    // Handle error from signInWithEmail
-                    updateAuthStatus({
-                        user: null,
-                        error: result.error
-                    });
-                }
-            } catch (error) {
-                // Handle any unexpected errors
-                console.error('Login error:', error);
-                let errorMessage = 'An error occurred during login. Please try again.';
-                
-                // More user-friendly error messages
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessage = 'Invalid email or password';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'Too many failed login attempts. Please try again later.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Please enter a valid email address';
-                }
-                
-                updateAuthStatus({
-                    user: null,
-                    error: errorMessage
-                });
-            }
-        };
-
-        window.handleAuthoritySignUp = async () => {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const role = document.getElementById('signupRole').value;
-            const authorityType = document.getElementById('authorityType').value;
-            
-            if (!role) {
-                updateAuthStatus({
-                    user: null,
-                    error: "Please select a role"
-                });
-                return;
-            }
-            // authorityType is kept for additional classification.
-            if (!authorityType && role === 'authority') {
-                updateAuthStatus({
-                    user: null,
-                    error: "Please select an authority type"
-                });
-                return;
-            }
-
-            try {
-                const result = await signUpWithEmail(email, password);
-                if (result.user) {
-                    // Here you would typically store the authority type in your database
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful signup
-                    setTimeout(() => {
-                        if (role === 'admin') {
-                            window.location.href = 'admin-page/project/index.html';
-                        } else {
-                            window.location.href = 'authority-page/index.html';
-                        }
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        window.handleAuthorityGoogleSignIn = async () => {
-            const role = document.getElementById('loginRole').value;
-            if (!role) {
-                updateAuthStatus({ user: null, error: 'Please select a role before continuing' });
-                return;
-            }
-            try {
-                const result = await signInWithGoogle();
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful Google sign-in
-                    setTimeout(() => {
-                        if (role === 'admin') {
-                            window.location.href = 'admin-page/project/index.html';
-                        } else {
-                            window.location.href = 'authority-page/index.html';
-                        }
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        function updateAuthStatus(result) {
-            const statusDiv = document.getElementById('auth-status');
-            if (result.error) {
-                statusDiv.textContent = `Error: ${result.error}`;
-                statusDiv.style.color = '#dc3545';
-                statusDiv.style.backgroundColor = '#f8d7da';
-                statusDiv.style.borderColor = '#f5c6cb';
-            } else if (result.user) {
-                statusDiv.textContent = `Welcome, ${result.user.email}! Redirecting...`;
-                statusDiv.style.color = '#155724';
-                statusDiv.style.backgroundColor = '#d4edda';
-                statusDiv.style.borderColor = '#c3e6cb';
-            }
-        }
-
-        // Tab switching functionality
-        window.switchTab = (tab) => {
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
-            const tabs = document.querySelectorAll('.auth-tab');
-            
-            if (tab === 'login') {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-            } else {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
-                tabs[0].classList.remove('active');
-                tabs[1].classList.add('active');
-            }
-        };
-
-        window.redirectTo = (type) => {
-            if (type === 'admin') {
-                window.location.href = 'admin-page/project/index.html';
-            }
-        };
-
-        // Check auth state on page load
-        onAuthStateChange((user) => {
-            if (user) {
-                console.log('User is signed in:', user.email);
-                // Redirect if already logged in
-                window.location.href = 'authority-page/index.html';
-            } else {
-                console.log('No user signed in');
-            }
-        });
-    </script>
 </body>
-</html> 
+</html>
