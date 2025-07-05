@@ -4,11 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafePin - Authority Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f7fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .auth-container {
             max-width: 480px;
-            margin: 2rem auto;
+            width: 100%;
+            margin: 2rem;
             padding: 2rem;
             background: white;
             border-radius: 12px;
@@ -24,10 +41,12 @@
             font-size: 1.8rem;
             color: #6ab04c;
             margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
         .auth-header p {
             color: #4a5568;
+            font-weight: 400;
         }
 
         .auth-form {
@@ -41,6 +60,13 @@
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             font-size: 1rem;
+            font-weight: 400;
+            transition: border-color 0.2s;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #6ab04c;
         }
 
         .auth-form button {
@@ -56,7 +82,7 @@
         }
 
         .auth-form button:hover {
-            background: #6ab04c;
+            background: #5a9142;
         }
 
         .google-signin-btn {
@@ -90,14 +116,25 @@
             color: #a0aec0;
             margin: 1rem 0;
             position: relative;
+            font-weight: 400;
         }
 
         .auth-divider::before,
         .auth-divider::after {
             content: "";
-            flex: 1;
-            border-bottom: 1px solid #e2e8f0;
-            margin: auto;
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .auth-divider::before {
+            left: 0;
+        }
+
+        .auth-divider::after {
+            right: 0;
         }
 
         #auth-status {
@@ -105,16 +142,49 @@
             margin-bottom: 1rem;
             border-radius: 8px;
             text-align: center;
+            font-weight: 500;
+            display: none;
         }
 
         .error {
             background: #fff5f5;
             color: #c53030;
+            border: 1px solid #feb2b2;
+            display: block;
         }
 
         .success {
             background: #f0fff4;
             color: #2f855a;
+            border: 1px solid #9ae6b4;
+            display: block;
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading button {
+            position: relative;
+        }
+
+        .loading button::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -127,49 +197,70 @@
         
         <div id="auth-status"></div>
         
-        <form id="loginForm" class="auth-form" onsubmit="event.preventDefault(); handleLogin();">
+        <form id="loginForm" class="auth-form">
             <input type="email" id="loginEmail" placeholder="Organization Email" required>
             <input type="password" id="loginPassword" placeholder="Password" required>
             <button type="submit">Sign In</button>
             <div class="auth-divider">OR</div>
-            <button type="button" class="google-signin-btn" onclick="handleGoogleSignIn()">
+            <button type="button" class="google-signin-btn" id="googleSignInBtn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
                 Sign in with Google
             </button>
         </form>
     </div>
-    <script type="module">
-        import { auth } from './modules/firebase-init.js';
-        import { 
-            signInWithEmailAndPassword,
-            GoogleAuthProvider,
-            signInWithPopup
-        } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
 
-        // Login handler
-        window.handleLogin = async () => {
+    <script>
+        // Mock authentication for demo purposes
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('auth-status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+
+        function setLoading(isLoading) {
+            const container = document.querySelector('.auth-container');
+            if (isLoading) {
+                container.classList.add('loading');
+            } else {
+                container.classList.remove('loading');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = 'authority-page/index.html';
-            } catch (error) {
-                document.getElementById('auth-status').textContent = 'Authentication failed. Please use your organization credentials.';
-            }
-        };
-
-        // Google Sign-In handler
-        window.handleGoogleSignIn = async () => {
-            const provider = new GoogleAuthProvider();
+            setLoading(true);
             
-            try {
-                await signInWithPopup(auth, provider);
-                window.location.href = 'authority-page/index.html';
-            } catch (error) {
-                document.getElementById('auth-status').textContent = 'Google sign-in failed. Please try again.';
-            }
-        };
+            // Simulate authentication delay
+            setTimeout(() => {
+                setLoading(false);
+                
+                if (email && password) {
+                    showStatus('Authentication successful! Redirecting...', 'success');
+                    // In a real app, you would redirect here
+                    // window.location.href = 'authority-page/index.html';
+                } else {
+                    showStatus('Authentication failed. Please use your organization credentials.', 'error');
+                }
+            }, 1500);
+        });
+
+        // Handle Google Sign-In
+        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+            setLoading(true);
+            
+            // Simulate Google Sign-In delay
+            setTimeout(() => {
+                setLoading(false);
+                showStatus('Google sign-in successful! Redirecting...', 'success');
+                // In a real app, you would redirect here
+                // window.location.href = 'authority-page/index.html';
+            }, 2000);
+        });
     </script>
 </body>
 </html>
