@@ -208,23 +208,8 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container header-container">
-            <a href="index.html" class="logo">
-                <img src="SafePin Logo Green.svg" alt="SafePin Logo">
-                SafePin
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#">Features</a></li>
-                    <li><a href="about-us.html">About Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#" class="nav-button" onclick="openModal()">Authority Access</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <!-- Header Container -->
+    <div id="header-container"></div>
 
     <main class="verification-container">
         <div class="container">
@@ -260,51 +245,12 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-column">
-                    <h4>SafePin</h4>
-                    <p>Copyright © 2022 SafePin<br>All rights reserved.</p>
-                </div>
-                
-                <div class="footer-column">
-                    <h4>SafePin</h4>
-                    <ul class="footer-links">
-                        <li><a href="about-us.html">About us</a></li>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact us</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-column">
-                    <h4>Support</h4>
-                    <ul class="footer-links">
-                        <li><a href="#">Help center</a></li>
-                        <li><a href="#">Terms of service</a></li>
-                        <li><a href="#">Legal</a></li>
-                        <li><a href="#">Privacy policy</a></li>
-                        <li><a href="#">Status</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-column">
-                    <h4>Stay up to date</h4>
-                    <p>Subscribe to our newsletter for updates.</p>
-                    <form class="newsletter-form">
-                        <input type="email" placeholder="Your email" class="newsletter-input" required>
-                        <button type="submit" class="newsletter-button">→</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="copyright">
-                <p>© 2022 SafePin. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
+
+    <!-- Header and Footer Scripts -->
+    <script src="../modules/header.js"></script>
+    <script src="../modules/footer.js"></script>
 
     <div id="authorityModal" class="modal">
         <div class="modal-content">

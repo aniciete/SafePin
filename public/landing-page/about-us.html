@@ -8,23 +8,8 @@
 </head>
 <body>
 
-    <header>
-        <div class="container">
-            <a href="index.html" class="logo">
-                <img src="SafePin Logo Green.svg" alt="SafePin Logo">
-                SafePin
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#">Features</a></li>
-                    <li><a href="#" style="color: #6ab04c; font-weight: bold;">About Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#" class="nav-button" onclick="openModal()">Authority Access</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <!-- Header Container -->
+    <div id="header-container"></div>
 
     <section class="page-title-section">
         <div class="container">
@@ -98,83 +83,12 @@
         </div>
     </section>
 
-    <footer>
-        <div class="container footer-container">
-            <div class="footer-column">
-                <h4><img src="https://via.placeholder.com/20x20.png?text=S" alt="" style="vertical-align: middle; margin-right: 5px;">SafePin</h4>
-                <p>Copyright © 2024 SafePin <br> All rights reserved.</p>
-                <div class="social-icons" style="margin-top:10px;">
-                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=in" alt="LinkedIn"></a>
-                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=X" alt="Twitter/X"></a>
-                    <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=yt" alt="YouTube"></a>
-                    <a href="#"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=ig" alt="Instagram"></a>
-                </div>
-            </div>
-            <div class="footer-column">
-                <h4>SafePin</h4>
-                <ul>
-                    <li><a href="#">About us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Contact us</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Privacy policy</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Terms of service</a></li>
-                    <li><a href="#">Privacy policy</a></li>
-                    <li><a href="#">Status</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h4>Stay up to date</h4>
-                <form class="newsletter-form">
-                    <input type="email" placeholder="Enter your email address">
-                    <button type="submit" class="subscribe-btn"><img src="https://via.placeholder.com/16x16/ffffff/5a9a42?Text=%3E" alt="Send"></button>
-                </form>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
 
-    <div id="authorityModal" class="modal">
-        <div class="modal-content">
-            <h2>Authority Access</h2>
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-                <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
-            </div>
-            
-            <div id="auth-status" class="auth-status"></div>
-            
-            <!-- Login Form -->
-            <div id="loginForm" class="auth-form">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button onclick="handleAuthorityLogin()">Login as Authority</button>
-                <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
-                <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
-            </div>
-
-            <!-- Sign Up Form -->
-            <div id="signupForm" class="auth-form" style="display: none;">
-                <input type="email" id="signupEmail" placeholder="Email" required>
-                <input type="password" id="signupPassword" placeholder="Password" required>
-                <select id="authorityType" required>
-                    <option value="">Select Authority Type</option>
-                    <option value="police">Police</option>
-                    <option value="fire">Fire Department</option>
-                    <option value="medical">Medical Services</option>
-                    <option value="government">Government Agency</option>
-                </select>
-                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
-            </div>
-
-            <button class="close-button" onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
+    <!-- Header and Footer Scripts -->
+    <script src="../modules/header.js"></script>
+    <script src="../modules/footer.js"></script>
 
     <!-- Auth Module Script -->
     <script type="module">
@@ -210,9 +124,18 @@
             const password = document.getElementById('signupPassword').value;
             const authorityType = document.getElementById('authorityType').value;
             
+            if (!authorityType) {
+                updateAuthStatus({
+                    user: null,
+                    error: "Please select an authority type"
+                });
+                return;
+            }
+
             try {
                 const result = await signUpWithEmail(email, password);
                 if (result.user) {
+                    // Here you would typically store the authority type in your database
                     updateAuthStatus({
                         user: result.user,
                         error: null
@@ -251,62 +174,31 @@
             }
         };
 
-        // Modal functions
-        window.openModal = () => {
-            document.getElementById('authorityModal').style.display = 'flex';
-        };
-
-        window.closeModal = () => {
-            document.getElementById('authorityModal').style.display = 'none';
-        };
-
-        window.switchTab = (tab) => {
-            // Update tab buttons
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update forms
-            if (tab === 'login') {
-                document.getElementById('loginForm').style.display = 'flex';
-                document.getElementById('signupForm').style.display = 'none';
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'flex';
+        function updateAuthStatus(result) {
+            const statusDiv = document.getElementById('auth-status');
+            if (result.error) {
+                statusDiv.textContent = `Error: ${result.error}`;
+                statusDiv.style.color = 'red';
+            } else if (result.user) {
+                statusDiv.textContent = `Welcome, ${result.user.email}!`;
+                statusDiv.style.color = 'green';
             }
-        };
+        }
 
         window.redirectTo = (type) => {
             if (type === 'admin') {
                 window.location.href = '../admin-page/project/index.html';
-            } else if (type === 'authority') {
-                window.location.href = '../authority-page/index.html';
             }
-            closeModal();
         };
 
-        // Update auth status display
-        function updateAuthStatus({ user, error }) {
-            const statusDiv = document.getElementById('auth-status');
+        // Check auth state on page load
+        onAuthStateChange((user) => {
             if (user) {
-                statusDiv.textContent = 'Authentication successful! Redirecting...';
-                statusDiv.style.backgroundColor = '#d4edda';
-                statusDiv.style.color = '#155724';
-                statusDiv.style.border = '1px solid #c3e6cb';
-            } else if (error) {
-                statusDiv.textContent = `Error: ${error}`;
-                statusDiv.style.backgroundColor = '#f8d7da';
-                statusDiv.style.color = '#721c24';
-                statusDiv.style.border = '1px solid #f5c6cb';
+                console.log('User is signed in:', user.email);
+            } else {
+                console.log('No user signed in');
             }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('authorityModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
+        });
     </script>
 
 </body>
