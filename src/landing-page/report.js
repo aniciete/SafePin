@@ -2,6 +2,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '/modules/auth.js';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js';
 import { db } from '../../firebase-init.js';
 
 // --- Map variables ---
@@ -128,9 +129,13 @@ const handleReportSubmission = async () => {
     const description = document.getElementById('description').value;
     const imageFile = document.getElementById('image-upload').files[0];
 
-    // --- Cloudinary Configuration ---
-    const CLOUDINARY_CLOUD_NAME = "dbeogq4vq"; // Your Cloudinary cloud name
-    const CLOUDINARY_UPLOAD_PRESET = "safepin_reports"; // The upload preset you created
+    // --- Cloudinary Signed Upload ---
+    const functionsInstance = getFunctions();
+    const getSignature = httpsCallable(functionsInstance, 'getCloudinarySignature');
+
+    // Ask backend for signed upload parameters
+    const signatureResp = await getSignature();
+    const { cloudName, apiKey, timestamp, signature, folder } = signatureResp.data;
 
     if (!incidentType || !severityLevel || !description || !imageFile) {
         alert('Please fill out all fields and select an image.');
@@ -140,12 +145,15 @@ const handleReportSubmission = async () => {
     }
 
     try {
-        // 2. Upload image to Cloudinary using an Unsigned Preset
+        // 2. Upload image to Cloudinary using the signed parameters
         const formData = new FormData();
         formData.append('file', imageFile);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('api_key', apiKey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        if (folder) formData.append('folder', folder);
 
-        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
         const cloudinaryResponse = await fetch(cloudinaryUrl, {
             method: 'POST',

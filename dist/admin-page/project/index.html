@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide icons for consistency with the new design -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -99,6 +99,16 @@
             /* Fallback color */
         }
     </style>
+  <script type="module" crossorigin src="/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
+  <script type="module" crossorigin src="/assets/firebase-init-CmrEjvYP.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
+  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/auth-styles-BGl9RA0z.css">
 </head>
 
@@ -345,12 +355,12 @@
                     <table class="min-w-full border-collapse">
                         <thead>
                             <tr class="bg-[#4caf50] text-[13px] text-black">
-                                <th class="py-2 px-3 rounded-tl-lg text-left">ID#</th>
-                                <th class="py-2 px-3 text-left">Street</th>
-                                <th class="py-2 px-3 text-left">Wanted</th>
-                                <th class="py-2 px-3 text-left">Progress</th>
-                                <th class="py-2 px-3 text-left">Visibility</th>
-                                <th class="py-2 px-3 rounded-tr-lg"></th>
+                                <th class="py-2 px-3 rounded-tl-lg text-left">Report ID</th>
+                                <th class="py-2 px-3 text-left">Incident Type</th>
+                                <th class="py-2 px-3 text-left">Location (Lat, Lng)</th>
+                                <th class="py-2 px-3 text-left">Status</th>
+                                <th class="py-2 px-3 text-left">Date</th>
+                                <th class="py-2 px-3 rounded-tr-lg text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white text-[13px] text-[#4a4a4a]" id="reports-table-body">
