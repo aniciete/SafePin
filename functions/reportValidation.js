@@ -7,8 +7,11 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cloudinary = require('cloudinary').v2;
+const { sanitize } = require('./utils/security');
 
-admin.initializeApp();
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
 
 // Initialize Cloudinary using environment config
 cloudinary.config({
@@ -95,6 +98,17 @@ exports.validateReport = functions.firestore
       await snap.ref.delete();
       return null;
     }
-    // Otherwise, accept the report
+    
+    // If validation passes, sanitize the data and update the document.
+    const sanitizedData = {
+      incidentType: sanitize(data.incidentType),
+      severityLevel: sanitize(data.severityLevel),
+      description: sanitize(data.description),
+    };
+
+    // Update the document with sanitized fields
+    await snap.ref.update(sanitizedData);
+    console.log(`Report ${context.params.reportId} has been sanitized and updated.`);
+
     return null;
   });
