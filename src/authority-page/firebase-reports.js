@@ -9,9 +9,7 @@ import {
   query,
   where,
   orderBy,
-  limit,
-  getDocs,
-  startAfter,
+  onSnapshot,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 // --- Global State ---
@@ -114,52 +112,20 @@ window.hideReportDetails = function () {
   document.getElementById('report-details-modal').classList.add('hidden');
 }
 
-async function fetchReports(loadMore = false) {
+function listenForReports() {
   const reportsCol = collection(db, 'reports');
-  let reportsQuery;
+  const reportsQuery = query(
+    reportsCol,
+    where('status', 'in', ['verified', 'resolved']),
+    orderBy('createdAt', 'desc')
+  );
 
-  if (loadMore && lastVisible) {
-    reportsQuery = query(
-      reportsCol,
-      where('status', 'in', ['verified', 'resolved']),
-      orderBy('createdAt', 'desc'),
-      startAfter(lastVisible),
-      limit(10) // Fetch smaller batches on load more
-    );
-  } else {
-    allReports = []; // Reset on initial load
-    reportsQuery = query(
-      reportsCol,
-      where('status', 'in', ['verified', 'resolved']),
-      orderBy('createdAt', 'desc'),
-      limit(25)
-    );
-  }
-
-  try {
-    const snapshot = await getDocs(reportsQuery);
-    const newReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    if (!loadMore) {
-        allReports = newReports;
-    } else {
-        allReports = [...allReports, ...newReports];
-    }
-    
-    lastVisible = snapshot.docs[snapshot.docs.length - 1];
-
+  onSnapshot(reportsQuery, (snapshot) => {
+    allReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     buildDashboardData(allReports);
-
-    const loadMoreBtn = document.getElementById('loadMoreReports');
-    if (snapshot.empty || snapshot.docs.length < 10) {
-      if (loadMoreBtn) loadMoreBtn.style.display = 'none';
-    } else {
-      if (loadMoreBtn) loadMoreBtn.style.display = 'block';
-    }
-  } catch (error) {
+  }, (error) => {
     console.error("Error fetching reports: ", error);
-    // Optionally, display an error message to the user
-  }
+  });
 }
 
 // --- Initial Load ---
@@ -169,10 +135,5 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
   }
 
-  fetchReports();
-
-  const loadMoreBtn = document.getElementById('loadMoreReports');
-  if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', () => fetchReports(true));
-  }
+  listenForReports();
 });
