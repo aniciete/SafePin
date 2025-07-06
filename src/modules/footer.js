@@ -29,7 +29,7 @@ class SafePinFooter {
                         <h4>SafePin</h4>
                         <ul>
                             <li><a href="${this.getAboutLink()}">About us</a></li>
-                            <li><a href="#">FAQ</a></li>
+                            <li><a href="${this.getFaqLink()}">FAQ</a></li>
                             <li><a href="#">Contact us</a></li>
                             <li><a href="#">Terms of Service</a></li>
                             <li><a href="#">Privacy policy</a></li>
@@ -65,6 +65,17 @@ class SafePinFooter {
             return 'about-us.html';
         }
         return 'landing-page/about-us.html';
+    }
+
+    /**
+     * Get FAQ link path based on current page location
+     */
+    getFaqLink() {
+        const path = window.location.pathname;
+        if (path.includes('landing-page/')) {
+            return 'faq.html';
+        }
+        return 'landing-page/faq.html';
     }
 
     /**

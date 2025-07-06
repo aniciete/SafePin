@@ -1,6 +1,8 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '/modules/auth.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../firebase-init.js';
 
 // --- Map variables ---
 let map;
@@ -113,12 +115,81 @@ function setupModal(modal, openBtnId, closeBtnId, onOpen, onClose) {
 }
 
 setupModal(confirmModal, 'openConfirmModalBtn', 'cancelConfirmBtn');
-setupModal(successModal, 'triggerSuccessModalBtn', 'closeSuccessModalBtn', 
-    () => confirmModal.classList.remove('active'),
-    () => successModal.classList.remove('active')
-);
 
-window.closeModal = () => authorityModal.classList.remove('active');
+// --- Report Submission Logic ---
+const handleReportSubmission = async () => {
+    const confirmButton = document.getElementById('triggerSuccessModalBtn');
+    confirmButton.disabled = true;
+    confirmButton.textContent = 'Submitting...';
+
+    // 1. Get form data
+    const incidentType = document.getElementById('incident-type').value;
+    const severityLevel = document.getElementById('severity-level').value;
+    const description = document.getElementById('description').value;
+    const imageFile = document.getElementById('image-upload').files[0];
+
+    // --- Cloudinary Configuration ---
+    const CLOUDINARY_CLOUD_NAME = "dbeogq4vq"; // Your Cloudinary cloud name
+    const CLOUDINARY_UPLOAD_PRESET = "safepin_reports"; // The upload preset you created
+
+    if (!incidentType || !severityLevel || !description || !imageFile) {
+        alert('Please fill out all fields and select an image.');
+        confirmButton.disabled = false;
+        confirmButton.textContent = 'Confirm';
+        return;
+    }
+
+    try {
+        // 2. Upload image to Cloudinary using an Unsigned Preset
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+        const cloudinaryResponse = await fetch(cloudinaryUrl, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!cloudinaryResponse.ok) {
+            const errorData = await cloudinaryResponse.json();
+            throw new Error(`Image upload failed: ${errorData.error.message}`);
+        }
+
+        const cloudinaryData = await cloudinaryResponse.json();
+        const imageUrl = cloudinaryData.secure_url;
+
+        // 3. Save report to Firestore
+        await addDoc(collection(db, 'reports'), {
+            incidentType,
+            severityLevel,
+            description,
+            imageUrl,
+            location: currentLocation, // From the map logic
+            status: 'pending_verification',
+            createdAt: serverTimestamp(),
+        });
+
+        // 4. Show success
+        confirmModal.classList.remove('active');
+        successModal.classList.add('active');
+
+    } catch (error) {
+        console.error('Error submitting report:', error);
+        alert(`Submission failed: ${error.message}`);
+    } finally {
+        confirmButton.disabled = false;
+        confirmButton.textContent = 'Confirm';
+    }
+};
+
+document.getElementById('triggerSuccessModalBtn').addEventListener('click', handleReportSubmission);
+
+window.closeModal = () => {
+    successModal.classList.remove('active');
+    authorityModal.classList.remove('active');
+};
 
 // --- Auth Form Functionality ---
 window.switchTab = (tabName) => {

@@ -1,5 +1,7 @@
 import * as UI from '../../modules/ui.js';
 import * as Charts from '../../modules/charts.js';
+import { db } from '../../../firebase-init.js';
+import { collection, getDocs } from 'firebase/firestore';
 
 // Global variables for modal callbacks
 let currentPromptCallback = null;
@@ -788,6 +790,74 @@ function attachSettingsNavLinkListeners() {
 }
 
 
+// Function to fetch and display reports from Firestore
+async function loadReportsData() {
+    const reportsTableBody = document.getElementById('reports-table-body');
+    if (!reportsTableBody) {
+        console.error("Element with ID 'reports-table-body' not found.");
+        return;
+    }
+
+    reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading reports...</td></tr>';
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "reports"));
+        if (querySnapshot.empty) {
+            reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No reports found.</td></tr>';
+            return;
+        }
+
+        reportsTableBody.innerHTML = ''; // Clear loading message
+
+        querySnapshot.forEach((doc) => {
+            const report = doc.data();
+            const reportId = doc.id;
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-200 hover:bg-gray-50';
+
+            // Format date
+            const date = report.createdAt && report.createdAt.seconds ? new Date(report.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+            
+            // Format location
+            const location = report.location && report.location.lat ? `${report.location.lat.toFixed(4)}, ${report.location.lng.toFixed(4)}` : 'N/A';
+
+            // Format status with color coding
+            let statusClass = 'bg-yellow-100 text-yellow-700';
+            if (report.status === 'verified') {
+                statusClass = 'bg-green-100 text-green-700';
+            } else if (report.status === 'rejected' || report.status === 'misleading') {
+                statusClass = 'bg-red-100 text-red-700';
+            }
+
+            row.innerHTML = `
+                <td class="py-3 px-3 text-left font-mono text-xs">${reportId.substring(0, 8)}...</td>
+                <td class="py-3 px-3 text-left">${report.incidentType}</td>
+                <td class="py-3 px-3 text-left font-mono text-xs">${location}</td>
+                <td class="py-3 px-3 text-left">
+                    <span class="px-2 py-1 font-semibold leading-tight rounded-full ${statusClass}">
+                        ${report.status}
+                    </span>
+                </td>
+                <td class="py-3 px-3 text-left">${date}</td>
+                <td class="py-3 px-3 text-center">
+                    <a href="${report.imageUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 mr-2">View Image</a>
+                    <button class="text-indigo-500 hover:text-indigo-700" onclick="viewReportDetails('${reportId}')">Details</button>
+                </td>
+            `;
+            reportsTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error loading reports: ", error);
+        reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load reports. See console for details.</td></tr>';
+    }
+}
+
+// Dummy function for now, will be expanded later
+window.viewReportDetails = (reportId) => {
+    // In the future, this could open a modal with the full report details
+    alert(`Viewing details for report: ${reportId}`);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Get buttons and content sections
     const overviewBtn = document.getElementById('overview-btn');
@@ -870,6 +940,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set initial active state
     setActiveTab('Overview');
+
+    // Load reports data when the page loads
+    loadReportsData();
 
     // Event Listeners for sidebar navigation
     overviewBtn.addEventListener('click', function() {

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - SafePin</title>
+    <link rel="stylesheet" href="/landing-page/style.css">
+</head>
+<body>
+    <!-- Header Container -->
+    <div id="header-container"></div>
+
+    <section class="page-title-section">
+        <div class="container">
+            <h1>Frequently Asked Questions</h1>
+            <p class="subtitle">Find answers to the most common questions about SafePin.</p>
+        </div>
+    </section>
+
+    <section class="faq-section">
+        <div class="container faq-container">
+            <div class="faq-item">
+                <button class="faq-question">What is SafePin?</button>
+                <div class="faq-answer">
+                    <p>SafePin is a community-driven platform that allows citizens to anonymously report incidents and stay informed about verified safety concerns in their area.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Is my identity protected?</button>
+                <div class="faq-answer">
+                    <p>Yes. Reports are completely anonymous. We never collect personally identifying information unless you choose to provide it.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">How are reports verified?</button>
+                <div class="faq-answer">
+                    <p>Our verification team collaborates with local authorities to confirm incident details before they are made publicly visible.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">How can I receive alerts?</button>
+                <div class="faq-answer">
+                    <p>Create an account and enable location-based notifications to get real-time alerts when incidents occur near you.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Is SafePin free?</button>
+                <div class="faq-answer">
+                    <p>Yes, reporting and viewing verified incidents are completely free for citizens. Premium integrations for authorities are available.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
+
+    <!-- Module Scripts -->
+    <script type="module" src="/modules/header.js"></script>
+    <script type="module" src="/modules/footer.js"></script>
+    <script>
+        // Simple accordion behaviour
+        document.addEventListener('DOMContentLoaded', () => {
+            const questions = document.querySelectorAll('.faq-question');
+            questions.forEach(q => {
+                q.addEventListener('click', () => {
+                    const answer = q.nextElementSibling;
+                    const expanded = q.getAttribute('aria-expanded') === 'true';
+                    q.setAttribute('aria-expanded', !expanded);
+                    answer.style.display = expanded ? 'none' : 'block';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

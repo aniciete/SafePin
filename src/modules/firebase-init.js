@@ -1,20 +1,22 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
+// Your web app's Firebase configuration pulled from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyDTwxz4f0JQbwRRCgP8z85xYS52sH_wb_s",
-  authDomain: "safepin-1d951.firebaseapp.com",
-  projectId: "safepin-1d951",
-  storageBucket: "safepin-1d951.firebasestorage.app",
-  messagingSenderId: "177195659244",
-  appId: "1:177195659244:web:cffe2d8295601de5b05ac9",
-  measurementId: "G-7FKZQV0WFB"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-getAnalytics(app); // Only needed for analytics, not exported
+getAnalytics(app); // Initialize analytics
 const auth = getAuth(app);
 const db = getFirestore(app);
 

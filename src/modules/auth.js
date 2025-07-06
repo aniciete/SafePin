@@ -28,6 +28,7 @@ export const signUpWithEmail = async (email, password, role) => {
 
         return { user, error: null };
     } catch (error) {
+        console.error("Full sign-up error:", error);
         return { user: null, error: error.message };
     }
 };

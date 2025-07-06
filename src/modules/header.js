@@ -17,6 +17,10 @@ class SafePinHeader {
             return 'home';
         } else if (path.includes('about-us.html')) {
             return 'about';
+        } else if (path.includes('features.html')) {
+            return 'features';
+        } else if (path.includes('faq.html')) {
+            return 'faq';
         } else if (path.includes('report.html')) {
             return 'report';
         } else if (path.includes('verification.html')) {
@@ -39,9 +43,9 @@ class SafePinHeader {
                     <nav>
                         <ul>
                             <li><a href="${this.getHomeLink()}" ${this.currentPage === 'home' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>Home</a></li>
-                            <li><a href="#">Features</a></li>
+                            <li><a href="${this.getFeaturesLink()}" ${this.currentPage === 'features' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>Features</a></li>
                             <li><a href="${this.getAboutLink()}" ${this.currentPage === 'about' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>About Us</a></li>
-                            <li><a href="#">FAQ</a></li>
+                            <li><a href="${this.getFaqLink()}" ${this.currentPage === 'faq' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>FAQ</a></li>
                             <li><a href="${this.getLoginLink()}" class="nav-button">Authority Access</a></li>
                         </ul>
                     </nav>
@@ -81,6 +85,28 @@ class SafePinHeader {
             return 'about-us.html';
         }
         return 'landing-page/about-us.html';
+    }
+
+    /**
+     * Get the appropriate features link based on current page location
+     */
+    getFeaturesLink() {
+        const path = window.location.pathname;
+        if (path.includes('landing-page/')) {
+            return 'features.html';
+        }
+        return 'landing-page/features.html';
+    }
+
+    /**
+     * Get the appropriate FAQ link based on current page location
+     */
+    getFaqLink() {
+        const path = window.location.pathname;
+        if (path.includes('landing-page/')) {
+            return 'faq.html';
+        }
+        return 'landing-page/faq.html';
     }
 
     /**
