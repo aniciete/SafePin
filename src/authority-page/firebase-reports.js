@@ -14,12 +14,105 @@ import {
   startAfter,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-// Utilities
+// --- Global State ---
+let lastVisible = null; // For pagination
+let allReports = []; // Local cache of all loaded reports
+let currentReportDetails = {}; // For the modal
+
+// --- UI Helper Functions ---
 const formatDate = (ts) =>
   ts && ts.seconds ? new Date(ts.seconds * 1000).toLocaleString() : 'N/A';
 
-let lastVisible = null;
-let allReports = [];
+const statusConfig = {
+  verified: { text: 'Verified', color: 'blue-500', pulse: true },
+  resolved: { text: 'Resolved', color: 'green-500', pulse: false },
+  rejected: { text: 'Rejected', color: 'red-500', pulse: false },
+  pending_verification: { text: 'Pending', color: 'yellow-500', pulse: true },
+};
+
+function buildDashboardData(reports) {
+  // --- Summary Cards ---
+  const totalReports = reports.length;
+  const highSeverity = reports.filter((r) => r.severityLevel === 'High').length;
+  const newToday = reports.filter((r) => {
+    const today = new Date();
+    const reportDate = new Date(r.createdAt.seconds * 1000);
+    return today.toDateString() === reportDate.toDateString();
+  }).length;
+
+  document.getElementById('total-reports-value').textContent = totalReports;
+  document.getElementById('high-severity-value').textContent = highSeverity;
+  document.getElementById('new-today-value').textContent = newToday;
+
+  // --- Reports Table ---
+  const tableBody = document.getElementById('reports-table-body');
+  tableBody.innerHTML = ''; // Clear existing rows
+  reports.forEach((report) => {
+    const status = statusConfig[report.status] || { text: 'Unknown', color: 'gray-500' };
+    const row = `
+      <tr class="hover:bg-gray-50">
+        <td class="py-4 px-6 text-sm font-medium text-gray-900">${report.incidentType}</td>
+        <td class="py-4 px-6 text-sm text-gray-500">${report.severityLevel}</td>
+        <td class="py-4 px-6 text-sm text-gray-500">${report.description.substring(0, 50)}...</td>
+        <td class="py-4 px-6 text-sm text-gray-500">${formatDate(report.createdAt)}</td>
+        <td class="py-4 px-6 text-sm">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${status.color.split('-')[0]}-100 text-${status.color}">
+            ${status.pulse ? `<span class="mr-1.5 h-2 w-2 bg-${status.color} rounded-full animate-pulse-custom"></span>` : ''}
+            ${status.text}
+          </span>
+        </td>
+        <td class="py-4 px-6 text-sm font-medium text-right">
+          <button onclick="showReportDetails('${report.id}')" class="text-indigo-600 hover:text-indigo-900">View</button>
+        </td>
+      </tr>
+    `;
+    tableBody.innerHTML += row;
+  });
+
+  // --- Map Markers ---
+  updateMapMarkers(reports);
+}
+
+function updateMapMarkers(reports) {
+  if (window.map && window.map.markers) {
+    window.map.markers.forEach((marker) => marker.setMap(null));
+    window.map.markers = [];
+  } else if (window.map) {
+    window.map.markers = [];
+  }
+
+  reports.forEach((report) => {
+    if (window.google && window.map && report.location) {
+      const marker = new google.maps.Marker({
+        position: report.location,
+        map: window.map,
+        title: report.incidentType,
+      });
+      window.map.markers.push(marker);
+    }
+  });
+}
+
+window.showReportDetails = function (reportId) {
+  const report = allReports.find((r) => r.id === reportId);
+  if (!report) return;
+
+  currentReportDetails = report;
+
+  document.getElementById('modal-title').textContent = report.incidentType;
+  document.getElementById('modal-status').textContent = report.status;
+  document.getElementById('modal-severity').textContent = report.severityLevel;
+  document.getElementById('modal-timestamp').textContent = formatDate(report.createdAt);
+  document.getElementById('modal-description').textContent = report.description;
+  document.getElementById('modal-image').src = report.imageUrl;
+  document.getElementById('modal-location').textContent = `Lat: ${report.location.lat}, Lng: ${report.location.lng}`;
+
+  document.getElementById('report-details-modal').classList.remove('hidden');
+}
+
+window.hideReportDetails = function () {
+  document.getElementById('report-details-modal').classList.add('hidden');
+}
 
 async function fetchReports(loadMore = false) {
   const reportsCol = collection(db, 'reports');
@@ -31,7 +124,7 @@ async function fetchReports(loadMore = false) {
       where('status', 'in', ['verified', 'resolved']),
       orderBy('createdAt', 'desc'),
       startAfter(lastVisible),
-      limit(25)
+      limit(10) // Fetch smaller batches on load more
     );
   } else {
     allReports = []; // Reset on initial load
@@ -43,94 +136,43 @@ async function fetchReports(loadMore = false) {
     );
   }
 
-  const snapshot = await getDocs(reportsQuery);
-  const newReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  
-  allReports = [...allReports, ...newReports];
-  lastVisible = snapshot.docs[snapshot.docs.length - 1];
+  try {
+    const snapshot = await getDocs(reportsQuery);
+    const newReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-  buildDashboardData(allReports);
+    if (!loadMore) {
+        allReports = newReports;
+    } else {
+        allReports = [...allReports, ...newReports];
+    }
+    
+    lastVisible = snapshot.docs[snapshot.docs.length - 1];
 
-  // Show/hide 'Load More' button
-  const loadMoreBtn = document.getElementById('loadMoreReports');
-  if (snapshot.empty || snapshot.docs.length < 25) {
-    if(loadMoreBtn) loadMoreBtn.style.display = 'none';
-  } else {
-    if(loadMoreBtn) loadMoreBtn.style.display = 'block';
+    buildDashboardData(allReports);
+
+    const loadMoreBtn = document.getElementById('loadMoreReports');
+    if (snapshot.empty || snapshot.docs.length < 10) {
+      if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    } else {
+      if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+    }
+  } catch (error) {
+    console.error("Error fetching reports: ", error);
+    // Optionally, display an error message to the user
   }
 }
 
-// Initial load
-fetchReports();
-
-// Add a 'Load More' button to your index.html and wire it up
-// e.g., <button id="loadMoreReports">Load More</button>
+// --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
-    const loadMoreBtn = document.getElementById('loadMoreReports');
-    if(loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => fetchReports(true));
-    }
+  // Make sure lucide icons are loaded
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  fetchReports();
+
+  const loadMoreBtn = document.getElementById('loadMoreReports');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => fetchReports(true));
+  }
 });
-
-function buildDashboardData(reports) {
-  // Table & map data (flat list)
-  window.reportsData = reports.map((r) => ({
-    id: `#${r.id.substring(0, 8)}`,
-    street:
-      r.location && r.location.lat
-        ? `${r.location.lat.toFixed(4)}, ${r.location.lng.toFixed(4)}`
-        : 'Unknown',
-    wanted: r.suspect || 'Unknown',
-    progress: r.status || 'pending_verification',
-    type: r.incidentType,
-    category: r.incidentType,
-    description: r.description,
-    verification: r.status || 'Pending',
-    date: formatDate(r.createdAt),
-    reporter: r.reporter || 'Anonymous',
-    lat: r.location?.lat,
-    lng: r.location?.lng,
-  }));
-
-  // Simple breakdowns for overview widgets
-  const pending = window.reportsData.filter(
-    (r) => r.progress === 'pending_verification'
-  );
-  const resolved = window.reportsData.filter((r) => r.progress === 'resolved');
-
-  window.mockData = {
-    jurisdiction: {
-      district: 'YOUR DISTRICT',
-      barangay: 'YOUR BARANGAY',
-    },
-    reportsInJurisdiction: window.reportsData.slice(0, 5),
-    pendingVerifications: pending.slice(0, 5).map((r) => ({
-      id: r.id,
-      location: r.street,
-      anonymousId: r.reporter,
-      date: r.date,
-      type: r.type,
-      category: r.category,
-      description: r.description,
-      status: r.verification,
-    })),
-    resolvedIncidents: {
-      total: resolved.length,
-      breakdown: [],
-      crimeApprehensionRate: 0,
-    },
-    recentActivity: [],
-  };
-
-  // Re-render dashboards if helpers exist
-  // Debounce rendering to avoid excessive updates if called frequently
-  clearTimeout(window.renderTimeout);
-  window.renderTimeout = setTimeout(() => {
-      if (typeof window.renderDashboardContent === 'function') {
-        window.renderDashboardContent();
-      }
-      if (typeof window.loadReportsOnMap === 'function') {
-        window.loadReportsOnMap();
-      }
-  }, 200);
-}

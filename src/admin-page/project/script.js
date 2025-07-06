@@ -524,10 +524,10 @@ function initializeCharts() {
     barChart = new Chart(barCtx, {
         type: 'bar',
         data: {
-            labels: [], // Populated from Firestore
+            labels: [], // Listen for live updates from Firestore
             datasets: [{
                 label: 'Crimes Committed',
-                data: [], // Populated from Firestore
+                data: [], // Listen for live updates from Firestore
                 backgroundColor: [
                     '#7dd3fc',
                     '#22d3ee',
