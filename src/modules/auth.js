@@ -8,8 +8,8 @@ import {
     signInWithPopup,
     sendEmailVerification,
     getAdditionalUserInfo
-} from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+} from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 // Sign up with email and password
 export const signUpWithEmail = async (email, password, role) => {
@@ -21,14 +21,14 @@ export const signUpWithEmail = async (email, password, role) => {
         await sendEmailVerification(user);
 
         // Store user role in Firestore
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
             role: role
         });
 
         return { user, error: null };
     } catch (error) {
-        console.error("Full sign-up error:", error);
+        console.error('Full sign-up error:', error);
         return { user: null, error: error.message };
     }
 };
@@ -57,7 +57,7 @@ export const signInWithGoogle = async (role = null) => {
         const additionalUserInfo = getAdditionalUserInfo(result);
         if (additionalUserInfo.isNewUser && role) {
             // Store user role in Firestore for new users
-            await setDoc(doc(db, "users", user.uid), {
+            await setDoc(doc(db, 'users', user.uid), {
                 email: user.email,
                 role: role
             });

@@ -1,7 +1,15 @@
 import * as UI from '../../modules/ui.js';
 import * as Charts from '../../modules/charts.js';
-import { db } from '../../../firebase-init.js';
-import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../modules/firebase-init.js';
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 // Global variables for modal callbacks
 let currentPromptCallback = null;
@@ -9,6 +17,7 @@ let currentConfirmCallback = null;
 let currentDropdownPromptCallback = null;
 let currentUserSelectionCallback = null;
 let currentEditReportRow = null; // To store the row being edited
+let reportsData = []; // To store live data from Firestore
 
 // Function to show custom message modal
 function showMessageModal(message) {
@@ -34,7 +43,7 @@ function promptCallback(value) {
 }
 
 // Function to show custom dropdown prompt modal
-function showDropdownPromptModal(message, options, callback) {
+function showDropdownPromptModal(message, options, callback, defaultValue = null) {
     document.getElementById('dropdownPromptText').textContent = message;
     const selectElement = document.getElementById('dropdownPromptSelect');
     selectElement.innerHTML = ''; // Clear previous options
@@ -42,6 +51,9 @@ function showDropdownPromptModal(message, options, callback) {
         const opt = document.createElement('option');
         opt.value = option;
         opt.textContent = option;
+        if (option === defaultValue) {
+            opt.selected = true;
+        }
         selectElement.appendChild(opt);
     });
     document.getElementById('dropdownPromptModal').style.display = 'flex';
@@ -233,53 +245,269 @@ function submitJurisdictionTransfer() {
     showMessageModal(`Jurisdiction transferred to District: ${newDistrict}, Barangay: ${newBarangay}.`);
 }
 
-// Function to open edit report modal
-function openEditReportModal(row) {
-    currentEditReportRow = row;
-    const cells = row.children;
-    document.getElementById('editReportId').value = cells[0].querySelector('span').textContent;
-    document.getElementById('editStreet').value = cells[1].textContent;
-    document.getElementById('editWanted').value = cells[2].textContent;
-    
-    // Set initial values for dropdowns and handle "Other" input
-    const editProgressSelect = document.getElementById('editProgress');
-    const editProgressOtherInput = document.getElementById('editProgressOther');
-    const currentProgress = cells[3].textContent;
-    if (Array.from(editProgressSelect.options).some(option => option.value === currentProgress)) {
-        editProgressSelect.value = currentProgress;
-        editProgressOtherInput.classList.add('hidden');
-    } else {
-        editProgressSelect.value = 'Other';
-        editProgressOtherInput.value = currentProgress;
-        editProgressOtherInput.classList.remove('hidden');
-    }
+// Function to edit a report's status
+function editReportStatus(reportId, currentStatus) {
+    const statusOptions = ['pending_verification', 'verified', 'resolved'];
 
-    document.getElementById('editVisibility').value = cells[4].textContent;
-    document.getElementById('editReportModal').style.display = 'flex';
+    showDropdownPromptModal(
+        `Edit status for report ${reportId.substring(0, 8)}...`,
+        statusOptions,
+        async (newStatus) => {
+            if (newStatus && newStatus !== currentStatus) {
+                const reportRef = doc(db, 'reports', reportId);
+                try {
+                    await updateDoc(reportRef, { status: newStatus });
+                    showMessageModal('Report status updated successfully!');
+                    // The table will auto-update due to the onSnapshot listener
+                } catch (error) {
+                    console.error('Error updating report status:', error);
+                    showMessageModal(`Error: ${error.message}`);
+                }
+            } else if (newStatus === null) {
+                // User cancelled, do nothing.
+            } else if (newStatus === currentStatus) {
+                showMessageModal('The new status is the same as the old one. No changes were made.');
+            }
+        },
+        currentStatus // Pass current status as default value
+    );
 }
 
-// Function to submit edited report
-function submitEditedReport() {
-    if (!currentEditReportRow) return;
+// --- Firestore Data Fetching and Table Rendering ---
 
-    const cells = currentEditReportRow.children;
-    cells[1].textContent = document.getElementById('editStreet').value;
-    cells[2].textContent = document.getElementById('editWanted').value;
-    
-    const editProgressSelect = document.getElementById('editProgress');
-    const editProgressOtherInput = document.getElementById('editProgressOther');
-    let selectedProgress = editProgressSelect.value;
-    if (selectedProgress === 'Other') {
-        selectedProgress = editProgressOtherInput.value;
+function renderReportsTable(reports) {
+    const tableBody = document.querySelector('#reports-content tbody');
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    if (!reports || reports.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No reports found.</td></tr>';
+        return;
     }
-    cells[3].textContent = selectedProgress;
-    
-    cells[4].textContent = document.getElementById('editVisibility').value;
 
-    closeModal('editReportModal');
-    showMessageModal('Report updated successfully!');
-    currentEditReportRow = null;
+    reports.forEach(report => {
+        const row = document.createElement('tr');
+        row.className = 'border-b';
+        row.dataset.id = report.id;
+
+        const formatDate = (ts) => ts && ts.seconds ? new Date(ts.seconds * 1000).toLocaleDateString() : 'N/A';
+
+        row.innerHTML = `
+            <td class="py-3 px-4"><span class="font-mono text-sm">${report.id.substring(0, 8)}</span></td>
+            <td class="py-3 px-4">${report.location.lat.toFixed(4)}, ${report.location.lng.toFixed(4)}</td>
+            <td class="py-3 px-4">${report.incidentType}</td>
+            <td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs ${getStatusClass(report.status)}">${report.status}</span></td>
+            <td class="py-3 px-4">${formatDate(report.createdAt)}</td>
+            <td class="py-3 px-4 flex items-center space-x-2">
+                <button class="text-blue-500 hover:text-blue-700 edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                <button class="text-red-500 hover:text-red-700 delete-btn"><i class="fas fa-trash-alt"></i></button>
+                <button class="text-gray-500 hover:text-gray-700 view-btn"><i class="fas fa-eye"></i></button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+
+    // Add event listeners after rows are created
+    addTableEventListeners();
 }
+
+function getStatusClass(status) {
+    switch (status) {
+        case 'pending_verification': return 'bg-yellow-200 text-yellow-800';
+        case 'verified': return 'bg-blue-200 text-blue-800';
+        case 'resolved': return 'bg-green-200 text-green-800';
+        default: return 'bg-gray-200 text-gray-800';
+    }
+}
+
+function addTableEventListeners() {
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            const reportId = row.dataset.id;
+            const report = reportsData.find(r => r.id === reportId);
+            if (report) {
+                editReportStatus(report.id, report.status);
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            const reportId = row.dataset.id;
+            showConfirmModal('Are you sure you want to delete this report? This action cannot be undone.', (confirmed) => {
+                if (confirmed) {
+                    deleteReport(reportId);
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.view-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            const reportId = row.dataset.id;
+            const report = reportsData.find(r => r.id === reportId);
+            if (report) {
+                // Simple alert for now, can be expanded to a modal
+                alert(`Description: ${report.description}\nImage: ${report.imageUrl}`);
+            }
+        });
+    });
+}
+
+async function deleteReport(reportId) {
+    const report = reportsData.find(r => r.id === reportId);
+    if (!report) {
+        showMessageModal('Error: Report not found.');
+        return;
+    }
+
+    // 1. Delete image from Cloudinary
+    try {
+        const functions = getFunctions();
+        const deleteImage = httpsCallable(functions, 'deleteCloudinaryImage');
+        await deleteImage({ imageUrl: report.imageUrl });
+    } catch (error) {
+        console.error('Error deleting Cloudinary image:', error);
+        showMessageModal('Warning: Failed to delete image from Cloudinary, but proceeding to delete report.');
+    }
+
+    // 2. Delete report from Firestore
+    try {
+        const reportRef = doc(db, 'reports', reportId);
+        await deleteDoc(reportRef);
+        showMessageModal('Report deleted successfully.');
+        // The onSnapshot listener will automatically re-render the table
+    } catch (error) {
+        console.error('Error deleting report from Firestore:', error);
+        showMessageModal(`Error: ${error.message}`);
+    }
+}
+
+function listenForReports() {
+    const reportsCollection = collection(db, 'reports');
+
+    let reportStatsChart = null; // Variable to hold the chart instance
+
+    // Function to update report statistics and render chart
+    function updateReportStatistics(reports) {
+        const statusCounts = {
+            pending: 0,
+            verified: 0,
+            resolved: 0,
+            rejected: 0
+        };
+
+        reports.forEach(report => {
+            if (report.status && statusCounts.hasOwnProperty(report.status.toLowerCase())) {
+                statusCounts[report.status.toLowerCase()]++;
+            }
+        });
+
+        // Update text elements
+        document.getElementById('verified-reports-text').textContent = `${statusCounts.verified} reports marked as verified`;
+        document.getElementById('pending-reports-text').textContent = `${statusCounts.pending} pending reports for approval`;
+        document.getElementById('resolved-reports-text').textContent = `${statusCounts.resolved} reports marked as resolved`;
+        document.getElementById('rejected-reports-text').textContent = `${statusCounts.rejected} reports marked as rejected`;
+
+        // Update Chart.js pie chart
+        const ctx = document.getElementById('report-stats-chart').getContext('2d');
+        const chartData = {
+            labels: ['Verified', 'Pending', 'Resolved', 'Rejected'],
+            datasets: [{
+                data: [statusCounts.verified, statusCounts.pending, statusCounts.resolved, statusCounts.rejected],
+                backgroundColor: ['#4caf50', '#f59e0b', '#22c55e', '#ef4444'],
+                hoverOffset: 4
+            }]
+        };
+
+        if (reportStatsChart) {
+            reportStatsChart.data = chartData;
+            reportStatsChart.update();
+        } else {
+            reportStatsChart = new Chart(ctx, {
+                type: 'pie',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Real-time listener for reports collection
+    onSnapshot(reportsCollection, (snapshot) => {
+        const reports = [];
+        snapshot.forEach(doc => {
+            reports.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Update the table with the new data
+        renderReportsTable(reports);
+
+        // Update dashboard metrics
+        updateDashboardMetrics(reports);
+
+        // Update report statistics chart
+        updateReportStatistics(reports);
+
+        // Update analytics charts
+        updateAnalyticsCharts(reports);
+    });
+}
+
+function updateDashboardMetrics(reports) {
+    document.getElementById('total-reports').textContent = reports.length;
+    const pending = reports.filter(r => r.status === 'pending_verification').length;
+    document.getElementById('pending-verifications').textContent = pending;
+    const resolved = reports.filter(r => r.status === 'resolved').length;
+    document.getElementById('resolved-incidents').textContent = resolved;
+}
+
+function updateAnalyticsCharts(reports) {
+    // Bar Chart - Crimes Committed per Month
+    const incidentCounts = {};
+    reports.forEach(report => {
+        const incidentType = report.incidentType || 'Unknown';
+        incidentCounts[incidentType] = (incidentCounts[incidentType] || 0) + 1;
+    });
+
+    const labels = Object.keys(incidentCounts);
+    const data = Object.values(incidentCounts);
+
+    if (barChart) {
+        barChart.data.labels = labels;
+        barChart.data.datasets[0].data = data;
+        barChart.update();
+    }
+}
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    listenForReports();
+    initializeCharts(); // Keep mock chart data for now
+
+    // Wire up modal buttons
+    document.getElementById('promptConfirmBtn').addEventListener('click', () => promptCallback(document.getElementById('promptInput').value));
+    document.getElementById('promptCancelBtn').addEventListener('click', () => promptCallback(null));
+    document.getElementById('dropdownPromptConfirmBtn').addEventListener('click', () => dropdownPromptCallback(document.getElementById('dropdownPromptSelect').value));
+    document.getElementById('dropdownPromptCancelBtn').addEventListener('click', () => dropdownPromptCallback(null));
+    document.getElementById('confirmYesBtn').addEventListener('click', () => confirmCallback(true));
+    document.getElementById('confirmNoBtn').addEventListener('click', () => confirmCallback(false));
+    document.getElementById('messageOkBtn').addEventListener('click', () => closeModal('messageModal'));
+    document.getElementById('userSelectionCancelBtn').addEventListener('click', () => userSelectionCallback(null));
+    document.getElementById('submitAlertBtn').addEventListener('click', submitAlert);
+    document.getElementById('submitTransferBtn').addEventListener('click', submitJurisdictionTransfer);
+    document.getElementById('submitEditReportBtn').addEventListener('click', submitEditedReport);
+});
 
 // Analytics Chart Initialization and Update Logic
 let barChart, pieChart, radarChart, areaChart;
@@ -292,26 +520,23 @@ function initializeCharts() {
     if (areaChart) areaChart.destroy();
 
     // Bar Chart - Crimes Committed per Month
-    const barCtx = document.getElementById("barChart").getContext("2d");
+    const barCtx = document.getElementById('barChart').getContext('2d');
     barChart = new Chart(barCtx, {
-        type: "bar",
+        type: 'bar',
         data: {
-            labels: [
-                "Murder",
-                "Kidnapping",
-                "Sexual Assault",
-                "Violence",
-                "Theft",
-            ],
+            labels: [], // Populated from Firestore
             datasets: [{
-                label: "Crimes Committed",
-                data: [8, 12, 16, 20, 35],
+                label: 'Crimes Committed',
+                data: [], // Populated from Firestore
                 backgroundColor: [
-                    "#7dd3fc", // Murder - cyan-300
-                    "#22d3ee", // Kidnapping - cyan-400
-                    "#0284c7", // Sexual Assault - blue-700
-                    "#7c3aed", // Violence - purple-700
-                    "#1e40af", // Theft - blue-900
+                    '#7dd3fc',
+                    '#22d3ee',
+                    '#0284c7',
+                    '#7c3aed',
+                    '#1e40af',
+                    '#fbbf24',
+                    '#f59e0b',
+                    '#ef4444',
                 ],
             }, ],
         },
@@ -329,7 +554,7 @@ function initializeCharts() {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 5,
+                        // Allow Chart.js to determine step size automatically
                     },
                 },
             },
@@ -337,26 +562,26 @@ function initializeCharts() {
     });
 
     // Pie Chart - Geographical Analysis
-    const pieCtx = document.getElementById("pieChart").getContext("2d");
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
     pieChart = new Chart(pieCtx, {
-        type: "pie",
+        type: 'pie',
         data: {
             labels: [
-                "Safer Outlier",
-                "Lower Outlier",
-                "Keep Caution",
-                "Extreme Caution",
-                "High Caution",
+                'Safer Outlier',
+                'Lower Outlier',
+                'Keep Caution',
+                'Extreme Caution',
+                'High Caution',
             ],
             datasets: [{
-                label: "Crime Distribution",
+                label: 'Crime Distribution',
                 data: [25, 35.7, 17.9, 7, 14.3],
                 backgroundColor: [
-                    "#c6d8e6", // light blue
-                    "#fcd5b2", // light orange
-                    "#3b82f6", // blue-500
-                    "#ef4444", // red-500
-                    "#ea580c", // orange-600
+                    '#c6d8e6', // light blue
+                    '#fcd5b2', // light orange
+                    '#3b82f6', // blue-500
+                    '#ef4444', // red-500
+                    '#ea580c', // orange-600
                 ],
             }, ],
         },
@@ -364,34 +589,34 @@ function initializeCharts() {
             responsive: true,
             plugins: {
                 legend: {
-                    position: "bottom",
+                    position: 'bottom',
                 },
             },
         },
     });
 
     // Radar Chart - SafePin System Performance
-    const radarCtx = document.getElementById("radarChart").getContext("2d");
+    const radarCtx = document.getElementById('radarChart').getContext('2d');
     radarChart = new Chart(radarCtx, {
-        type: "radar",
+        type: 'radar',
         data: {
             labels: [
-                "Performance",
-                "Reliability",
-                "Usability",
-                "Security",
-                "Scalability",
+                'Performance',
+                'Reliability',
+                'Usability',
+                'Security',
+                'Scalability',
             ],
             datasets: [{
-                label: "User Evaluation",
+                label: 'User Evaluation',
                 data: [9, 6, 8, 7, 6],
                 fill: true,
-                backgroundColor: "rgba(29, 78, 216, 0.5)", // blue-700 with opacity
-                borderColor: "#1d4ed8", // blue-700
-                pointBackgroundColor: "#1d4ed8",
-                pointBorderColor: "#fff",
-                pointHoverBackgroundColor: "#fff",
-                pointHoverBorderColor: "#1d4ed8",
+                backgroundColor: 'rgba(29, 78, 216, 0.5)', // blue-700 with opacity
+                borderColor: '#1d4ed8', // blue-700
+                pointBackgroundColor: '#1d4ed8',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#1d4ed8',
             }, ],
         },
         options: {
@@ -405,75 +630,75 @@ function initializeCharts() {
                     suggestedMax: 10,
                     ticks: {
                         stepSize: 2,
-                        backdropColor: "transparent",
+                        backdropColor: 'transparent',
                     },
                 },
             },
             plugins: {
                 legend: {
-                    position: "top",
+                    position: 'top',
                 },
             },
         },
     });
 
     // Area Chart - Response Time Analysis
-    const areaCtx = document.getElementById("areaChart").getContext("2d");
+    const areaCtx = document.getElementById('areaChart').getContext('2d');
     areaChart = new Chart(areaCtx, {
-        type: "line",
+        type: 'line',
         data: {
             labels: [
-                "1 Min",
-                "2 Mins",
-                "3 Mins",
-                "4 Mins",
-                "5 Mins",
-                "6 Mins",
-                "7 Mins",
-                "8 Mins",
-                "9 Mins",
-                "10 Mins",
+                '1 Min',
+                '2 Mins',
+                '3 Mins',
+                '4 Mins',
+                '5 Mins',
+                '6 Mins',
+                '7 Mins',
+                '8 Mins',
+                '9 Mins',
+                '10 Mins',
             ],
             datasets: [{
-                label: "PNP",
+                label: 'PNP',
                 data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 fill: true,
-                backgroundColor: "rgba(29, 78, 216, 0.7)", // blue-700
-                borderColor: "#1d4ed8",
+                backgroundColor: 'rgba(29, 78, 216, 0.7)', // blue-700
+                borderColor: '#1d4ed8',
                 tension: 0.4,
             }, {
-                label: "BFP",
+                label: 'BFP',
                 data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 fill: true,
-                backgroundColor: "rgba(239, 68, 68, 0.7)", // red-500
-                borderColor: "#ef4444",
+                backgroundColor: 'rgba(239, 68, 68, 0.7)', // red-500
+                borderColor: '#ef4444',
                 tension: 0.4,
             }, {
-                label: "EMS",
+                label: 'EMS',
                 data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 fill: true,
-                backgroundColor: "rgba(20, 184, 166, 0.7)", // teal-500
-                borderColor: "#14b8a6",
+                backgroundColor: 'rgba(20, 184, 166, 0.7)', // teal-500
+                borderColor: '#14b8a6',
                 tension: 0.4,
             }, {
-                label: "PCG",
+                label: 'PCG',
                 data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 fill: true,
-                backgroundColor: "rgba(14, 165, 233, 0.7)", // sky-500
-                borderColor: "#0ea5e9",
+                backgroundColor: 'rgba(14, 165, 233, 0.7)', // sky-500
+                borderColor: '#0ea5e9',
                 tension: 0.4,
             }, ],
         },
         options: {
             responsive: true,
             interaction: {
-                mode: "nearest",
+                mode: 'nearest',
                 intersect: false,
             },
             stacked: true,
             plugins: {
                 legend: {
-                    position: "top",
+                    position: 'top',
                 },
             },
             scales: {
@@ -489,23 +714,23 @@ function initializeCharts() {
 // Update functions for each chart
 function updateBarChart() {
     const murder = parseInt(
-        document.getElementById("murderInput").value,
+        document.getElementById('murderInput').value,
         10
     );
     const kidnapping = parseInt(
-        document.getElementById("kidnappingInput").value,
+        document.getElementById('kidnappingInput').value,
         10
     );
     const sexualAssault = parseInt(
-        document.getElementById("sexualAssaultInput").value,
+        document.getElementById('sexualAssaultInput').value,
         10
     );
     const violence = parseInt(
-        document.getElementById("violenceInput").value,
+        document.getElementById('violenceInput').value,
         10
     );
     const theft = parseInt(
-        document.getElementById("theftInput").value,
+        document.getElementById('theftInput').value,
         10
     );
 
@@ -514,7 +739,7 @@ function updateBarChart() {
             (v) => isNaN(v) || v < 0
         )
     ) {
-        showMessageModal("Please enter valid non-negative numbers for all crime categories.");
+        showMessageModal('Please enter valid non-negative numbers for all crime categories.');
         return;
     }
 
@@ -530,19 +755,19 @@ function updateBarChart() {
 
 function updatePieChart() {
     const safeOutlier = parseFloat(
-        document.getElementById("safeOutlierInput").value
+        document.getElementById('safeOutlierInput').value
     );
     const lowerOutlier = parseFloat(
-        document.getElementById("lowerOutlierInput").value
+        document.getElementById('lowerOutlierInput').value
     );
     const keepCaution = parseFloat(
-        document.getElementById("keepCautionInput").value
+        document.getElementById('keepCautionInput').value
     );
     const extremeCaution = parseFloat(
-        document.getElementById("extremeCautionInput").value
+        document.getElementById('extremeCautionInput').value
     );
     const highCaution = parseFloat(
-        document.getElementById("highCautionInput").value
+        document.getElementById('highCautionInput').value
     );
 
     const values = [
@@ -558,13 +783,13 @@ function updatePieChart() {
             (v) => isNaN(v) || v < 0 || v > 100
         )
     ) {
-        showMessageModal("Please enter valid percentages between 0 and 100.");
+        showMessageModal('Please enter valid percentages between 0 and 100.');
         return;
     }
 
     const total = values.reduce((a, b) => a + b, 0);
     if (total > 100) {
-        showMessageModal("Total percentage cannot exceed 100.");
+        showMessageModal('Total percentage cannot exceed 100.');
         return;
     }
 
@@ -574,19 +799,19 @@ function updatePieChart() {
 
 function updateRadarChart() {
     const performance = parseFloat(
-        document.getElementById("performanceInput").value
+        document.getElementById('performanceInput').value
     );
     const reliability = parseFloat(
-        document.getElementById("reliabilityInput").value
+        document.getElementById('reliabilityInput').value
     );
     const usability = parseFloat(
-        document.getElementById("usabilityInput").value
+        document.getElementById('usabilityInput').value
     );
     const security = parseFloat(
-        document.getElementById("securityInput").value
+        document.getElementById('securityInput').value
     );
     const scalability = parseFloat(
-        document.getElementById("scalabilityInput").value
+        document.getElementById('scalabilityInput').value
     );
 
     const values = [
@@ -602,7 +827,7 @@ function updateRadarChart() {
             (v) => isNaN(v) || v < 0 || v > 10
         )
     ) {
-        showMessageModal("Please enter valid scores between 0 and 10.");
+        showMessageModal('Please enter valid scores between 0 and 10.');
         return;
     }
 
@@ -614,27 +839,27 @@ function updateAreaChart() {
     function parseInput(inputId) {
         const val = document.getElementById(inputId).value;
         return val
-            .split(",")
+            .split(',')
             .map((v) => parseFloat(v.trim()))
             .filter((v) => !isNaN(v) && v >= 0);
     }
 
-    const pnpData = parseInput("pnpInput");
-    const bfpData = parseInput("bfpInput");
-    const emsData = parseInput("emsInput");
-    const pcgData = parseInput("pcgInput");
+    const pnpData = parseInput('pnpInput');
+    const bfpData = parseInput('bfpInput');
+    const emsData = parseInput('emsInput');
+    const pcgData = parseInput('pcgInput');
 
     const lengths = [pnpData.length, bfpData.length, emsData.length, pcgData.length];
     const minLen = Math.min(...lengths);
     if (minLen === 0) {
-        showMessageModal("Please enter valid comma-separated numbers for all response time fields.");
+        showMessageModal('Please enter valid comma-separated numbers for all response time fields.');
         return;
     }
 
     // Use the shortest length to sync labels and data
     const labels = [];
     for (let i = 1; i <= minLen; i++) {
-        labels.push(i + (i === 1 ? " Min" : " Mins"));
+        labels.push(i + (i === 1 ? ' Min' : ' Mins'));
     }
 
     areaChart.data.labels = labels;
@@ -651,14 +876,14 @@ function shareDashboard() {
     if (navigator.share) {
         navigator
             .share({
-                title: "SafePin Admin Dashboard",
-                text: "Check out the SafePin Admin Dashboard analytics.",
+                title: 'SafePin Admin Dashboard',
+                text: 'Check out the SafePin Admin Dashboard analytics.',
                 url: window.location.href,
             })
-            .then(() => showMessageModal("Dashboard shared successfully!"))
-            .catch((error) => showMessageModal("Error sharing: " + error));
+            .then(() => showMessageModal('Dashboard shared successfully!'))
+            .catch((error) => showMessageModal('Error sharing: ' + error));
     } else {
-        showMessageModal("Sharing not supported on this browser.");
+        showMessageModal('Sharing not supported on this browser.');
     }
 }
 
@@ -677,57 +902,57 @@ function downloadDashboardData() {
         },
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
+        type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "safepin_dashboard_data.json";
+    a.download = 'safepin_dashboard_data.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showMessageModal("Dashboard data downloaded as JSON file.");
+    showMessageModal('Dashboard data downloaded as JSON file.');
 }
 
 
 // Settings Tab Logic
 const settingsDetails = {
-    "System Settings": [
-        "Manage system preferences",
-        "Configure system-wide options",
-        "Set default behaviors"
+    'System Settings': [
+        'Manage system preferences',
+        'Configure system-wide options',
+        'Set default behaviors'
     ],
-    "Map Configuration": [
-        "Set map default location",
-        "Manage map layers",
-        "Configure map zoom levels"
+    'Map Configuration': [
+        'Set map default location',
+        'Manage map layers',
+        'Configure map zoom levels'
     ],
-    "Notification Template": [
-        "Edit email templates",
-        "Edit SMS templates",
-        "Manage notification triggers"
+    'Notification Template': [
+        'Edit email templates',
+        'Edit SMS templates',
+        'Manage notification triggers'
     ],
-    "Custom Fields": [
-        "Add new custom fields",
-        "Edit existing fields",
-        "Manage field visibility"
+    'Custom Fields': [
+        'Add new custom fields',
+        'Edit existing fields',
+        'Manage field visibility'
     ],
-    "API Access": [
-        "Generate API keys",
-        "Set API permissions",
-        "View API usage logs"
+    'API Access': [
+        'Generate API keys',
+        'Set API permissions',
+        'View API usage logs'
     ],
-    "Security Settings": [
-        "Manage user roles",
-        "Set password policies",
-        "Configure two-factor authentication"
+    'Security Settings': [
+        'Manage user roles',
+        'Set password policies',
+        'Configure two-factor authentication'
     ]
 };
 
 function renderSettingsDashboard() {
-    document.getElementById('settings-back-button').classList.add("hidden");
-    const settingsMainContent = document.getElementById("settings-main-content");
+    document.getElementById('settings-back-button').classList.add('hidden');
+    const settingsMainContent = document.getElementById('settings-main-content');
     settingsMainContent.innerHTML = `
         <h1 class="font-bold text-lg md:text-xl mb-8">Admin Dashboard - Settings</h1>
         <section class="grid grid-cols-1 sm:grid-cols-3 gap-y-16 gap-x-24 max-w-5xl mx-auto">
@@ -761,28 +986,28 @@ function renderSettingsDashboard() {
 }
 
 function renderSettingsDetails(name) {
-    document.getElementById('settings-back-button').classList.remove("hidden");
-    const settingsMainContent = document.getElementById("settings-main-content");
+    document.getElementById('settings-back-button').classList.remove('hidden');
+    const settingsMainContent = document.getElementById('settings-main-content');
     const details = settingsDetails[name] || [];
     settingsMainContent.innerHTML = `
         <h2 class="text-lg font-bold mb-6">${name}</h2>
         <ul class="list-disc list-inside space-y-2 max-w-3xl">
-            ${details.map(item => `<li class="text-sm">${item}</li>`).join("")}
+            ${details.map(item => `<li class="text-sm">${item}</li>`).join('')}
         </ul>
     `;
 }
 
 function attachSettingsNavLinkListeners() {
-    const settingsNavLinks = document.querySelectorAll(".settings-nav-link");
+    const settingsNavLinks = document.querySelectorAll('.settings-nav-link');
     settingsNavLinks.forEach(link => {
-        link.addEventListener("click", () => {
-            const name = link.getAttribute("data-name");
+        link.addEventListener('click', () => {
+            const name = link.getAttribute('data-name');
             renderSettingsDetails(name);
         });
-        link.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
+        link.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                const name = link.getAttribute("data-name");
+                const name = link.getAttribute('data-name');
                 renderSettingsDetails(name);
             }
         });
@@ -794,14 +1019,14 @@ function attachSettingsNavLinkListeners() {
 async function loadReportsData() {
     const reportsTableBody = document.getElementById('reports-table-body');
     if (!reportsTableBody) {
-        console.error("Element with ID 'reports-table-body' not found.");
+        console.error('Element with ID \'reports-table-body\' not found.');
         return;
     }
 
     reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading reports...</td></tr>';
 
     try {
-        const querySnapshot = await getDocs(collection(db, "reports"));
+        const querySnapshot = await getDocs(collection(db, 'reports'));
         if (querySnapshot.empty) {
             reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No reports found.</td></tr>';
             return;
@@ -847,7 +1072,7 @@ async function loadReportsData() {
             reportsTableBody.appendChild(row);
         });
     } catch (error) {
-        console.error("Error loading reports: ", error);
+        console.error('Error loading reports: ', error);
         reportsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load reports. See console for details.</td></tr>';
     }
 }
@@ -921,12 +1146,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 analyticsBtn.classList.add('bg-[#bfc3ca]', 'bg-opacity-40');
                 initializeCharts(); // Initialize charts when analytics tab is opened
                 // Attach event listeners for analytics chart updates
-                document.getElementById("updateBarChart").addEventListener("click", updateBarChart);
-                document.getElementById("updatePieChart").addEventListener("click", updatePieChart);
-                document.getElementById("updateRadarChart").addEventListener("click", updateRadarChart);
-                document.getElementById("updateAreaChart").addEventListener("click", updateAreaChart);
-                document.getElementById("shareBtn").addEventListener("click", shareDashboard);
-                document.getElementById("downloadBtn").addEventListener("click", downloadDashboardData);
+                document.getElementById('updateBarChart').addEventListener('click', updateBarChart);
+                document.getElementById('updatePieChart').addEventListener('click', updatePieChart);
+                document.getElementById('updateRadarChart').addEventListener('click', updateRadarChart);
+                document.getElementById('updateAreaChart').addEventListener('click', updateAreaChart);
+                document.getElementById('shareBtn').addEventListener('click', shareDashboard);
+                document.getElementById('downloadBtn').addEventListener('click', downloadDashboardData);
                 break;
             case 'Settings':
                 settingsContent.classList.add('active');

@@ -8,8 +8,8 @@
  * Then deploy with: firebase deploy --only functions
  */
 
-const functions = require("firebase-functions");
-const cloudinary = require("cloudinary").v2;
+const functions = require('firebase-functions');
+const cloudinary = require('cloudinary').v2;
 
 // Initialize Cloudinary using environment config
 cloudinary.config({
@@ -27,7 +27,7 @@ exports.getCloudinarySignature = functions.https.onCall(async (data, context) =>
   const timestamp = Math.floor(Date.now() / 1000);
   const paramsToSign = {
     timestamp,
-    folder: "safepin_reports", // Optional: store uploads in a dedicated folder
+    folder: 'safepin_reports', // Optional: store uploads in a dedicated folder
   };
 
   // The signature is created by Cloudinary using API secret

@@ -1,31 +1,39 @@
 # SafePin
 
-**SafePin** is a web-based crime-reporting platform designed to empower citizens to anonymously report crimes and threats via an interactive map. It strengthens public safety efforts by structuring access to reports based on user roles—ensuring privacy, increasing community awareness, and improving authority response.
+SafePin is a web application for reporting and managing safety incidents, leveraging Firebase for backend services and scalable hosting.
 
-## Table of Contents
+## Project Structure
 
-- [Features](#features)
-- [Usage](#usage)
+- `src/` - Frontend source code
+  - `modules/` - Core JS modules (auth, firebase-init, UI, etc.)
+  - `utils/` - Utility scripts (validation, error handling, security)
+  - `landing-page/` - Public-facing pages and scripts
+  - `admin-page/` - Admin dashboard
+  - `authority-page/` - Authority dashboard
+  - `assets/` - Images, SVGs, and other static assets
+- `functions/` - Firebase backend functions
+- `dist/` - Production build output
 
-## Features
+## Setup
 
-- Anonymous crime reporting with location-based pins
-- Role-based visual access (public, authorities, NGOs)
-- Interactive heatmaps of high-crime areas
-- Community validation (upvotes/downvotes)
-- Real-time alerts and notification system
-- Admin dashboard for managing and verifying reports
-- Mobile-responsive design
-- Secure authentication and encrypted data handling
+1. Clone the repository
+2. Run `npm install` in the root and in `functions/`
+3. Configure Firebase credentials in `.env` or `firebase.json`
+4. Use `npm run dev` to start the frontend (Vite)
+5. Deploy with `firebase deploy`
 
 ## Usage
-SafePin is used by:
 
-Citizens – Submit reports and view approved incidents anonymously
+- Visit the landing page to submit or view reports
+- Admins and authorities can log in for dashboard access
 
-Authorities & Barangay Leaders – Access detailed reports in their jurisdiction and validate reports
+## Contribution Guidelines
 
-NGOs & Advocates – Analyze data trends for community action
+- Use kebab-case for files, camelCase for variables
+- Add JSDoc comments to all exported functions
+- Run `npm run lint` and `npm run format` before committing
 
-Researchers & Journalists – Use heatmaps and verified reports for studies and articles
+## License
+
+MIT
 

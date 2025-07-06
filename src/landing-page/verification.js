@@ -1,4 +1,4 @@
-import { signUpWithEmail, signInWithEmail, signInWithGoogle } from '/modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle } from '../modules/auth.js';
 
 // --- Auth Functions (exposed to window for HTML onclick) ---
 window.handleAuthorityLogin = async () => {

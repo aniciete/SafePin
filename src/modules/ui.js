@@ -1,35 +1,35 @@
 // UI utility functions for modals and redirects
 
 export function openModal() {
-    console.log("Opening modal...");
-    document.getElementById("authorityModal").style.display = "flex";
+    console.log('Opening modal...');
+    document.getElementById('authorityModal').style.display = 'flex';
 }
 
 export function closeModal() {
-    console.log("Closing modal...");
-    document.getElementById("authorityModal").style.display = "none";
+    console.log('Closing modal...');
+    document.getElementById('authorityModal').style.display = 'none';
 }
 
 export function redirectTo(type) {
-    console.log("redirectTo called with type:", type);
-    console.log("Current location:", window.location.href);
+    console.log('redirectTo called with type:', type);
+    console.log('Current location:', window.location.href);
 
-    let folderName = "";
-    let fileName = "";
+    let folderName = '';
+    let fileName = '';
 
     if (type === 'admin') {
-        folderName = "Admin Page/Project";
-        fileName = "Admin-Page.html";
+        folderName = 'Admin Page/Project';
+        fileName = 'Admin-Page.html';
     } else if (type === 'authority') {
-        folderName = "Authority Page";
-        fileName = "Authority-Page.html";
+        folderName = 'Authority Page';
+        fileName = 'Authority-Page.html';
     } else {
-        console.error("Unknown type:", type);
+        console.error('Unknown type:', type);
         return;
     }
 
-    const targetPath = "../" + encodeURIComponent(folderName) + "/" + fileName;
-    console.log("Redirecting to:", targetPath);
+    const targetPath = '../' + encodeURIComponent(folderName) + '/' + fileName;
+    console.log('Redirecting to:', targetPath);
 
     window.location.href = targetPath;
 
@@ -38,9 +38,9 @@ export function redirectTo(type) {
 
 export function setupModalCloseOnOutsideClick() {
     window.onclick = function(event) {
-        const modal = document.getElementById("authorityModal");
+        const modal = document.getElementById('authorityModal');
         if (event.target === modal) {
-            modal.style.display = "none";
+            modal.style.display = 'none';
         }
     };
 }
@@ -143,8 +143,4 @@ export function userSelectionCallback(username) {
         window.currentUserSelectionCallback(username);
         window.currentUserSelectionCallback = null;
     }
-}
-
-export function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
 } 

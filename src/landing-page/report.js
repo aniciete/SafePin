@@ -1,9 +1,15 @@
+/**
+ * Report page logic for SafePin
+ * Handles report submission, validation, and communication with backend
+ * @module report
+ */
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
-import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '/modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../modules/auth.js';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js';
-import { db } from '../../firebase-init.js';
+import { db } from '../modules/firebase-init.js';
+import { checkRateLimit } from './rate-limit.js';
 
 // --- Map variables ---
 let map;
@@ -121,7 +127,16 @@ setupModal(confirmModal, 'openConfirmModalBtn', 'cancelConfirmBtn');
 const handleReportSubmission = async () => {
     const confirmButton = document.getElementById('triggerSuccessModalBtn');
     confirmButton.disabled = true;
-    confirmButton.textContent = 'Submitting...';
+    confirmButton.textContent = 'Checking...';
+
+    // 0. Rate limit check
+    const allowed = await checkRateLimit();
+    if (!allowed) {
+        confirmButton.disabled = false;
+        confirmButton.textContent = 'Confirm';
+        return;
+    }
+    confirmButton.textContent = 'Uploading...';
 
     // 1. Get form data
     const incidentType = document.getElementById('incident-type').value;
@@ -129,22 +144,20 @@ const handleReportSubmission = async () => {
     const description = document.getElementById('description').value;
     const imageFile = document.getElementById('image-upload').files[0];
 
-    // --- Cloudinary Signed Upload ---
-    const functionsInstance = getFunctions();
-    const getSignature = httpsCallable(functionsInstance, 'getCloudinarySignature');
-
-    // Ask backend for signed upload parameters
-    const signatureResp = await getSignature();
-    const { cloudName, apiKey, timestamp, signature, folder } = signatureResp.data;
-
     if (!incidentType || !severityLevel || !description || !imageFile) {
-        alert('Please fill out all fields and select an image.');
+        showInlineError('Please fill out all fields and select an image.');
         confirmButton.disabled = false;
         confirmButton.textContent = 'Confirm';
         return;
     }
 
     try {
+        // --- Cloudinary Signed Upload ---
+        const functionsInstance = getFunctions();
+        const getSignature = httpsCallable(functionsInstance, 'getCloudinarySignature');
+        const signatureResp = await getSignature();
+        const { cloudName, apiKey, timestamp, signature, folder } = signatureResp.data;
+
         // 2. Upload image to Cloudinary using the signed parameters
         const formData = new FormData();
         formData.append('file', imageFile);
@@ -155,42 +168,118 @@ const handleReportSubmission = async () => {
 
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-        const cloudinaryResponse = await fetch(cloudinaryUrl, {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!cloudinaryResponse.ok) {
-            const errorData = await cloudinaryResponse.json();
-            throw new Error(`Image upload failed: ${errorData.error.message}`);
+        // Progress indicator
+        showProgress('Uploading image...');
+        let cloudinaryData;
+        let imageUrl;
+        let uploadSuccess = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const cloudinaryResponse = await fetch(cloudinaryUrl, {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (!cloudinaryResponse.ok) {
+                    const errorData = await cloudinaryResponse.json();
+                    throw new Error(`Image upload failed: ${errorData.error.message}`);
+                }
+                cloudinaryData = await cloudinaryResponse.json();
+                imageUrl = cloudinaryData.secure_url;
+                uploadSuccess = true;
+                break;
+            } catch (err) {
+                if (attempt === 3) throw err;
+                await new Promise(res => setTimeout(res, 1000 * attempt)); // Exponential backoff
+            }
         }
+        if (!uploadSuccess) throw new Error('Image upload failed after multiple attempts.');
 
-        const cloudinaryData = await cloudinaryResponse.json();
-        const imageUrl = cloudinaryData.secure_url;
-
-        // 3. Save report to Firestore
-        await addDoc(collection(db, 'reports'), {
-            incidentType,
-            severityLevel,
-            description,
-            imageUrl,
-            location: currentLocation, // From the map logic
-            status: 'pending_verification',
-            createdAt: serverTimestamp(),
-        });
+        // 3. Save report to Firestore with retry
+        showProgress('Submitting report...');
+        let reportSuccess = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                await addDoc(collection(db, 'reports'), {
+                    incidentType,
+                    severityLevel,
+                    description,
+                    imageUrl,
+                    location: currentLocation, // From the map logic
+                    status: 'pending_verification',
+                    createdAt: serverTimestamp(),
+                });
+                reportSuccess = true;
+                break;
+            } catch (err) {
+                if (attempt === 3) {
+                    // Attempt to delete orphaned image from Cloudinary
+                    await cleanupOrphanedImage(imageUrl);
+                    throw new Error('Report submission failed after multiple attempts. Your image was not saved.');
+                }
+                await new Promise(res => setTimeout(res, 1000 * attempt));
+            }
+        }
+        if (!reportSuccess) throw new Error('Report submission failed after multiple attempts.');
 
         // 4. Show success
+        hideProgress();
         confirmModal.classList.remove('active');
         successModal.classList.add('active');
 
+// Helper to cleanup orphaned image
+async function cleanupOrphanedImage(imageUrl) {
+    if (!imageUrl) return;
+    try {
+        const functionsInstance = getFunctions();
+        const deleteImage = httpsCallable(functionsInstance, 'deleteCloudinaryImage');
+        await deleteImage({ imageUrl });
+    } catch (e) {
+        // Silent fail, but you may want to log this somewhere
+        console.warn('Failed to cleanup orphaned Cloudinary image:', e);
+    }
+}
+
+
     } catch (error) {
+        hideProgress();
         console.error('Error submitting report:', error);
-        alert(`Submission failed: ${error.message}`);
+        showInlineError(`Submission failed: ${error.message}`);
     } finally {
         confirmButton.disabled = false;
         confirmButton.textContent = 'Confirm';
     }
 };
+
+// Helper functions for inline error and progress
+function showInlineError(message) {
+    let errorDiv = document.getElementById('reportFormError');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'reportFormError';
+        errorDiv.style.color = 'red';
+        errorDiv.style.marginBottom = '10px';
+        const form = document.getElementById('reportIncidentForm');
+        form.parentNode.insertBefore(errorDiv, form);
+    }
+    errorDiv.textContent = message;
+}
+function showProgress(message) {
+    let progressDiv = document.getElementById('reportFormProgress');
+    if (!progressDiv) {
+        progressDiv = document.createElement('div');
+        progressDiv.id = 'reportFormProgress';
+        progressDiv.style.color = 'green';
+        progressDiv.style.marginBottom = '10px';
+        const form = document.getElementById('reportIncidentForm');
+        form.parentNode.insertBefore(progressDiv, form);
+    }
+    progressDiv.textContent = message;
+}
+function hideProgress() {
+    const progressDiv = document.getElementById('reportFormProgress');
+    if (progressDiv) progressDiv.remove();
+}
+;
 
 document.getElementById('triggerSuccessModalBtn').addEventListener('click', handleReportSubmission);
 

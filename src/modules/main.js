@@ -1,4 +1,4 @@
-import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from './auth.js';
 
 // Make auth functions available globally
 window.handleAuthorityLogin = async () => {
@@ -14,7 +14,7 @@ window.handleAuthorityLogin = async () => {
             });
             // Redirect to authority page after successful login
             setTimeout(() => {
-                window.location.href = '/authority-page/index.html';
+                window.location.href = 'authority-page/index.html';
             }, 1500);
         }
     } catch (error) {
@@ -48,7 +48,7 @@ window.handleAuthoritySignUp = async () => {
             });
             // Redirect to authority page after successful signup
             setTimeout(() => {
-                window.location.href = '/authority-page/index.html';
+                window.location.href = 'authority-page/index.html';
             }, 1500);
         }
     } catch (error) {
@@ -69,7 +69,7 @@ window.handleAuthorityGoogleSignIn = async () => {
             });
             // Redirect to authority page after successful Google sign-in
             setTimeout(() => {
-                window.location.href = '/authority-page/index.html';
+                window.location.href = 'authority-page/index.html';
             }, 1500);
         }
     } catch (error) {
@@ -82,7 +82,8 @@ window.handleAuthorityGoogleSignIn = async () => {
 
 function updateAuthStatus(result) {
     const statusDiv = document.getElementById('auth-status');
-    if (!statusDiv) return;
+    if (!statusDiv) return; // Guard against element not being present
+
     if (result.error) {
         statusDiv.textContent = `Error: ${result.error}`;
         statusDiv.style.color = 'red';
@@ -94,7 +95,7 @@ function updateAuthStatus(result) {
 
 window.redirectTo = (type) => {
     if (type === 'admin') {
-        window.location.href = '/admin-page/project/index.html';
+        window.location.href = 'admin-page/project/index.html';
     }
 };
 
@@ -105,4 +106,4 @@ onAuthStateChange((user) => {
     } else {
         console.log('No user signed in');
     }
-});
+}); 
