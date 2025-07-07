@@ -140,6 +140,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2 mr-3"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
                     <span class="font-medium">Analytics</span>
                 </button>
+                <button id="map-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-3"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>
+                    <span class="font-medium">Map</span>
+                </button>
                 <button id="settings-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings mr-3"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l-.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span class="font-medium">Settings</span>
@@ -517,6 +521,13 @@
         </div>
 
         <div id="analytics-content" class="content-section space-y-8">
+        <!-- Map Content Section -->
+        <div id="map-content" class="content-section" style="display:none;">
+            <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Map</h1>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div id="admin-map" style="width:100%;height:500px;min-height:350px;border-radius:16px;"></div>
+            </div>
+        </div>
             <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Analytics</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <section class="bg-white p-6 rounded-xl shadow-lg">
@@ -1296,64 +1307,7 @@
         let currentActiveTabName = 'Overview'; // Initialize with default active tab
         let previousTabBeforeLogout = 'Overview'; // To store the tab to return to if logout is cancelled
 
-        // Function to set active tab
-        function setActiveTab(tabName) {
-            // Hide all content sections
-            document.querySelectorAll('.content-section').forEach(content => {
-                content.classList.remove('active');
-            });
 
-            // Remove active styles from all sidebar buttons
-            document.querySelectorAll('aside nav button').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'text-white', 'shadow-md');
-                btn.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-            });
-
-            // Show the new active content and apply active style to its button
-            switch (tabName) {
-                case 'Overview':
-                    document.getElementById('overview-content').classList.add('active');
-                    document.getElementById('overview-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('overview-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    // Re-render dashboard content on overview tab activation
-        
-                    break;
-                case 'Reports':
-                    document.getElementById('reports-content').classList.add('active');
-                    document.getElementById('reports-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('reports-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    renderReportsTable(); // Render reports table when reports tab is opened
-                    break;
-                case 'Users':
-                    document.getElementById('users-content').classList.add('active');
-                    document.getElementById('users-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('users-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    break;
-                case 'Analytics':
-                    document.getElementById('analytics-content').classList.add('active');
-                    document.getElementById('analytics-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('analytics-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    initializeCharts(); // Initialize charts when analytics tab is opened
-                    // Attach event listeners for analytics chart updates (only once)
-                    if (!document.getElementById("updateBarChart").hasAttribute('data-listeners-attached')) {
-                        document.getElementById("updateBarChart").addEventListener("click", updateBarChart);
-                        document.getElementById("updatePieChart").addEventListener("click", updatePieChart);
-                        document.getElementById("updateRadarChart").addEventListener("click", updateRadarChart);
-                        document.getElementById("updateAreaChart").addEventListener("click", updateAreaChart);
-                        // Removed share and download buttons event listeners
-                        document.getElementById("updateBarChart").setAttribute('data-listeners-attached', 'true');
-                    }
-                    break;
-                case 'Settings':
-                    document.getElementById('settings-content').classList.add('active');
-                    document.getElementById('settings-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('settings-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    renderSettingsDashboard();
-                    break;
-                // Removed Map View, Profile, Help cases as their buttons were removed
-            }
-            currentActiveTabName = tabName; // Update the current active tab name
-        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Get buttons and content sections
@@ -1668,6 +1622,7 @@
             }
         });
     </script>
+    <script src="script.js" type="module"></script>
 </body>
 
 </html>

@@ -154,25 +154,29 @@
             
             <!-- Login Form -->
             <div id="loginForm" class="auth-form">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button onclick="handleAuthorityLogin()">Login as Authority</button>
+                <form onsubmit="handleAuthorityLogin(); return false;">
+                    <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" required>
+                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                    <button type="submit">Login as Authority</button>
+                </form>
                 <button onclick="handleAuthorityGoogleSignIn()" class="google-btn">Sign in with Google</button>
                 <button onclick="redirectTo('admin')" class="admin-btn">Admin Login</button>
             </div>
 
             <!-- Sign Up Form -->
             <div id="signupForm" class="auth-form" style="display: none;">
-                <input type="email" id="signupEmail" placeholder="Email" required>
-                <input type="password" id="signupPassword" placeholder="Password" required>
-                <select id="authorityType" required>
-                    <option value="">Select Authority Type</option>
-                    <option value="police">Police</option>
-                    <option value="fire">Fire Department</option>
-                    <option value="medical">Medical Services</option>
-                    <option value="government">Government Agency</option>
-                </select>
-                <button onclick="handleAuthoritySignUp()">Sign Up as Authority</button>
+                <form onsubmit="handleAuthoritySignUp(); return false;">
+                    <input type="email" id="signupEmail" placeholder="Email" autocomplete="username" required>
+                    <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password" required>
+                    <select id="authorityType" required>
+                        <option value="">Select Authority Type</option>
+                        <option value="police">Police</option>
+                        <option value="fire">Fire Department</option>
+                        <option value="medical">Medical Services</option>
+                        <option value="government">Government Agency</option>
+                    </select>
+                    <button type="submit">Sign Up as Authority</button>
+                </form>
             </div>
 
             <button class="close-button" onclick="closeModal()">Cancel</button>

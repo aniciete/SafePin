@@ -24,7 +24,7 @@ import {
 import {
     db,
     functions
-} from '../../firebase-init.js';
+} from '../../modules/firebase-init.js';
 
 // --- MODAL AND UI HELPER FUNCTIONS ---
 

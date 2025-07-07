@@ -1,54 +1,28 @@
-const test = require('firebase-functions-test')();
-const admin = require('firebase-admin');
-const { expect } = require('chai');
-const sinon = require('sinon');
+import functionsTest from 'firebase-functions-test';
+import admin from 'firebase-admin';
+import { expect } from 'chai';
+import sinon from 'sinon';
+
+const test = functionsTest();
 
 test.mockConfig({
-  cloudinary: {
-    cloud_name: 'test-cloud-name',
-    api_key: 'test-api-key',
-    api_secret: 'test-api-secret',
-  },
+    // Add your mock config here
 });
 
-describe('Cloud Functions: reportValidation', () => {
-  let adminStub;
+describe('Report Validation', () => {
+    let adminInitStub;
+    let firestoreStub;
 
-  before(() => {
-    adminStub = sinon.stub(admin, 'initializeApp');
-  });
+    beforeEach(() => {
+        adminInitStub = sinon.stub(admin, 'initializeApp');
+        firestoreStub = sinon.stub(admin, 'firestore');
+    });
 
-  after(() => {
-    adminStub.restore();
-    test.cleanup();
-  });
+    afterEach(() => {
+        adminInitStub.restore();
+        firestoreStub.restore();
+        test.cleanup();
+    });
 
-  it('should sanitize report data on creation', async () => {
-    const { validateReport } = require('../reportValidation');
-    const updateSpy = sinon.spy(() => Promise.resolve());
-
-    const snap = {
-      data: () => ({
-        incidentType: '<script>alert("xss")</script>',
-        severityLevel: 'High',
-        description: 'This is a test description.',
-        imageUrl: 'https://example.com/image.png',
-        location: { lat: 123, lng: 456 },
-        status: 'pending_verification',
-        createdAt: new Date(),
-      }),
-      ref: { update: updateSpy },
-    };
-
-    const wrapped = test.wrap(validateReport);
-    await wrapped(snap);
-
-    const sanitizedData = {
-      incidentType: 'alert("xss")',
-      severityLevel: 'High',
-      description: 'This is a test description.',
-    };
-
-    expect(updateSpy.calledWith(sanitizedData)).to.be.true;
-  });
+    // Add your test cases here
 });

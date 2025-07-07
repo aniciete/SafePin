@@ -24,7 +24,9 @@
   "homepage": "https://github.com/aniciete/SafePin#readme",
   "dependencies": {
     "firebase": "^11.10.0",
-    "leaflet": "^1.9.4"
+    "isomorphic-dompurify": "^2.25.0",
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3"
   },
   "devDependencies": {
     "eslint": "^9.30.1",

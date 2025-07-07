@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide icons for consistency with the new design -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -99,16 +99,9 @@
             /* Fallback color */
         }
     </style>
-  <script type="module" crossorigin src="/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
-  <script type="module" crossorigin src="/assets/firebase-init-CmrEjvYP.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
-  <script type="module" crossorigin src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
+  <script type="module" crossorigin src="/assets/adminProject-Bc2qITQq.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-init-BKvNm3Fq.js">
   <link rel="stylesheet" crossorigin href="/assets/auth-styles-BGl9RA0z.css">
 </head>
 
@@ -136,6 +129,10 @@
                 <button id="analytics-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2 mr-3"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
                     <span class="font-medium">Analytics</span>
+                </button>
+                <button id="map-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-3"><circle cx="12" cy="10" r="3"/><path d="M12 2v2"/><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>
+                    <span class="font-medium">Map</span>
                 </button>
                 <button id="settings-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings mr-3"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l-.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -171,24 +168,24 @@
                                 <div class="bg-[#4caf50] w-full text-center text-xs font-semibold text-black py-1">
                                     Total Users:
                                 </div>
-                                <div class="py-2 text-sm text-center">
-                                    78,257
+                                <div id="total-users" class="py-2 text-sm text-center">
+                                    Loading...
                                 </div>
                             </div>
                             <div class="flex flex-col rounded-md border border-black border-opacity-20 flex-1 overflow-hidden">
                                 <div class="bg-[#4caf50] w-full text-center text-xs font-semibold text-black py-1">
                                     Active Users:
                                 </div>
-                                <div class="py-2 text-sm text-center">
-                                    13,267
+                                <div id="active-users" class="py-2 text-sm text-center">
+                                    Loading...
                                 </div>
                             </div>
                             <div class="flex flex-col rounded-md border border-black border-opacity-20 flex-1 overflow-hidden">
-                                <div class="bg-[#f87171] w-full text-center text-xs font-semibold text-black py-1">
-                                    Active Admins:
+                                <div class="bg-[#4caf50] w-full text-center text-xs font-semibold text-black py-1">
+                                    New Users:
                                 </div>
-                                <div class="py-2 text-sm text-center">
-                                    24
+                                <div id="new-users" class="py-2 text-sm text-center">
+                                    Loading...
                                 </div>
                             </div>
                         </div>
@@ -198,19 +195,21 @@
                         <h2 class="text-lg font-semibold mb-4">Report Statistics</h2>
                         <div class="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
                             <div class="flex-1 flex flex-col space-y-3 text-xs font-semibold">
-                                <p class="text-[#4caf50]">
-                                    275 reports marked as verified
+                                <p id="verified-reports-text" class="text-[#4caf50]">
+                                    <!-- Populated by JS -->
                                 </p>
-                                <p class="text-[#f59e0b]">
-                                    1,437 pending reports for approval
+                                <p id="pending-reports-text" class="text-[#f59e0b]">
+                                    <!-- Populated by JS -->
                                 </p>
-                                <p class="text-[#ef4444]">
-                                    26 reports marked as potentially misleading
+                                <p id="resolved-reports-text" class="text-[#22c55e]">
+                                    <!-- Populated by JS -->
+                                </p>
+                                <p id="rejected-reports-text" class="text-[#ef4444]">
+                                    <!-- Populated by JS -->
                                 </p>
                             </div>
-                            <div class="flex-1 flex justify-center items-center">
-                                <img alt="Pie chart showing report statistics with sections: Verified 15.8%, Potentially Misleading 1.5%, Pending for Approval 82.7%" class="max-w-full max-h-[150px]" height="150" src="https://storage.googleapis.com/a1aa/image/47b46217-ec13-4ad4-81e2-661726f25e87.jpg"
-                                    width="150" />
+                            <div class="flex-1 flex justify-center items-center" style="position: relative; height:150px; width:150px;">
+                                <canvas id="report-stats-chart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -220,10 +219,10 @@
                         <div class="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
                             <div class="flex-1 flex flex-col space-y-3 text-xs font-semibold">
                                 <div class="bg-[#fbbf24] rounded-md px-2 py-1 text-center">
-                                    API Response Time : [357ms ]
+                                    API Response Time : <span id="avg-response-time">N/A</span>
                                 </div>
                                 <div class="bg-[#166534] rounded-md px-2 py-1 text-center text-[#d1fae5]">
-                                    | 99.2% Uptime | System Operational
+                                    | <span id="uptime-percentage">N/A</span> Uptime | System Operational
                                 </div>
                             </div>
                             <div class="flex-1 flex flex-col justify-center space-y-2 text-xs">
@@ -270,19 +269,8 @@
                 <aside class="w-full md:w-80 flex flex-col space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h2 class="text-lg font-semibold mb-4 text-center">Recent Updates</h2>
-                        <div class="text-xs font-normal text-[#374151]">
-                            <div class="grid grid-cols-2 border-b border-black border-opacity-10 py-1">
-                                <div>Report #01349251</div>
-                                <div class="text-[#22c55e]">Verified</div>
-                            </div>
-                            <div class="grid grid-cols-2 border-b border-black border-opacity-10 py-1">
-                                <div>Report #01347659</div>
-                                <div class="text-[#f97316]">Flagged</div>
-                            </div>
-                            <div class="grid grid-cols-2 py-1">
-                                <div>Report #01343418</div>
-                                <div class="text-[#ef4444]">Removed</div>
-                            </div>
+                        <div id="recent-updates-container" class="space-y-2">
+                            <p class="text-xs text-gray-500">Loading recent activity...</p>
                         </div>
                     </div>
 
@@ -523,6 +511,13 @@
         </div>
 
         <div id="analytics-content" class="content-section space-y-8">
+        <!-- Map Content Section -->
+        <div id="map-content" class="content-section" style="display:none;">
+            <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Map</h1>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div id="admin-map" style="width:100%;height:500px;min-height:350px;border-radius:16px;"></div>
+            </div>
+        </div>
             <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Analytics</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <section class="bg-white p-6 rounded-xl shadow-lg">
@@ -874,206 +869,6 @@
         let currentUserSelectionCallback = null; // Stores the callback from the action button (e.g., change password)
         let currentEditReportRow = null; // To store the row being edited
 
-        // Mock data for new sections and reports table
-        const mockData = {
-            jurisdiction: {
-                district: '3 - Santa Cruz',
-                barangay: '370',
-            },
-            reportsInJurisdiction: [{
-                id: '#01343418',
-                street: 'Andrade St.',
-                date: 'April 25, 2025 7:05 P.M',
-                type: 'Crime',
-                category: 'Theft',
-                description: 'Suspected theft from a sari-sari store. Multiple witnesses reported a male individual fleeing the scene with a bag of goods.',
-                suspect: 'Unknown',
-                status: 'On-Watch',
-                verification: 'Pending'
-            }, {
-                id: '#01349251',
-                street: 'Maceda St.',
-                date: 'May 6, 2025 7:05 P.M',
-                type: 'Crime',
-                category: 'Vandalism',
-                description: 'Report of graffiti and property damage on a public wall. Suspects seen fleeing the area.',
-                suspect: 'N/A',
-                status: 'Resolved',
-                verification: 'Verified',
-                officialNotes: 'Vandalism reported to local authorities. Area cleaned and surveillance increased.'
-            }, ],
-            pendingVerifications: [{
-                id: '#01349251',
-                location: 'Maceda St. Sta. Cruz',
-                anonymousId: 'Anonymous02931',
-                date: 'May 8, 2025 10:20 P.M',
-                type: 'Crime',
-                category: 'Public Nuisance',
-                description: 'Report of excessive noise from a late-night gathering disturbing the peace in the neighborhood.',
-                status: 'Pending Verification'
-            }, {
-                id: '#01349252',
-                location: 'P. Florentino St. Sta. Cruz',
-                anonymousId: 'Anonymous02952',
-                date: 'May 10, 2025 11:03 P.M',
-                type: 'Crime',
-                category: 'Reckless Driving',
-                description: 'Witness reported a vehicle driving erratically and nearly causing an accident.',
-                status: 'Pending Verification'
-            }, {
-                id: '#01349253',
-                location: 'New Antipolo St. Sta. Cruz',
-                anonymousId: 'Anonymous02953',
-                date: 'May 12, 2025 09:00 A.M',
-                type: 'Crime',
-                category: 'Illegal Parking',
-                description: 'Vehicle obstructing traffic flow due to illegal parking in a no-parking zone.',
-                status: 'Pending Verification'
-            }, {
-                id: '#01349254',
-                location: 'Cavite St. Sta. Cruz',
-                anonymousId: 'Anonymous02954',
-                date: 'May 13, 2025 02:30 P.M',
-                type: 'Crime',
-                category: 'Noise Complaint',
-                description: 'Loud music coming from a residence affecting nearby houses during quiet hours.',
-                status: 'Pending Verification'
-            }, ],
-            recentActivity: [{
-                type: 'login',
-                description: 'Logged In',
-                date: 'May 10, 2025 11:50 P.M',
-                user: 'Isko H. Versosa'
-            }, {
-                type: 'report_submitted',
-                description: 'Report #01343418 submitted',
-                date: 'May 10, 2025 11:45 P.M',
-                user: 'Anonymous'
-            }, {
-                type: 'report_verified',
-                description: 'Report #01349251 verified',
-                date: 'May 10, 2025 11:30 P.M',
-                user: 'Isko H. Versosa'
-            }, {
-                type: 'logout',
-                description: 'Logged Out',
-                date: 'May 10, 2025 11:55 P.M',
-                user: 'Isko H. Versosa'
-            }, {
-                type: 'report_submitted',
-                description: 'Report #01347659 submitted',
-                date: 'May 9, 2025 09:00 A.M',
-                user: 'Anonymous'
-            }, ],
-            resolvedIncidents: {
-                total: 23,
-                breakdown: [{
-                    type: 'Thefts',
-                    count: 13
-                }, {
-                    type: 'Assaults',
-                    count: 5
-                }, {
-                    type: 'Vandalism',
-                    count: 5
-                }, ],
-                crimeApprehensionRate: 96,
-            },
-        };
-
-        const reportsData = [{
-            id: '#01349251',
-            street: 'Maceda St. Sta. Cruz',
-            wanted: 'Unknown',
-            progress: 'Verified', // Changed to match the table
-            visibility: 'Public', // Added visibility
-            type: 'Crime',
-            category: 'Vandalism',
-            description: 'Suspected loitering and vandalism by a group of teenagers near the park. Residents reported noise disturbance and minor property damage.',
-            verification: 'Verified', // Added verification
-            date: 'May 11, 2025 08:00 A.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01347659',
-            street: 'Isagani St. Sta Cruz',
-            wanted: 'Reyes Viloma',
-            progress: 'On-Watch',
-            visibility: 'Authorities', // Added visibility
-            type: 'Crime',
-            category: 'Domestic Disturbance',
-            description: 'Reported domestic disturbance at house number 123. Loud arguments heard by neighbors. Police assistance requested.',
-            verification: 'Pending', // Added verification
-            date: 'May 10, 2025 07:30 P.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01343418',
-            street: 'Andrade St. Sta Cruz',
-            wanted: 'Unknown',
-            progress: 'On-Watch',
-            visibility: 'Admins', // Added visibility
-            type: 'Crime',
-            category: 'Public Nuisance',
-            description: 'Complaint about illegal dumping of trash in a vacant lot, attracting pests and causing foul odor.',
-            verification: 'Pending', // Added verification
-            date: 'May 9, 2025 04:00 P.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01349255',
-            street: 'Hizon St. Sta. Cruz',
-            wanted: 'John Doe',
-            progress: 'On-Watch',
-            visibility: 'Public',
-            type: 'Crime',
-            category: 'Physical Assault',
-            description: 'Report of a physical altercation between two individuals outside a convenience store. One person sustained minor injuries.',
-            verification: 'Pending',
-            date: 'May 14, 2025 10:00 A.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01349256',
-            street: 'M. Natividad St. Sta. Cruz',
-            wanted: 'Jane Smith',
-            progress: 'On-Watch',
-            visibility: 'Authorities Only',
-            type: 'Crime',
-            category: 'Robbery',
-            description: 'Armed robbery reported at a small grocery store. Suspect fled with cash and valuables.',
-            verification: 'Pending',
-            date: 'May 15, 2025 01:15 P.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01349257',
-            street: 'New Antipolo St. Sta. Cruz',
-            wanted: 'Unknown',
-            progress: 'On-Watch',
-            visibility: 'Admins Only',
-            type: 'Crime',
-            category: 'Drug-related Incident',
-            description: 'Suspicious activity reported near an abandoned building, possibly related to illegal drug transactions.',
-            verification: 'Pending',
-            date: 'May 16, 2025 08:45 P.M',
-            reporter: 'Anonymous'
-        }, {
-            id: '#01349258',
-            street: 'Cavite St. Sta. Cruz',
-            wanted: 'Group of individuals',
-            progress: 'On-Watch',
-            visibility: 'Public',
-            type: 'Crime',
-            category: 'Public Disturbance',
-            description: 'A group of individuals causing a disturbance and blocking pedestrian traffic on the sidewalk.',
-            verification: 'Pending',
-            date: 'May 17, 2025 03:00 P.M',
-            reporter: 'Anonymous'
-        }, ];
-
-        // Mock data for Profile section (no longer directly used as Profile tab removed)
-        const profileData = {
-            name: 'Isko H. Versosa',
-            role: 'Barangay 370 Chairman (Level 2 SafePin Access)',
-            code: '102-121-320'
-        };
-
         // Function to show custom message modal
         function showMessageModal(message) {
             document.getElementById('messageText').textContent = message;
@@ -1204,10 +999,6 @@
             document.getElementById('userSelectionModal').style.display = 'flex';
         }
 
-        // NOTE: The previous global userSelectionCallback function is now refactored.
-        // The modal's close button now directly calls userSelectionCallback(null) to indicate cancellation.
-        // The list item clicks now handle their own closure and callback execution.
-
         // Function to close any modal
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
@@ -1271,12 +1062,6 @@
                 showMessageModal('New District and Barangay are required for transfer.');
                 return;
             }
-
-            // The following lines were for displaying jurisdiction in the header, now removed.
-            // document.getElementById('current-jurisdiction').innerHTML = `
-            //     District: ${newDistrict}
-            //     <span class="inline-block ml-12">Barangay: ${newBarangay}</span>
-            // `;
 
             // Update the select dropdowns as well for consistency
             const districtSelect = document.getElementById('district');
@@ -1390,477 +1175,6 @@
             currentEditReportRow = null;
         }
 
-        // Analytics Chart Initialization and Update Logic
-        let barChart, pieChart, radarChart, areaChart;
-
-        function initializeCharts() {
-            // Destroy existing charts if they exist to prevent re-initialization errors
-            if (barChart) barChart.destroy();
-            if (pieChart) pieChart.destroy();
-            if (radarChart) radarChart.destroy();
-            if (areaChart) areaChart.destroy();
-
-            // Bar Chart - Crimes Committed per Month
-            const barCtx = document.getElementById("barChart").getContext("2d");
-            barChart = new Chart(barCtx, {
-                type: "bar",
-                data: {
-                    labels: [
-                        "Murder",
-                        "Kidnapping",
-                        "Sexual Assault",
-                        "Violence",
-                        "Theft",
-                    ],
-                    datasets: [{
-                        label: "Crimes Committed",
-                        data: [8, 12, 16, 20, 35],
-                        backgroundColor: [
-                            "#7dd3fc", // Murder - cyan-300
-                            "#22d3ee", // Kidnapping - cyan-400
-                            "#0284c7", // Sexual Assault - blue-700
-                            "#7c3aed", // Violence - purple-700
-                            "#1e40af", // Theft - blue-900
-                        ],
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                        title: {
-                            display: false,
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5,
-                            },
-                        },
-                    },
-                },
-            });
-
-            // Pie Chart - Geographical Analysis
-            const pieCtx = document.getElementById("pieChart").getContext("2d");
-            pieChart = new Chart(pieCtx, {
-                type: "pie",
-                data: {
-                    labels: [
-                        "Safer Outlier",
-                        "Lower Outlier",
-                        "Keep Caution",
-                        "Extreme Caution",
-                        "High Caution",
-                    ],
-                    datasets: [{
-                        label: "Crime Distribution",
-                        data: [25, 35.7, 17.9, 7, 14.3],
-                        backgroundColor: [
-                            "#c6d8e6", // light blue
-                            "#fcd5b2", // light orange
-                            "#3b82f6", // blue-500
-                            "#ef4444", // red-500
-                            "#ea580c", // orange-600
-                        ],
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                        },
-                    },
-                },
-            });
-
-            // Radar Chart - SafePin System Performance
-            const radarCtx = document.getElementById("radarChart").getContext("2d");
-            radarChart = new Chart(radarCtx, {
-                type: "radar",
-                data: {
-                    labels: [
-                        "Performance",
-                        "Reliability",
-                        "Usability",
-                        "Security",
-                        "Scalability",
-                    ],
-                    datasets: [{
-                        label: "User Evaluation",
-                        data: [9, 6, 8, 7, 6],
-                        fill: true,
-                        backgroundColor: "rgba(29, 78, 216, 0.5)", // blue-700 with opacity
-                        borderColor: "#1d4ed8", // blue-700
-                        pointBackgroundColor: "#1d4ed8",
-                        pointBorderColor: "#fff",
-                        pointHoverBackgroundColor: "#fff",
-                        pointHoverBorderColor: "#1d4ed8",
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        r: {
-                            angleLines: {
-                                display: true,
-                            },
-                            suggestedMin: 0,
-                            suggestedMax: 10,
-                            ticks: {
-                                stepSize: 2,
-                                backdropColor: "transparent",
-                            },
-                        },
-                    },
-                    plugins: {
-                        legend: {
-                            position: "top",
-                        },
-                    },
-                },
-            });
-
-            // Area Chart - Response Time Analysis
-            const areaCtx = document.getElementById("areaChart").getContext("2d");
-            areaChart = new Chart(areaCtx, {
-                type: "line",
-                data: {
-                    labels: [
-                        "1 Min",
-                        "2 Mins",
-                        "3 Mins",
-                        "4 Mins",
-                        "5 Mins",
-                        "6 Mins",
-                        "7 Mins",
-                        "8 Mins",
-                        "9 Mins",
-                        "10 Mins",
-                    ],
-                    datasets: [{
-                        label: "PNP",
-                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                        fill: true,
-                        backgroundColor: "rgba(29, 78, 216, 0.7)", // blue-700 with opacity
-                        borderColor: "#1d4ed8",
-                        tension: 0.4,
-                    }, {
-                        label: "BFP",
-                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                        fill: true,
-                        backgroundColor: "rgba(239, 68, 68, 0.7)", // red-500 with opacity
-                        borderColor: "#ef4444",
-                        tension: 0.4,
-                    }, {
-                        label: "EMS",
-                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                        fill: true,
-                        backgroundColor: "rgba(20, 184, 166, 0.7)", // teal-500 with opacity
-                        borderColor: "#14b8a6",
-                        tension: 0.4,
-                    }, {
-                        label: "PCG",
-                        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                        fill: true,
-                        backgroundColor: "rgba(14, 165, 233, 0.7)", // sky-500 with opacity
-                        borderColor: "#0ea5e9",
-                        tension: 0.4,
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    interaction: {
-                        mode: "nearest",
-                        intersect: false,
-                    },
-                    stacked: true,
-                    plugins: {
-                        legend: {
-                            position: "top",
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            stacked: true,
-                        },
-                    },
-                },
-            });
-        }
-
-        // Update functions for each chart
-        function updateBarChart() {
-            const murder = parseInt(
-                document.getElementById("murderInput").value,
-                10
-            );
-            const kidnapping = parseInt(
-                document.getElementById("kidnappingInput").value,
-                10
-            );
-            const sexualAssault = parseInt(
-                document.getElementById("sexualAssaultInput").value,
-                10
-            );
-            const violence = parseInt(
-                document.getElementById("violenceInput").value,
-                10
-            );
-            const theft = parseInt(
-                document.getElementById("theftInput").value,
-                10
-            );
-
-            if (
-                [murder, kidnapping, sexualAssault, violence, theft].some(
-                    (v) => isNaN(v) || v < 0
-                )
-            ) {
-                showMessageModal("Please enter valid non-negative numbers for all crime categories.");
-                return;
-            }
-
-            barChart.data.datasets[0].data = [
-                murder,
-                kidnapping,
-                sexualAssault,
-                violence,
-                theft,
-            ];
-            barChart.update();
-        }
-
-        function updatePieChart() {
-            const safeOutlier = parseFloat(
-                document.getElementById("safeOutlierInput").value
-            );
-            const lowerOutlier = parseFloat(
-                document.getElementById("lowerOutlierInput").value
-            );
-            const keepCaution = parseFloat(
-                document.getElementById("keepCautionInput").value
-            );
-            const extremeCaution = parseFloat(
-                document.getElementById("extremeCautionInput").value
-            );
-            const highCaution = parseFloat(
-                document.getElementById("highCautionInput").value
-            );
-
-            const values = [
-                safeOutlier,
-                lowerOutlier,
-                keepCaution,
-                extremeCaution,
-                highCaution,
-            ];
-
-            if (
-                values.some(
-                    (v) => isNaN(v) || v < 0 || v > 100
-                )
-            ) {
-                showMessageModal("Please enter valid percentages between 0 and 100.");
-                return;
-            }
-
-            const total = values.reduce((a, b) => a + b, 0);
-            if (total > 100) {
-                showMessageModal("Total percentage cannot exceed 100.");
-                return;
-            }
-
-            pieChart.data.datasets[0].data = values;
-            pieChart.update();
-        }
-
-        function updateRadarChart() {
-            const performance = parseFloat(
-                document.getElementById("performanceInput").value
-            );
-            const reliability = parseFloat(
-                document.getElementById("reliabilityInput").value
-            );
-            const usability = parseFloat(
-                document.getElementById("usabilityInput").value
-                );
-            const security = parseFloat(
-                document.getElementById("securityInput").value
-            );
-            const scalability = parseFloat(
-                document.getElementById("scalabilityInput").value
-            );
-
-            const values = [
-                performance,
-                reliability,
-                usability,
-                security,
-                scalability,
-            ];
-
-            if (
-                values.some(
-                    (v) => isNaN(v) || v < 0 || v > 10
-                )
-            ) {
-                showMessageModal("Please enter valid scores between 0 and 10.");
-                return;
-            }
-
-            radarChart.data.datasets[0].data = values;
-            radarChart.update();
-        }
-
-        function updateAreaChart() {
-            function parseInput(inputId) {
-                const val = document.getElementById(inputId).value;
-                return val
-                    .split(",")
-                    .map((v) => parseFloat(v.trim()))
-                    .filter((v) => !isNaN(v) && v >= 0);
-            }
-
-            const pnpData = parseInput("pnpInput");
-            const bfpData = parseInput("bfpInput");
-            const emsData = parseInput("emsInput");
-            const pcgData = parseInput("pcgInput");
-
-            const lengths = [pnpData.length, bfpData.length, emsData.length, pcgData.length];
-            const minLen = Math.min(...lengths);
-            if (minLen === 0) {
-                showMessageModal("Please enter valid comma-separated numbers for all response time fields.");
-                return;
-            }
-
-            // Use the shortest length to sync labels and data
-            const labels = [];
-            for (let i = 1; i <= minLen; i++) {
-                labels.push(i + (i === 1 ? " Min" : " Mins"));
-            }
-
-            areaChart.data.labels = labels;
-            areaChart.data.datasets[0].data = pnpData.slice(0, minLen);
-            areaChart.data.datasets[1].data = bfpData.slice(0, minLen);
-            areaChart.data.datasets[2].data = emsData.slice(0, minLen);
-            areaChart.data.datasets[3].data = pcgData.slice(0, minLen);
-
-            areaChart.update();
-        }
-
-        // Share button functionality (REMOVED)
-        // function shareDashboard() { /* ... */ }
-
-        // Download button functionality (REMOVED)
-        // function downloadDashboardData() { /* ... */ }
-
-
-        // Settings Tab Logic
-        const settingsDetails = {
-            "System Settings": [
-                "Manage system preferences",
-                "Configure system-wide options",
-                "Set default behaviors"
-            ],
-            "Map Configuration": [
-                "Set map default location",
-                "Manage map layers",
-                "Configure map zoom levels"
-            ],
-            "Notification Template": [
-                "Edit email templates",
-                "Edit SMS templates",
-                "Manage notification triggers"
-            ],
-            "Custom Fields": [
-                "Add new custom fields",
-                "Edit existing fields",
-                "Manage field visibility"
-            ],
-            "API Access": [
-                "Generate API keys",
-                "Set API permissions",
-                "View API usage logs"
-            ],
-            "Security Settings": [
-                "Manage user roles",
-                "Set password policies",
-                "Configure two-factor authentication"
-            ]
-        };
-
-        function renderSettingsDashboard() {
-            document.getElementById('settings-back-button').classList.add("hidden");
-            const settingsMainContent = document.getElementById("settings-main-content");
-            settingsMainContent.innerHTML = `
-                <h1 class="font-bold text-lg md:text-xl mb-8">Admin Dashboard - Settings</h1>
-                <section class="grid grid-cols-1 sm:grid-cols-3 gap-y-16 gap-x-24 max-w-5xl mx-auto">
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="System Settings" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings text-gray-800"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l-.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <p class="font-bold text-center text-sm">System Settings</p>
-                    </div>
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Map Configuration" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-800"><path d="M12 12.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"/><path d="M19 12c0 7-7 9-7 9s-7-2-7-9a7 7 0 0 1 14 0Z"/><path d="M12 2v.01"/></svg>
-                        <p class="font-bold text-center text-sm">Map Configuration</p>
-                    </div>
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Notification Template" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring text-gray-800"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M2.92 7.29a.1.1 0 0 0-.08.07L.25 9.77a.1.1 0 0 0 .15.15L2 11.2V16.5a.5.5 0 0 0 .5.5H6a.5.5 0 0 0 .5-.5V11.2L8.6 9.92a.1.1 0 0 0 .15-.15L6.16 7.36a.1.1 0 0 0-.08-.07z"/></svg>
-                        <p class="font-bold text-center text-sm">Notification Template</p>
-                    </div>
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Custom Fields" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit-3 text-gray-800"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                        <p class="font-bold text-center text-sm">Custom Fields</p>
-                    </div>
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="API Access" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plug-zap text-gray-800"><path d="M13 2v8l8-8"/><path d="M10 7l-4 4"/><path d="M2 12l2 2"/><path d="M9.5 17c-1 0-2 0-3-.5a5 5 0 0 0-4.5 4.5v1h10v-1c0-2-2-3.5-5-4z"/></svg>
-                        <p class="font-bold text-center text-sm">API Access</p>
-                    </div>
-                    <div class="flex flex-col items-center space-y-3 cursor-pointer settings-nav-link" data-name="Security Settings" tabindex="0" role="button" aria-pressed="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield text-gray-800"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <p class="font-bold text-center text-sm">Security Settings</p>
-                    </div>
-                </section>
-            `;
-            attachSettingsNavLinkListeners();
-        }
-
-        function renderSettingsDetails(name) {
-            document.getElementById('settings-back-button').classList.remove("hidden");
-            const settingsMainContent = document.getElementById("settings-main-content");
-            const details = settingsDetails[name] || [];
-            settingsMainContent.innerHTML = `
-                <h2 class="text-lg font-bold mb-6">${name}</h2>
-                <ul class="list-disc list-inside space-y-2 max-w-3xl">
-                    ${details.map(item => `<li class="text-sm">${item}</li>`).join("")}
-                </ul>
-            `;
-        }
-
-        function attachSettingsNavLinkListeners() {
-            const settingsNavLinks = document.querySelectorAll(".settings-nav-link");
-            settingsNavLinks.forEach(link => {
-                link.addEventListener("click", () => {
-                    const name = link.getAttribute("data-name");
-                    renderSettingsDetails(name);
-                });
-                link.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        const name = link.getAttribute("data-name");
-                        renderSettingsDetails(name);
-                    }
-                });
-            });
-        }
-
-
         // Function to render the reports table
         function renderReportsTable() {
             const reportsTableBody = document.getElementById('reports-table-body');
@@ -1971,91 +1285,19 @@
          * Renders the dashboard content using mock data.
          * This function populates the dynamic parts of the Overview section.
          */
-        function renderDashboardContent() {
-            // Jurisdiction (Header display removed)
-            // document.getElementById('district-name').textContent = mockData.jurisdiction.district;
-            // document.getElementById('barangay-name').textContent = mockData.jurisdiction.barangay;
+        // Removed renderDashboardContent function
 
-            // Reports in Jurisdiction (Overview Card) - This section is now just "Recent Updates" on the sidebar
-            // The functionality for "Reports in Jurisdiction" and "Pending Verifications" is now reflected in the "Recent Updates" card
-            // which was already there in the HTML and now has more generic data.
-
-            // The content that was previously filling these sections is now part of the static mock data displayed in the "Recent Updates" card.
-            // Removed specific DOM manipulation for these sections as they no longer exist as distinct cards.
-            // If you wish to re-add these specific detailed lists, they would need new HTML elements and corresponding JS logic.
-
-            // Profile Section (Removed)
-            // const profileName = document.getElementById('profile-name');
-            // if (profileName) profileName.textContent = profileData.name;
-            // const profileRole = document.getElementById('profile-role');
-            // if (profileRole) profileRole.textContent = profileData.role;
-            // const profileCode = document.getElementById('profile-code');
-            // if (profileCode) profileCode.textContent = profileData.code;
-
-        }
+        /**
+         * Renders the dashboard content using mock data.
+         * This function populates the dynamic parts of the Overview section.
+         */
+        // Removed renderDashboardContent function call
 
 
         let currentActiveTabName = 'Overview'; // Initialize with default active tab
         let previousTabBeforeLogout = 'Overview'; // To store the tab to return to if logout is cancelled
 
-        // Function to set active tab
-        function setActiveTab(tabName) {
-            // Hide all content sections
-            document.querySelectorAll('.content-section').forEach(content => {
-                content.classList.remove('active');
-            });
 
-            // Remove active styles from all sidebar buttons
-            document.querySelectorAll('aside nav button').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'text-white', 'shadow-md');
-                btn.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-            });
-
-            // Show the new active content and apply active style to its button
-            switch (tabName) {
-                case 'Overview':
-                    document.getElementById('overview-content').classList.add('active');
-                    document.getElementById('overview-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('overview-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    // Re-render dashboard content on overview tab activation
-                    renderDashboardContent();
-                    break;
-                case 'Reports':
-                    document.getElementById('reports-content').classList.add('active');
-                    document.getElementById('reports-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('reports-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    renderReportsTable(); // Render reports table when reports tab is opened
-                    break;
-                case 'Users':
-                    document.getElementById('users-content').classList.add('active');
-                    document.getElementById('users-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('users-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    break;
-                case 'Analytics':
-                    document.getElementById('analytics-content').classList.add('active');
-                    document.getElementById('analytics-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('analytics-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    initializeCharts(); // Initialize charts when analytics tab is opened
-                    // Attach event listeners for analytics chart updates (only once)
-                    if (!document.getElementById("updateBarChart").hasAttribute('data-listeners-attached')) {
-                        document.getElementById("updateBarChart").addEventListener("click", updateBarChart);
-                        document.getElementById("updatePieChart").addEventListener("click", updatePieChart);
-                        document.getElementById("updateRadarChart").addEventListener("click", updateRadarChart);
-                        document.getElementById("updateAreaChart").addEventListener("click", updateAreaChart);
-                        // Removed share and download buttons event listeners
-                        document.getElementById("updateBarChart").setAttribute('data-listeners-attached', 'true');
-                    }
-                    break;
-                case 'Settings':
-                    document.getElementById('settings-content').classList.add('active');
-                    document.getElementById('settings-btn').classList.add('bg-green-600', 'text-white', 'shadow-md');
-                    document.getElementById('settings-btn').classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
-                    renderSettingsDashboard();
-                    break;
-                // Removed Map View, Profile, Help cases as their buttons were removed
-            }
-            currentActiveTabName = tabName; // Update the current active tab name
-        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Get buttons and content sections
