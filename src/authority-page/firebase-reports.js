@@ -3,14 +3,14 @@
  * This script converts Firestore `reports` documents to the structures
  * expected by the existing UI helpers defined inside index.html.
  */
-import { db } from '../modules/firebase-init.js';
+import { db } from '../config/firebase.js';
 import {
   collection,
   query,
   where,
   orderBy,
   onSnapshot,
-} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+} from 'firebase/firestore';
 
 // --- Global State ---
 let lastVisible = null; // For pagination

@@ -99,10 +99,10 @@
             /* Fallback color */
         }
     </style>
-  <script type="module" crossorigin src="/assets/adminProject-Bc2qITQq.js"></script>
+  <script type="module" crossorigin src="/assets/adminProject-MWU4EFqD.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-init-BKvNm3Fq.js">
-  <link rel="stylesheet" crossorigin href="/assets/auth-styles-BGl9RA0z.css">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-D7X223rW.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth-styles-D5JqEab-.css">
 </head>
 
 <body class="min-h-screen bg-[#f5f6f8] text-[#000000] flex font-sans antialiased">
@@ -291,10 +291,6 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                 <span>Manage Users</span>
                             </button>
-                            <button id="create-alert-overview-btn" class="flex items-center justify-center space-x-2 bg-green-600 text-white font-semibold rounded-lg py-3 px-6 w-full cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-                                <span>Create Alert</span>
-                            </button>
                             <button id="review-flags-btn" class="flex items-center justify-center space-x-2 bg-green-600 text-white font-semibold rounded-lg py-3 px-6 w-full cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flag"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
                                 <span>Review Flags</span>
@@ -357,306 +353,16 @@
                     </table>
                 </div>
                 <div class="flex flex-col sm:flex-row justify-center mt-6 flex-wrap gap-4">
-                    <button id="create-alert-reports-btn" class="bg-green-600 text-white rounded-full px-6 py-2 text-[13px] font-semibold hover:bg-green-700 transition-colors duration-200 flex-1 sm:flex-none sm:w-auto">
-                        Create Alert
-                    </button>
                     <button id="transfer-jurisdiction-btn" class="bg-green-600 text-white rounded-full px-6 py-2 text-[13px] font-semibold hover:bg-green-700 transition-colors duration-200 flex-1 sm:flex-none sm:w-auto">
                         Transfer Jurisdiction
                     </button>
                 </div>
             </section>
 
-            <section class="bg-white p-6 rounded-xl shadow-lg mt-8">
-                <h2 class="font-semibold text-lg mb-4">Active Alerts</h2>
-                <div id="active-alerts-container" class="space-y-4">
-                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md shadow-sm" role="alert">
-                        <p class="font-bold">System Maintenance</p>
-                        <p class="text-sm">Scheduled downtime for server updates on 2025-05-25 at 02:00 AM.</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <div id="users-content" class="content-section space-y-8">
-            <h1 class="font-bold text-lg md:text-xl mb-8">Admin Dashboard - User Management</h1>
-
-            <section class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-lg font-semibold mb-4">Current Users</h2>
-                <div class="overflow-x-auto border border-gray-400 rounded-md max-w-full max-h-[280px] scrollbar-thin">
-                    <table class="w-full border-collapse border border-gray-400 text-sm">
-                        <thead>
-                            <tr class="bg-white">
-                                <th class="border border-gray-400 px-3 py-2 text-left">Username</th>
-                                <th class="border border-gray-400 px-3 py-2 text-left">Status</th>
-                                <th class="border border-gray-400 px-3 py-2 text-left">Access Level</th>
-                                <th class="border border-gray-400 px-3 py-2 text-left">Last Activity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">node_user_27</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
-                                    <span>Active</span>
-                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
-                                <td class="border border-gray-400 px-3 py-1">Today</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">sync_4210</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
-                                    <span>Inactive</span>
-                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
-                                <td class="border border-gray-400 px-3 py-1">2 hours ago</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">p_line_309</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
-                                    <span>Inactive</span>
-                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
-                                <td class="border border-gray-400 px-3 py-1">3 minutes ago</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">tmp_user_88</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
-                                    <span>Active</span>
-                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
-                                <td class="border border-gray-400 px-3 py-1">Today</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">xval_1902</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
-                                    <span>Inactive</span>
-                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
-                                <td class="border border-gray-400 px-3 py-1">5 hours ago</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">shift_lock_73</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
-                                    <span>Active</span>
-                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
-                                <td class="border border-gray-400 px-3 py-1">Today</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">net_run_11</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
-                                    <span>Inactive</span>
-                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
-                                <td class="border border-gray-400 px-3 py-1">10 days ago</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">jvxn_0034</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
-                                    <span>Active</span>
-                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 1</td>
-                                <td class="border border-gray-400 px-3 py-1">Today</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">bin_trace_62</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-green-600 flex items-center space-x-2">
-                                    <span>Active</span>
-                                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 3</td>
-                                <td class="border border-gray-400 px-3 py-1">Today</td>
-                            </tr>
-                            <tr class="bg-gray-300">
-                                <td class="border border-gray-400 px-3 py-1">loop_set_59</td>
-                                <td class="border border-gray-400 px-3 py-1 font-semibold text-red-600 flex items-center space-x-2">
-                                    <span>Inactive</span>
-                                    <div class="w-4 h-4 rounded-full bg-red-600"></div>
-                                </td>
-                                <td class="border border-gray-400 px-3 py-1">Level 2</td>
-                                <td class="border border-gray-400 px-3 py-1">10 minutes ago</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <section id="help-content" class="hidden">
+                <div id="help-container"></div>
             </section>
 
-            <section class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-lg font-semibold mb-4">User Actions</h2>
-                <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
-                    <button id="createUserBtn" class="bg-green-600 text-white font-bold px-5 py-2 rounded-full flex-1 sm:flex-none sm:w-[200px] text-center hover:bg-green-700 transition-colors duration-200">
-                        Create User
-                    </button>
-                    <button id="changePasswordBtn" class="bg-green-600 text-white font-bold px-5 py-2 rounded-full flex-1 sm:flex-none sm:w-[200px] text-center hover:bg-green-700 transition-colors duration-200">
-                        Change Password
-                    </button>
-                    <button id="setAccessBtn" class="bg-green-600 text-white font-bold px-5 py-2 rounded-full flex-1 sm:flex-none sm:w-[200px] text-center hover:bg-green-700 transition-colors duration-200">
-                        Set Access
-                    </button>
-                    <button id="deactivateAccountBtn" class="bg-red-500 text-white font-bold px-5 py-2 rounded-full flex-1 sm:flex-none sm:w-[200px] text-center hover:bg-red-600 transition-colors duration-200">
-                        Deactivate Account
-                    </button>
-                    <button id="reactivateAccountBtn" class="bg-blue-500 text-white font-bold px-5 py-2 rounded-full flex-1 sm:flex-none sm:w-[200px] text-center hover:bg-blue-600 transition-colors duration-200">
-                        Reactivate Account
-                    </button>
-                </div>
-            </section>
-        </div>
-
-        <div id="analytics-content" class="content-section space-y-8">
-        <!-- Map Content Section -->
-        <div id="map-content" class="content-section" style="display:none;">
-            <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Map</h1>
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <div id="admin-map" style="width:100%;height:500px;min-height:350px;border-radius:16px;"></div>
-            </div>
-        </div>
-            <h1 class="text-black font-bold text-lg md:text-xl mb-8">Admin Dashboard - Analytics</h1>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-xs font-bold mb-2 text-black">
-                        Crimes Committed per Month in Metro Manila
-                    </h2>
-                    <canvas id="barChart" class="w-full h-56"></canvas>
-                    <div class="mt-4 space-y-2">
-                        <label class="block text-xs font-semibold text-black">Update Crime Data:</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-700" for="murderInput">Murder</label>
-                                <input id="murderInput" type="number" min="0" value="8" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="kidnappingInput">Kidnapping</label>
-                                <input id="kidnappingInput" type="number" min="0" value="12" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="sexualAssaultInput">Sexual Assault</label>
-                                <input id="sexualAssaultInput" type="number" min="0" value="16" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="violenceInput">Violence</label>
-                                <input id="violenceInput" type="number" min="0" value="20" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="theftInput">Theft</label>
-                                <input id="theftInput" type="number" min="0" value="35" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                        </div>
-                        <button id="updateBarChart" class="mt-2 bg-green-600 text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
-                            Update Chart
-                        </button>
-                    </div>
-                </section>
-                <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-xs font-bold mb-2 text-black">
-                        Geographical Analysis of Crime in Metro Manila
-                    </h2>
-                    <canvas id="pieChart" class="w-full h-56"></canvas>
-                    <div class="mt-4 space-y-2">
-                        <label class="block text-xs font-semibold text-black">Update Crime Distribution (%):</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-700" for="safeOutlierInput">Safer Outlier</label>
-                                <input id="safeOutlierInput" type="number" min="0" max="100" value="25" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="lowerOutlierInput">Lower Outlier</label>
-                                <input id="lowerOutlierInput" type="number" min="0" max="100" value="35.7" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="keepCautionInput">Keep Caution</label>
-                                <input id="keepCautionInput" type="number" min="0" max="100" value="17.9" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="extremeCautionInput">Extreme Caution</label>
-                                <input id="extremeCautionInput" type="number" min="0" max="100" value="7.0" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="highCautionInput">High Caution</label>
-                                <input id="highCautionInput" type="number" min="0" max="100" value="14.3" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                        </div>
-                        <button id="updatePieChart" class="mt-2 bg-green-600 text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
-                            Update Chart
-                        </button>
-                    </div>
-                </section>
-                <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-xs font-bold mb-2 text-black">SafePin System Performance</h2>
-                    <canvas id="radarChart" class="w-full h-56"></canvas>
-                    <div class="mt-4 space-y-2">
-                        <label class="block text-xs font-semibold text-black">Update Performance Scores (0-10):</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-700" for="performanceInput">Performance</label>
-                                <input id="performanceInput" type="number" min="0" max="10" value="9" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="reliabilityInput">Reliability</label>
-                                <input id="reliabilityInput" type="number" min="0" max="10" value="6" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="usabilityInput">Usability</label>
-                                <input id="usabilityInput" type="number" min="0" max="10" value="8" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="securityInput">Security</label>
-                                <input id="securityInput" type="number" min="0" max="10" value="7" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="scalabilityInput">Scalability</label>
-                                <input id="scalabilityInput" type="number" min="0" max="10" value="6" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" />
-                            </div>
-                        </div>
-                        <button id="updateRadarChart" class="mt-2 bg-green-600 text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
-                            Update Chart
-                        </button>
-                    </div>
-                </section>
-                <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-xs font-bold mb-2 text-black">Response Time Analysis</h2>
-                    <canvas id="areaChart" class="w-full h-56"></canvas>
-                    <div class="mt-4 space-y-2">
-                        <label class="block text-xs font-semibold text-black">Update Response Times (minutes):</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-700" for="pnpInput">PNP</label>
-                                <input id="pnpInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="bfpInput">BFP</label>
-                                <input id="bfpInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="emsInput">EMS</label>
-                                <input id="emsInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-700" for="pcgInput">PCG</label>
-                                <input id="pcgInput" type="text" value="1,2,3,4,5,6,7,8,9,10" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#4caf50]" placeholder="Comma separated numbers" />
-                            </div>
-                        </div>
-                        <button id="updateAreaChart" class="mt-2 bg-green-600 text-white font-semibold rounded-md px-6 py-2 cursor-pointer hover:bg-green-700 transition-colors duration-200" type="button">
-                            Update Chart
-                        </button>
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <div id="settings-content" class="content-section space-y-8">
-            <button aria-label="Back to dashboard" class="hidden mb-6 px-4 py-2 bg-gray-300 rounded text-gray-700 hover:bg-gray-400 transition-colors" id="settings-back-button" type="button">
-                ← Back
-            </button>
-            <div id="settings-main-content">
-            </div>
         </div>
 
         <!-- Section for showing Report Details -->
@@ -761,82 +467,23 @@
         </div>
     </div>
 
-    <div id="alertDetailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal('alertDetailsModal')">&times;</span>
-            <h2 class="text-lg font-bold mb-4">Create New Alert</h2>
-            <label for="alertTitle" class="block text-sm font-medium text-gray-700">Alert Title:</label>
-            <input type="text" id="alertTitle" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
-
-            <label for="alertDescription" class="block text-sm font-medium text-gray-700">Description:</label>
-            <textarea id="alertDescription" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full h-24"></textarea>
-
-            <label for="alertCategory" class="block text-sm font-medium text-gray-700">Category:</label>
-            <select id="alertCategory" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full">
-                <option value="System Health">System Health</option>
-                <option value="Security">Security</option>
-                <option value="Incident Report">Incident Report</option>
-                <option value="User Activity">User Activity</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <div class="flex justify-end space-x-2 mt-4">
-                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('alertDetailsModal')">Cancel</button>
-                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="submitAlert()">Submit Alert</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="transferJurisdictionModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal('transferJurisdictionModal')">&times;</span>
-            <h2 class="text-lg font-bold mb-4">Transfer Jurisdiction</h2>
-            <label for="transferDistrict" class="block text-sm font-medium text-gray-700">New District:</label>
-            <input type="text" id="transferDistrict" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
-
-            <label for="transferBarangay" class="block text-sm font-medium text-gray-700">New Barangay:</label>
-            <input type="text" id="transferBarangay" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
-
-            <div class="flex justify-end space-x-2 mt-4">
-                <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('transferJurisdictionModal')">Cancel</button>
-                <button class="bg-[#4caf50] text-white px-4 py-2 rounded-md hover:bg-[#3b82f6] transition-colors duration-200" onclick="submitJurisdictionTransfer()">Transfer</button>
-            </div>
-        </div>
-    </div>
-
     <div id="editReportModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('editReportModal')">&times;</span>
-            <h2 class="text-lg font-bold mb-4">Edit Report</h2>
+            <h2 class="text-lg font-bold mb-4">Edit Report Status</h2>
             <label for="editReportId" class="block text-sm font-medium text-gray-700">Report ID:</label>
             <input type="text" id="editReportId" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full bg-gray-100" readonly />
 
-            <label for="editStreet" class="block text-sm font-medium text-gray-700">Street:</label>
-            <input type="text" id="editStreet" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
-
-            <label for="editWanted" class="block text-sm font-medium text-gray-700">Wanted:</label>
-            <input type="text" id="editWanted" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full" />
-
-            <label for="editProgress" class="block text-sm font-medium text-gray-700">Progress:</label>
+            <label for="editProgress" class="block text-sm font-medium text-gray-700">Status:</label>
             <select id="editProgress" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full">
-                <option value="New">New — Just submitted</option>
-                <option value="Under Review">Under Review — Being assessed</option>
-                <option value="In Progress">In Progress — Action ongoing</option>
-                <option value="Resolved">Resolved — Issue addressed</option>
-                <option value="Closed">Closed — Completed/archived</option>
-                <option value="Escalated">Escalated — Sent to higher authority</option>
-                <option value="Other">Other</option>
+                <option value="pending_verification">Pending Verification</option>
+                <option value="verified">Verified</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
             </select>
-            <input type="text" id="editProgressOther" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full hidden" placeholder="Specify other progress..." />
 
-            <label for="editVisibility" class="block text-sm font-medium text-gray-700">Visibility:</label>
-            <select id="editVisibility" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full">
-                <option value="Public">Public — Visible to everyone</option>
-                <option value="Authorities Only">Authorities Only — Restricted to verified authorities/NGOs</option>
-                <option value="Admins Only">Admins Only — Restricted to system admins</option>
-                <option value="Sensitive">Sensitive — Limited access due to sensitive content</option>
-                <option value="Anonymous">Anonymous — Report details anonymized</option>
-            </select>
+            <label for="editOfficialNotes" class="block text-sm font-medium text-gray-700">Official Notes:</label>
+            <textarea id="editOfficialNotes" class="border border-gray-300 rounded-md p-2 mt-1 mb-3 w-full h-24" placeholder="Add official notes about this report..."></textarea>
 
             <div class="flex justify-end space-x-2 mt-4">
                 <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200" onclick="closeModal('editReportModal')">Cancel</button>
@@ -1010,47 +657,7 @@
             const description = document.getElementById('alertDescription').value;
             const category = document.getElementById('alertCategory').value;
 
-            if (!title || !description) {
-                showMessageModal('Alert title and description are required.');
-                return;
-            }
-
-            const alertsContainer = document.getElementById('active-alerts-container');
-            const newAlert = document.createElement('div');
-
-            let alertClasses = 'p-4 rounded-md shadow-sm';
-            let alertRole = 'alert';
-
-            // Assign color based on category
-            switch (category) {
-                case 'System Health':
-                    alertClasses += ' bg-green-100 border-l-4 border-green-500 text-green-700';
-                    break;
-                case 'Security':
-                    alertClasses += ' bg-red-100 border-l-4 border-red-500 text-red-700';
-                    break;
-                case 'Incident Report':
-                    alertClasses += ' bg-orange-100 border-l-4 border-orange-500 text-orange-700';
-                    break;
-                case 'User Activity':
-                    alertClasses += ' bg-blue-100 border-l-4 border-blue-500 text-blue-700';
-                    break;
-                case 'Other':
-                default:
-                    alertClasses += ' bg-gray-100 border-l-4 border-gray-500 text-gray-700';
-                    break;
-            }
-
-            newAlert.className = alertClasses;
-            newAlert.setAttribute('role', alertRole);
-            newAlert.innerHTML = `
-                <p class="font-bold">${category}: ${title}</p>
-                <p class="text-sm">${description}</p>
-            `;
-            alertsContainer.appendChild(newAlert);
-
-            closeModal('alertDetailsModal');
-            showMessageModal('Alert created and displayed successfully!');
+            // Alert creation functionality removed - authorities and admins cannot create alerts
         }
 
         // Function to submit jurisdiction transfer
@@ -1406,15 +1013,6 @@
             }
             
 
-            // Event Listener for Create Alert button on Overview page
-            const createAlertOverviewBtn = document.getElementById('create-alert-overview-btn');
-            if (createAlertOverviewBtn) {
-                createAlertOverviewBtn.addEventListener('click', function() {
-                    document.getElementById('alertTitle').value = ''; // Clear previous input
-                    document.getElementById('alertDescription').value = ''; // Clear previous input
-                    document.getElementById('alertDetailsModal').style.display = 'flex';
-                });
-            }
             
 
             // Event listeners for remove and edit buttons in reports table

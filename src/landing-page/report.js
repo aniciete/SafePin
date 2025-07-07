@@ -7,10 +7,10 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
-import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../services/auth.service.js';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js';
-import { db } from '../modules/firebase-init.js';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { db, functions } from '../config/firebase.js';
 import { checkRateLimit } from './rate-limit.js';
 import { ValidationError, ERROR_TYPES, ERROR_SEVERITY, showErrorMessage } from '../utils/errorHandler.js';
 
@@ -500,11 +500,10 @@ class ReportController {
      * @returns {Promise<string>} Uploaded image URL
      */
     async uploadImage(imageFile) {
-        const functionsInstance = getFunctions();
-        const getSignature = httpsCallable(functionsInstance, 'getCloudinarySignature');
+        const getSignature = httpsCallable(functions, 'getCloudinarySignature');
         
         try {
-            const signatureResp = await getSignature();
+            const signatureResp = await getSignature({ file: imageFile });
             const { cloudName, apiKey, timestamp, signature, folder } = signatureResp.data;
 
             const formData = new FormData();
@@ -587,8 +586,7 @@ class ReportController {
         if (!imageUrl) return;
         
         try {
-            const functionsInstance = getFunctions();
-            const deleteImage = httpsCallable(functionsInstance, 'deleteCloudinaryImage');
+            const deleteImage = httpsCallable(functions, 'deleteCloudinaryImage');
             await deleteImage({ imageUrl });
         } catch (error) {
             console.warn('Failed to cleanup orphaned image:', error);

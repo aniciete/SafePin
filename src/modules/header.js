@@ -3,7 +3,7 @@
  * This module provides a reusable header that can be included across all pages
  */
 
-class SafePinHeader {
+export class SafePinHeader {
     constructor() {
         this.currentPage = this.getCurrentPage();
     }
@@ -145,11 +145,6 @@ class SafePinHeader {
             this.insertHeader();
         }
     }
-}
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SafePinHeader;
 }
 
 // Auto-initialize if script is loaded directly

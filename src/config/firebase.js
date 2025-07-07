@@ -5,14 +5,12 @@ import { getFunctions } from 'firebase/functions';
 
 // Firebase configuration
 const firebaseConfig = {
-    // Your web app's Firebase configuration will be automatically injected here
-    // from your environment variables
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID
+    apiKey: "AIzaSyBPyEkv4KR0xXE7lh2QqEQDhXnQxQkqbXE",
+    authDomain: "safepin-4c82c.firebaseapp.com",
+    projectId: "safepin-4c82c",
+    storageBucket: "safepin-4c82c.appspot.com",
+    messagingSenderId: "1095800409544",
+    appId: "1:1095800409544:web:e6e1d1f3c6c9c7e7d7c7d7"
 };
 
 // Initialize Firebase

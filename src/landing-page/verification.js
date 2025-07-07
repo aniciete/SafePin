@@ -4,7 +4,7 @@
  * @module VerificationController
  */
 
-import { signUpWithEmail, signInWithEmail, signInWithGoogle } from '../modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle } from '../services/auth.service.js';
 import { ValidationError, ERROR_TYPES, ERROR_SEVERITY, showErrorMessage } from '../utils/errorHandler.js';
 
 /**

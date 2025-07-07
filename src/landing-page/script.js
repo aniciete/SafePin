@@ -1,4 +1,4 @@
-import { openModal, closeModal, redirectTo, setupModalCloseOnOutsideClick } from '../modules/ui.js';
+import { openModal, closeModal, redirectTo, setupModalCloseOnOutsideClick } from '../utils/ui.js';
 
 // Optionally, call setupModalCloseOnOutsideClick() on page load if needed
 setupModalCloseOnOutsideClick();

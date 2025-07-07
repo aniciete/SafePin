@@ -3,7 +3,7 @@
  * This module provides a reusable footer that can be included across all pages
  */
 
-class SafePinFooter {
+export class SafePinFooter {
     constructor() {
         this.currentYear = new Date().getFullYear();
     }
