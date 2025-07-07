@@ -2,7 +2,7 @@ import {
     signInWithEmail,
     signInWithGoogle,
     signUpWithEmail
-} from './modules/auth.js';
+} from './services/auth.service.js';
 
 // Show status message in the UI
 function showStatus(message, type) {

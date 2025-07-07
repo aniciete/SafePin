@@ -1,69 +1,91 @@
 # SafePin
 
-SafePin is a web application designed for real-time incident reporting and mapping. It allows users to submit reports, which are then displayed on a live map for administrators and authorities to manage.
+A secure web application for [brief description of your app].
 
-## ✨ Features
+## Project Structure
 
-- **Real-time Reporting:** Users can submit incident reports that appear instantly.
-- **Interactive Map:** Utilizes Leaflet to display reports on an interactive map.
-- **User Authentication:** Secure login and signup functionality for users and authorities.
-- **Admin Dashboard:** A dedicated interface for administrators to view, edit, and delete reports.
+```
+SafePin/
+├── src/                    # Frontend source code
+│   ├── config/            # Configuration files
+│   │   └── firebase.js    # Firebase initialization
+│   ├── services/          # Service layer
+│   │   └── auth.service.js # Authentication service
+│   ├── components/        # Reusable UI components
+│   ├── utils/             # Utility functions
+│   └── pages/             # Page components
+├── functions/             # Backend (Firebase Functions)
+│   ├── src/              # Backend source code
+│   └── test/             # Backend tests
+└── public/               # Static assets
+```
 
-## 🚀 Tech Stack
+## Environment Setup
 
-- **Frontend:**
-  - [React](https://reactjs.org/)
-  - [Vite](https://vitejs.dev/) - Next-generation frontend tooling
-  - [Leaflet](https://leafletjs.com/) - Interactive map library
-- **Backend & Database:**
-  - [Firebase](https://firebase.google.com/)
-    - **Firestore:** Real-time NoSQL database for storing reports.
-    - **Authentication:** Manages user authentication and sessions.
-    - **Hosting:** Deploys and hosts the web application.
-- **Code Quality:**
-  - [ESLint](https://eslint.org/)
-  - [Prettier](https://prettier.io/) (Recommended)
+1. Create a `.env` file in the root directory with the following variables:
 
-## 📦 Getting Started
+```env
+# Firebase Configuration
+FIREBASE_API_KEY=your_api_key_here
+FIREBASE_AUTH_DOMAIN=your_auth_domain_here
+FIREBASE_PROJECT_ID=your_project_id_here
+FIREBASE_STORAGE_BUCKET=your_storage_bucket_here
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+FIREBASE_APP_ID=your_app_id_here
 
-### Prerequisites
+# Security Settings
+SESSION_SECRET=your_session_secret_here
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
 
-- Node.js (v18 or later)
-- npm or yarn
+# Environment
+NODE_ENV=development
+```
 
-### Installation & Setup
+2. Install dependencies:
+```bash
+npm install
+cd functions && npm install
+```
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/aniciete/SafePin.git
-    cd SafePin
-    ```
+3. Start the development server:
+```bash
+npm run dev
+```
 
-2.  **Install dependencies:**
-    ```sh
-    npm install
-    ```
+## Security Features
 
-3.  **Set up environment variables:**
-    Create a `.env.local` file in the root directory and add your Firebase configuration keys. You can get these from your Firebase project settings.
-    ```
-    VITE_FIREBASE_API_KEY=your_api_key
-    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-    VITE_FIREBASE_PROJECT_ID=your_project_id
-    VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-    VITE_FIREBASE_APP_ID=your_app_id
-    ```
+- Email verification required
+- Rate limiting on authentication endpoints
+- Session management with timeout
+- Input validation and sanitization
+- CSRF protection
+- XSS prevention
 
-4.  **Run the development server:**
-    ```sh
-    npm run dev
-    ```
-    Open http://localhost:5173 to view it in your browser.
+## Development Guidelines
 
-## 📜 Available Scripts
+1. **Code Organization**
+   - Keep frontend and backend code separate
+   - Use services for business logic
+   - Keep components focused and reusable
 
-- `npm run dev`: Starts the development server.
-- `npm run build`: Builds the app for production.
-- `npm run lint`: Lints the codebase using ESLint.
-- `npm run test`: Runs the test suite.
+2. **Security**
+   - Never commit sensitive data or API keys
+   - Always validate user input
+   - Use environment variables for configuration
+
+3. **Testing**
+   - Write unit tests for critical functionality
+   - Test security measures thoroughly
+   - Run tests before committing
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Write/update tests
+4. Submit a pull request
+
+## License
+
+[Your license here]

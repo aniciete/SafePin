@@ -1,4 +1,3 @@
-import { auth, db } from './firebase-init.js';
 import { 
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -9,10 +8,12 @@ import {
     sendEmailVerification,
     getAdditionalUserInfo
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../config/firebase.js';
 import { validateEmail, validatePassword } from '../utils/validation.js';
-import { ValidationError, AuthError, ERROR_TYPES } from '../utils/errorHandler.js';
+import { ValidationError, AuthError } from '../utils/errorHandler.js';
 import { sanitizeText } from '../utils/security.js';
+import { showAuthFeedback } from '../utils/authUtils.js';
 
 // Track failed login attempts
 const loginAttempts = new Map();
@@ -102,8 +103,11 @@ export const signUpWithEmail = async (email, password, role) => {
         await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
             role: role,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            onboardingCompleted: false
         });
+
+        showAuthFeedback('Account created successfully! Please verify your email.', 'success');
 
         return { user, error: null };
     } catch (error) {
@@ -143,7 +147,21 @@ export const signInWithEmail = async (email, password) => {
 
         // Reset failed attempts on success
         resetLoginAttempts(email);
+
+        // Check if onboarding is needed
+        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+        const userData = userDoc.data();
         
+        if (userData.role === 'authority' && !userData.onboardingCompleted) {
+            showAuthFeedback('Please complete the onboarding process.', 'info');
+            return { 
+                user: userCredential.user, 
+                error: null,
+                requiresOnboarding: true 
+            };
+        }
+        
+        showAuthFeedback(`Welcome back, ${userCredential.user.email}!`, 'success');
         return { user: userCredential.user, error: null };
     } catch (error) {
         // Record failed attempt
@@ -217,4 +235,4 @@ export const signOutUser = async () => {
  */
 export const onAuthStateChange = (callback) => {
     return onAuthStateChanged(auth, callback);
-};
+}; 

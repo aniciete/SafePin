@@ -1,4 +1,4 @@
-import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../modules/auth.js';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../services/auth.service.js';
 
 // Make auth functions available globally
 window.handleAuthorityLogin = async () => {

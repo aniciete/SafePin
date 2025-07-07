@@ -181,12 +181,6 @@
         </section>
 
         <section id="reports-content" class="hidden">
-            <div class="flex justify-end mb-4">
-                <button class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
-                    Send Report
-                </button>
-            </div>
-
             <div class="bg-white p-6 rounded-xl shadow-lg">
                 <div class="grid grid-cols-4 gap-4 bg-green-600 text-white font-semibold p-4 rounded-t-lg">
                     <span>ID#</span>
@@ -283,20 +277,20 @@
             <h2 class="text-3xl font-bold text-gray-900 mb-6">SafePin Help Center</h2>
             <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
                 <div class="border-b pb-4">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">How do I report an incident?</h3>
-                    <p class="text-gray-700">To report an incident, navigate to the "Map View" section and drop a pin on the location of the incident. You can then provide details about the crime, hazard, or emergency.</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">How do I manage reports?</h3>
+                    <p class="text-gray-700">As an authority user, you can review, verify, and manage reports submitted by residents in your jurisdiction. Use the Reports section to view and update report statuses.</p>
                 </div>
                 <div class="border-b pb-4">
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">How are reports verified?</h3>
-                    <p class="text-gray-700">Barangay officials (Level 2 users) have access to a dedicated dashboard where they can review and verify submitted reports. This ensures the accuracy and reliability of the data.</p>
+                    <p class="text-gray-700">Review each report's details, evidence, and location. Update the verification status based on your assessment and add official notes as needed.</p>
                 </div>
                 <div class="border-b pb-4">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Can I report anonymously?</h3>
-                    <p class="text-gray-700">Yes, SafePin V1 is designed to allow residents to anonymously report incidents. Your identity will be protected.</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">What are the report statuses?</h3>
+                    <p class="text-gray-700">Reports can be marked as: Pending Verification, Verified, Resolved, or Rejected. Each status helps track the progress of incident management.</p>
                 </div>
                 <div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">Who can access the data?</h3>
-                    <p class="text-gray-700">Access to incident data is role-based. Barangay officials can only view data relevant to their specific jurisdiction.</p>
+                    <p class="text-gray-700">Access to incident data is role-based. You can only view and manage reports within your assigned jurisdiction.</p>
                 </div>
             </div>
         </section>
@@ -579,6 +573,8 @@
                 document.getElementById('settings-content').classList.remove('hidden');
             } else if (tabName === 'Help') {
                 document.getElementById('help-content').classList.remove('hidden');
+                const helpComponent = new Help('help-container', 'authority');
+                helpComponent.render();
             } else if (tabName === 'Log out') {
                 document.getElementById('logout-content').classList.remove('hidden');
             }
@@ -857,28 +853,8 @@
         });
     </script>
 
-    <!-- Modals for confirmation and success messages -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">Confirm Incident Report</h3>
-            <p class="text-gray-700 mb-6">Are you sure you want to report this incident at the selected location?</p>
-            <div class="flex justify-center space-x-4">
-                <button id="confirmReportBtn" class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">Confirm</button>
-                <button id="cancelConfirmBtn" class="bg-gray-400 text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold text-green-600 mb-4">Report Submitted Successfully!</h3>
-            <p class="text-gray-700 mb-6">Your incident report has been submitted and is awaiting verification.</p>
-            <button id="closeSuccessModalBtn" class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">Close</button>
-        </div>
-    </div>
-
     <!-- Firebase init and Firestore real-time reports script -->
-    <script type="module" src="./firebase-reports.js"></script>
+    <script src="firebase-reports.js"></script>
 
 </body>
 </html>
