@@ -1,0 +1,61 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isAuthority() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+    }
+    
+    function isValidReport() {
+      let report = request.resource.data;
+      return report.size() == 8 &&
+        'incidentType' in report && report.incidentType is string &&
+        'severityLevel' in report && report.severityLevel in ['low', 'medium', 'high', 'critical'] &&
+        'description' in report && report.description is string && 
+        report.description.size() >= 20 && report.description.size() <= 1000 &&
+        'imageUrl' in report && report.imageUrl is string &&
+        'location' in report && report.location is map &&
+        'status' in report && report.status in ['pending_verification', 'verified', 'resolved', 'rejected'] &&
+        'createdAt' in report && report.createdAt is timestamp;
+    }
+    
+    // Reports collection
+    match /reports/{reportId} {
+      // Anyone can create a report
+      allow create: if isValidReport();
+      
+      // Only admins and authorities can update reports
+      allow update: if (isAdmin() || isAuthority()) && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'verifiedBy', 'verifiedAt', 'notes']);
+      
+      // Anyone can read verified reports, only admins/authorities can read all
+      allow read: if resource.data.status == 'verified' || isAdmin() || isAuthority();
+      
+      // Only admins can delete reports
+      allow delete: if isAdmin();
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read/write their own data
+      allow read, write: if request.auth.uid == userId;
+      
+      // Admins can read/write all user data
+      allow read, write: if isAdmin();
+    }
+  }
+} 
