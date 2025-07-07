@@ -177,7 +177,7 @@ class MapController {
     async addTileLayer() {
         return new Promise((resolve, reject) => {
             const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+                attribution: ' OpenStreetMap contributors',
                 maxZoom: 19,
                 minZoom: 3
             });
@@ -384,6 +384,48 @@ class ReportController {
     }
 
     /**
+     * Generates a unique anonymous user ID and stores it in session storage.
+     * @returns {string} The anonymous user ID.
+     */
+    getAnonymousUserId() {
+        let userId = sessionStorage.getItem('anonymousUserId');
+        if (!userId) {
+            userId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+            sessionStorage.setItem('anonymousUserId', userId);
+        }
+        return userId;
+    }
+
+    /**
+     * Triggers the download of a text file with the report details.
+     * @param {object} reportData - The data for the report.
+     * @private
+     */
+    downloadReportAsTxt(reportData) {
+        const content = [
+            `Incident Report`,
+            `---------------------------`,
+            `Date: ${new Date().toLocaleString()}`,
+            `Report ID: ${reportData.id || 'N/A'}`,
+            `User ID: ${reportData.userId}`,
+            `Incident Type: ${reportData.incidentType}`,
+            `Severity: ${reportData.severityLevel}`,
+            `Location (Lat, Lng): ${reportData.location.latitude}, ${reportData.location.longitude}`,
+            `Description: ${reportData.description}`,
+        ].join('\n');
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `safepin_report_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
      * Setup event listeners for form elements and modals
      * @private
      */
@@ -400,41 +442,35 @@ class ReportController {
         const confirmModal = document.getElementById('confirmModal');
         const successModal = document.getElementById('successModal');
         const errorModal = document.getElementById('errorModal');
-        
-        this.setupModal(confirmModal, 'openConfirmModalBtn', 'cancelConfirmBtn', 
-            () => this.updateReportSummary());
-        
-        // Setup form submission
-        this.confirmBtn.addEventListener('click', () => this.handleReportSubmission());
-        
-        // Close modals on success/error
-        document.getElementById('closeSuccessModalBtn').addEventListener('click', 
-            () => successModal.classList.remove('active'));
-        document.getElementById('closeErrorModalBtn').addEventListener('click', 
-            () => errorModal.classList.remove('active'));
-    }
+        const openConfirmBtn = document.getElementById('openConfirmModalBtn');
+        const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+        const closeSuccessModalBtn = document.getElementById('closeSuccessModalBtn');
+        const closeErrorModalBtn = document.getElementById('closeErrorModalBtn');
 
-    /**
-     * Setup modal functionality
-     * @private
-     */
-    setupModal(modal, openBtnId, closeBtnId, onOpen, onClose) {
-        const openBtn = document.getElementById(openBtnId);
-        const closeBtn = document.getElementById(closeBtnId);
+        openConfirmBtn.addEventListener('click', () => {
+            const isValid = this.validateForm(true); // Pass true to show all errors
+            if (isValid) {
+                this.updateSummary();
+                confirmModal.classList.add('visible');
+            }
+        });
 
-        if (openBtn) {
-            openBtn.addEventListener('click', () => {
-                if (onOpen) onOpen();
-                modal.classList.add('active');
-            });
-        }
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                if (onClose) onClose();
-                modal.classList.remove('active');
-            });
-        }
+        cancelConfirmBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('visible');
+        });
+
+        this.confirmBtn.addEventListener('click', async () => {
+            await this.submitReport();
+        });
+
+        closeSuccessModalBtn.addEventListener('click', () => {
+            successModal.classList.remove('visible');
+            this.resetForm();
+        });
+
+        closeErrorModalBtn.addEventListener('click', () => {
+            errorModal.classList.remove('visible');
+        });
     }
 
     /**
@@ -627,7 +663,7 @@ class ReportController {
      * Update report summary in confirmation modal
      * @private
      */
-    updateReportSummary() {
+    updateSummary() {
         const location = this.mapController.getLocation();
         document.getElementById('summary-incident-type').textContent = this.incidentType.options[this.incidentType.selectedIndex].text;
         document.getElementById('summary-severity').textContent = this.severityLevel.options[this.severityLevel.selectedIndex].text;
@@ -636,204 +672,74 @@ class ReportController {
     }
 
     /**
-     * Handle report submission
+     * Gathers data, submits the report to Firestore, and handles UI updates.
      * @private
      */
-    async handleReportSubmission() {
-        const confirmButton = document.getElementById('triggerSuccessModalBtn');
-        const confirmModal = document.getElementById('confirmModal');
-        const successModal = document.getElementById('successModal');
-        const errorModal = document.getElementById('errorModal');
-
-        if (!confirmButton) return;
+    async submitReport() {
+        const submitButton = this.confirmBtn;
+        const spinner = submitButton.querySelector('.loading-spinner');
+        const btnText = submitButton.querySelector('.btn-text');
 
         try {
-            // Disable button and show loading state
-            confirmButton.disabled = true;
-            confirmButton.querySelector('.btn-text').classList.add('hidden');
-            confirmButton.querySelector('.loading-spinner').classList.remove('hidden');
+            // Show loading state
+            btnText.textContent = 'Submitting...';
+            spinner.classList.remove('hidden');
+            submitButton.disabled = true;
 
-            // Generate a random user ID for rate limiting
-            const anonymousUserId = 'anon_' + Math.random().toString(36).substring(2, 15);
-
-            // Rate limit check
-            const allowed = await checkRateLimit(anonymousUserId);
-            if (!allowed) {
-                throw new ValidationError(
-                    'Too many reports submitted. Please try again later.',
-                    ERROR_SEVERITY.MEDIUM
-                );
-            }
-
-            // Get form data
-            const formData = this.getFormData();
-            if (!formData.isValid) {
-                throw new ValidationError(
-                    formData.error,
-                    ERROR_SEVERITY.MEDIUM
-                );
-            }
-
-            // Upload image
-            const imageUrl = await this.uploadImage(formData.imageFile);
-
-            // Submit report
-            const reportRef = await this.submitReport({
-                ...formData,
-                userId: anonymousUserId,
-                imageUrl,
-                location: this.mapController.getLocation()
-            });
-
-            // Show success
-            confirmModal.classList.remove('active');
-            document.getElementById('report-id').textContent = `#${reportRef.id}`;
-            successModal.classList.add('active');
-
-        } catch (error) {
-            // Show error modal
-            confirmModal.classList.remove('active');
-            document.getElementById('error-message').textContent = error.message;
-            errorModal.classList.add('active');
-        } finally {
-            // Reset button state
-            confirmButton.disabled = false;
-            confirmButton.querySelector('.btn-text').classList.remove('hidden');
-            confirmButton.querySelector('.loading-spinner').classList.add('hidden');
-        }
-    }
-
-    /**
-     * Get and validate form data
-     * @private
-     * @returns {Object} Form data and validation status
-     */
-    getFormData() {
-        const incidentType = document.getElementById('incident-type')?.value;
-        const severityLevel = document.getElementById('severity-level')?.value;
-        const description = document.getElementById('description')?.value;
-        const imageFile = document.getElementById('image-upload')?.files[0];
-
-        if (!incidentType || !severityLevel || !description || !imageFile) {
-            return {
-                isValid: false,
-                error: 'Please fill out all fields and select an image.'
-            };
-        }
-
-        return {
-            isValid: true,
-            incidentType,
-            severityLevel,
-            description,
-            imageFile
-        };
-    }
-
-    /**
-     * Upload image to Cloudinary
-     * @private
-     * @param {File} imageFile - Image file to upload
-     * @returns {Promise<string>} Uploaded image URL
-     */
-    async uploadImage(imageFile) {
-        const getSignature = httpsCallable(functions, 'getCloudinarySignature');
-        
-        try {
-            const signatureResp = await getSignature({ file: imageFile });
-            const { cloudName, apiKey, timestamp, signature, folder } = signatureResp.data;
-
-            const formData = new FormData();
-            formData.append('file', imageFile);
-            formData.append('api_key', apiKey);
-            formData.append('timestamp', timestamp);
-            formData.append('signature', signature);
-            if (folder) formData.append('folder', folder);
-
-            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-            
-            // Upload with retry
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    const response = await fetch(cloudinaryUrl, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || 'Image upload failed');
-                    }
-
-                    const data = await response.json();
-                    return data.secure_url;
-                } catch (err) {
-                    if (attempt === 3) throw err;
-                    await new Promise(res => setTimeout(res, 1000 * attempt));
-                }
-            }
-
-            throw new Error('Image upload failed after multiple attempts');
-        } catch (error) {
-            throw new ValidationError(
-                'Failed to upload image. Please try again.',
-                ERROR_SEVERITY.HIGH
-            );
-        }
-    }
-
-    /**
-     * Submit report to Firestore
-     * @private
-     * @param {Object} reportData - Report data to submit
-     * @returns {Promise<DocumentReference>} - Firestore document reference
-     */
-    async submitReport(reportData) {
-        try {
-            // Generate a random user ID (no login required)
-            const anonymousUserId = 'anon_' + Math.random().toString(36).substring(2, 15);
-            
-            // Prepare report data
-            const report = {
-                userId: anonymousUserId,
-                timestamp: serverTimestamp(),
+            // 1. Gather form data
+            const location = this.mapController.getLocation();
+            const reportData = {
+                userId: this.getAnonymousUserId(),
+                incidentType: this.incidentType.value,
+                severityLevel: this.severityLevel.value,
+                description: this.description.value,
                 location: {
-                    latitude: reportData.location.lat,
-                    longitude: reportData.location.lng
+                    latitude: location.lat,
+                    longitude: location.lng,
                 },
-                incidentType: reportData.incidentType,
-                severityLevel: reportData.severityLevel,
-                description: reportData.description,
-                status: 'pending_verification' // Initial status
+                createdAt: serverTimestamp(),
+                status: 'pending_verification', // Initial status
             };
 
-            // Add document to Firestore
-            const reportsRef = collection(window.db, 'reports');
-            const docRef = await addDoc(reportsRef, report);
-            return docRef;
+            // 2. Submit to Firestore
+            const reportsCollection = collection(window.db, 'reports');
+            const docRef = await addDoc(reportsCollection, reportData);
+            console.log('Report submitted with ID: ', docRef.id);
+
+            // 3. Create and download local backup file
+            this.downloadReportAsTxt({ ...reportData, id: docRef.id });
+
+            // 4. Show success modal
+            document.getElementById('report-id').textContent = `#${docRef.id.substring(0, 8)}`;
+            document.getElementById('confirmModal').classList.remove('visible');
+            document.getElementById('successModal').classList.add('visible');
+
         } catch (error) {
-            console.error('Error submitting report:', error);
-            throw new ValidationError(
-                'Failed to submit report. Please try again.',
-                ERROR_SEVERITY.HIGH
-            );
+            console.error('Submission failed:', error);
+            showErrorMessage(new ValidationError(
+                'Failed to submit report. Please try again later.',
+                ERROR_SEVERITY.CRITICAL
+            ));
+        } finally {
+            // Hide loading state
+            btnText.textContent = 'Confirm';
+            spinner.classList.add('hidden');
+            submitButton.disabled = false;
         }
     }
 
     /**
-     * Cleanup orphaned Cloudinary image
+     * Resets the form fields and removes any uploaded image.
      * @private
-     * @param {string} imageUrl - URL of image to delete
      */
-    async cleanupOrphanedImage(imageUrl) {
-        if (!imageUrl) return;
-        
-        try {
-            const deleteImage = httpsCallable(functions, 'deleteCloudinaryImage');
-            await deleteImage({ imageUrl });
-        } catch (error) {
-            console.warn('Failed to cleanup orphaned image:', error);
-        }
+    resetForm() {
+        this.form.reset();
+        this.imagePreview.src = '';
+        this.imagePreview.classList.add('hidden');
+        this.fileName.textContent = '';
+        this.fileSize.textContent = '';
+        this.removeImageBtn.classList.add('hidden');
+        this.validateField(this.imageUpload);
     }
 }
 

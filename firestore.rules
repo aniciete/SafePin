@@ -34,20 +34,28 @@ service cloud.firestore {
     
     // Helper function to check rate limit
     function isWithinRateLimit() {
-      let rateLimitDoc = get(/databases/$(database)/documents/rateLimits/$(request.auth.uid ?? request.resource.data.userId)).data;
-      let timestamps = rateLimitDoc != null ? rateLimitDoc.timestamps : [];
-      let recentTimestamps = timestamps.filter(ts => ts > (request.time.toMillis() - 3600000)); // Last hour
-      return recentTimestamps.size() < 5; // Max 5 reports per hour
+      // Determine the user ID from the request.
+      let userId = request.auth != null ? request.auth.uid : request.resource.data.userId;
+      let rateLimitPath = /databases/$(database)/documents/rateLimits/$(userId);
+      
+      // The rule is satisfied if either no rate limit document exists for the user,
+      // OR the number of reports in the last hour is less than 5.
+      // This is a single expression, which is valid syntax.
+      return !exists(rateLimitPath) || (
+        get(rateLimitPath).data.timestamps
+          .filter(ts, ts > (request.time - duration.time(1, 0, 0, 0)))
+          .size() < 5
+      );
     }
 
     // Allow anyone to create a report with rate limiting
     match /reports/{reportId} {
       allow create: if 
         // Validate required fields
-        request.resource.data.keys().hasAll(['userId', 'timestamp', 'location', 'incidentType', 'severityLevel', 'description', 'status']) &&
+        request.resource.data.keys().hasAll(['userId', 'createdAt', 'location', 'incidentType', 'severityLevel', 'description', 'status']) &&
         // Validate data types
         request.resource.data.userId is string &&
-        request.resource.data.timestamp is timestamp &&
+        request.resource.data.createdAt is timestamp &&
         request.resource.data.location is map &&
         request.resource.data.location.latitude is number &&
         request.resource.data.location.longitude is number &&
