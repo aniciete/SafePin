@@ -8,11 +8,10 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
 import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../services/auth.service.js';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase.js';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db, functions } from '../config/firebase.js';
-import { checkRateLimit } from './rate-limit.js';
-import { ValidationError, ERROR_TYPES, ERROR_SEVERITY, showErrorMessage } from '../utils/errorHandler.js';
+import { ValidationError, ERROR_SEVERITY } from '../utils/errorHandler.js';
 
 // Constants for validation
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -782,27 +781,33 @@ class ReportController {
      * Submit report to Firestore
      * @private
      * @param {Object} reportData - Report data to submit
+     * @returns {Promise<DocumentReference>} - Firestore document reference
      */
     async submitReport(reportData) {
         try {
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    const reportRef = await addDoc(collection(db, 'reports'), {
-                        ...reportData,
-                        status: 'pending_verification',
-                        createdAt: serverTimestamp()
-                    });
-                    return reportRef;
-                } catch (err) {
-                    if (attempt === 3) {
-                        // Cleanup orphaned image
-                        await this.cleanupOrphanedImage(reportData.imageUrl);
-                        throw err;
-                    }
-                    await new Promise(res => setTimeout(res, 1000 * attempt));
-                }
-            }
+            // Generate a random user ID (no login required)
+            const anonymousUserId = 'anon_' + Math.random().toString(36).substring(2, 15);
+            
+            // Prepare report data
+            const report = {
+                userId: anonymousUserId,
+                timestamp: serverTimestamp(),
+                location: {
+                    latitude: reportData.location.lat,
+                    longitude: reportData.location.lng
+                },
+                incidentType: reportData.incidentType,
+                severityLevel: reportData.severityLevel,
+                description: reportData.description,
+                status: 'pending_verification' // Initial status
+            };
+
+            // Add document to Firestore
+            const reportsRef = collection(db, 'reports');
+            const docRef = await addDoc(reportsRef, report);
+            return docRef;
         } catch (error) {
+            console.error('Error submitting report:', error);
             throw new ValidationError(
                 'Failed to submit report. Please try again.',
                 ERROR_SEVERITY.HIGH

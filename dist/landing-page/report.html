@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Incident with Modal - SafePin</title>
-  <script type="module" crossorigin src="/assets/report-B3jryZEq.js"></script>
+  <script type="module" crossorigin src="/assets/report-BqLx1dWe.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/footer-D3GxUo90.js">
   <link rel="modulepreload" crossorigin href="/assets/firebase-D7X223rW.js">
   <link rel="modulepreload" crossorigin href="/assets/authUtils-DlK1GYkY.js">
   <link rel="stylesheet" crossorigin href="/assets/footer-BKCO-sTW.css">
-  <link rel="stylesheet" crossorigin href="/assets/report-C2vznWMF.css">
+  <link rel="stylesheet" crossorigin href="/assets/report-CmZ0L3vp.css">
 </head>
 <body>
 
@@ -57,23 +57,28 @@
                 <span class="icon">📝</span>
                 <h2>Submit a Safety Report</h2>
             </div>
-            <form action="#" method="POST" id="reportIncidentForm">
+            <!-- Add form validation message container -->
+            <div id="form-validation-message" class="validation-message hidden"></div>
+            
+            <form action="#" method="POST" id="reportIncidentForm" novalidate>
                 <div class="report-form-fields">
                     <div class="map-area">
                         <div id="map"></div>
                         <div class="map-address-bar" id="addressBar">
-                            **2511 Isagani St, Santa Cruz, Manila, Metro Manila**
+                            <div class="loading-spinner hidden"></div>
+                            <span class="address-text">Select a location on the map</span>
                         </div>
                         <button type="button" class="current-location-btn" id="currentLocationBtn">
                             <svg class="location-icon" viewBox="0 0 24 24">
                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                             </svg>
-                            Using current location
+                            <span class="btn-text">Using current location</span>
+                            <div class="loading-spinner hidden"></div>
                         </button>
                     </div>
                     <div class="form-group">
-                        <label for="incident-type">Incident Type</label>
-                        <select id="incident-type" name="incident_type">
+                        <label for="incident-type">Incident Type <span class="required">*</span></label>
+                        <select id="incident-type" name="incident_type" required>
                             <option value="">Select Incident Type</option>
                             <option value="theft">Theft/Robbery</option>
                             <option value="assault">Assault</option>
@@ -83,28 +88,49 @@
                             <option value="fire">Fire</option>
                             <option value="other">Other</option>
                         </select>
+                        <div class="validation-feedback"></div>
                     </div>
                     <div class="form-group">
-                        <label for="severity-level">Severity Level</label>
-                        <select id="severity-level" name="severity_level">
+                        <label for="severity-level">Severity Level <span class="required">*</span></label>
+                        <select id="severity-level" name="severity_level" required>
                             <option value="">Select Severity Level</option>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
                             <option value="high">High</option>
                             <option value="critical">Critical</option>
                         </select>
+                        <div class="validation-feedback"></div>
                     </div>
                     <div class="form-group full-width">
-                        <label for="description">Description Field</label>
-                        <textarea id="description" name="description" placeholder="Describe what happened..."></textarea>
+                        <label for="description">Description <span class="required">*</span></label>
+                        <textarea id="description" name="description" placeholder="Describe what happened..." required minlength="20"></textarea>
+                        <div class="validation-feedback"></div>
+                        <div class="character-count"><span id="description-length">0</span> / 1000 characters</div>
                     </div>
                     <!-- Image Upload Field -->
                     <div class="form-group full-width">
-                        <label for="image-upload">Upload Image</label>
-                        <input type="file" id="image-upload" accept="image/*" required>
+                        <label for="image-upload">Upload Image <span class="required">*</span></label>
+                        <div class="file-upload-container">
+                            <input type="file" id="image-upload" name="image" accept="image/*" required>
+                            <div class="file-upload-preview">
+                                <img id="image-preview" src="" alt="" class="hidden">
+                                <div class="file-info">
+                                    <span class="file-name"></span>
+                                    <span class="file-size"></span>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-file hidden" id="remove-image">✕</button>
+                        </div>
+                        <div class="validation-feedback"></div>
+                        <div class="upload-requirements">
+                            Accepted formats: JPG, PNG, GIF (max 5MB)
+                        </div>
                     </div>
                     <div class="submit-button-container">
-                        <button type="button" class="btn btn-primary-green" id="openConfirmModalBtn">Submit for Verification</button>
+                        <button type="button" class="btn btn-primary-green" id="openConfirmModalBtn">
+                            <span class="btn-text">Submit for Verification</span>
+                            <div class="loading-spinner hidden"></div>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -114,8 +140,6 @@
     <!-- Footer Container -->
     <div id="footer-container"></div>
 
-
-
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-content">
             <div class="modal-icon">
@@ -124,10 +148,22 @@
             <h3 class="modal-title">Are you sure you want to submit?</h3>
             <div class="modal-body">
                 <p>Once submitted, you acknowledge that your report is <b>final</b> and that you have the right to <b>withdraw at any time.</b></p>
+                <div class="report-summary">
+                    <h4>Report Summary:</h4>
+                    <ul>
+                        <li><strong>Incident Type:</strong> <span id="summary-incident-type"></span></li>
+                        <li><strong>Severity:</strong> <span id="summary-severity"></span></li>
+                        <li><strong>Location:</strong> <span id="summary-location"></span></li>
+                        <li><strong>Description:</strong> <span id="summary-description"></span></li>
+                    </ul>
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary-grey" id="cancelConfirmBtn">Cancel</button>
-                <button type="button" class="btn btn-primary-green" id="triggerSuccessModalBtn">Confirm</button>
+                <button type="button" class="btn btn-primary-green" id="triggerSuccessModalBtn">
+                    <span class="btn-text">Confirm</span>
+                    <div class="loading-spinner hidden"></div>
+                </button>
             </div>
         </div>
     </div>
@@ -139,7 +175,8 @@
             </div>
             <h3 class="modal-title">Report Submitted!</h3>
             <div class="modal-body">
-                <p>Thank you. Your report <b>#01347659</b> has been successfully submitted to be reviewed by proper authorities. You may now close this window.</p>
+                <p>Thank you. Your report <b id="report-id">#01347659</b> has been successfully submitted to be reviewed by proper authorities.</p>
+                <p class="mt-2">You can track the status of your report using the report ID above.</p>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-confirm-ok" id="closeSuccessModalBtn">OK</button>
@@ -147,6 +184,23 @@
         </div>
     </div>
 
+    <!-- Error Modal -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <span class="icon-error">❌</span>
+            </div>
+            <h3 class="modal-title">Error</h3>
+            <div class="modal-body">
+                <p id="error-message"></p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-confirm-ok" id="closeErrorModalBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authority Modal -->
     <div id="authorityModal" class="modal">
         <div class="modal-content">
             <h2>Authority Access</h2>

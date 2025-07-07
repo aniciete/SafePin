@@ -32,21 +32,32 @@ service cloud.firestore {
         'createdAt' in report && report.createdAt is timestamp;
     }
     
-    // Reports collection
+    // Allow anyone to create a report
     match /reports/{reportId} {
-      // Anyone can create a report
-      allow create: if isValidReport();
+      allow create: if 
+        // Validate required fields
+        request.resource.data.keys().hasAll(['userId', 'timestamp', 'location', 'incidentType', 'severityLevel', 'description', 'status']) &&
+        // Validate data types
+        request.resource.data.userId is string &&
+        request.resource.data.timestamp is timestamp &&
+        request.resource.data.location is map &&
+        request.resource.data.location.latitude is number &&
+        request.resource.data.location.longitude is number &&
+        request.resource.data.incidentType is string &&
+        request.resource.data.severityLevel is string &&
+        request.resource.data.description is string &&
+        request.resource.data.status == 'pending_verification' &&
+        // Validate field constraints
+        request.resource.data.description.size() >= 20 &&
+        request.resource.data.description.size() <= 1000 &&
+        request.resource.data.userId.matches('anon_.*');
       
-      // Only admins and authorities can update reports
-      allow update: if (isAdmin() || isAuthority()) && 
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'verifiedBy', 'verifiedAt', 'notes']);
+      // Only allow reading your own reports using the anonymous ID
+      allow read: if resource.data.userId == request.auth.uid || 
+                   resource.data.userId == request.query.anonymousId;
       
-      // Anyone can read verified reports, only admins/authorities can read all
-      allow read: if resource.data.status == 'verified' || isAdmin() || isAuthority();
-      
-      // Only admins can delete reports
-      allow delete: if isAdmin();
+      // No updates or deletes from client side
+      allow update, delete: if false;
     }
     
     // Users collection
