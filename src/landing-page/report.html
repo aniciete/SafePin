@@ -6,6 +6,10 @@
     <title>Report Incident with Modal - SafePin</title>
     <link rel="stylesheet" href="/landing-page/style.css">
     <link rel="stylesheet" href="/landing-page/report-styles.css">
+    <!-- Add Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
 </head>
 <body>
 
@@ -237,129 +241,42 @@
         </div>
     </div>
 
+    <!-- Load Leaflet and its plugins first -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFunctions } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPyEkv4KR0xXE7lh2QqEQDhXnQxQkqbXE",
+            authDomain: "safepin-4c82c.firebaseapp.com",
+            projectId: "safepin-4c82c",
+            storageBucket: "safepin-4c82c.appspot.com",
+            messagingSenderId: "1095800409544",
+            appId: "1:1095800409544:web:e6e1d1f3c6c9c7e7d7c7d7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Initialize Firestore and Functions
+        const db = getFirestore(app);
+        const functions = getFunctions(app);
+
+        // Make Firebase instances available globally
+        window.db = db;
+        window.functions = functions;
+    </script>
+
     <!-- Module Scripts -->
     <script type="module" src="/modules/header.js"></script>
     <script type="module" src="/modules/footer.js"></script>
     <script type="module" src="/landing-page/report.js"></script>
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful login
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        window.handleAuthoritySignUp = async () => {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const authorityType = document.getElementById('authorityType').value;
-            
-            try {
-                const result = await signUpWithEmail(email, password);
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful signup
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        window.handleAuthorityGoogleSignIn = async () => {
-            try {
-                const result = await signInWithGoogle();
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful Google sign-in
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        // Modal functions
-        window.openModal = () => {
-            document.getElementById('authorityModal').style.display = 'flex';
-        };
-
-        window.closeModal = () => {
-            document.getElementById('authorityModal').style.display = 'none';
-        };
-
-        window.switchTab = (tab) => {
-            // Update tab buttons
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update forms
-            if (tab === 'login') {
-                document.getElementById('loginForm').style.display = 'flex';
-                document.getElementById('signupForm').style.display = 'none';
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'flex';
-            }
-        };
-
-        window.redirectTo = (type) => {
-            if (type === 'admin') {
-                window.location.href = '../admin-page/project/index.html';
-            } else if (type === 'authority') {
-                window.location.href = '../authority-page/index.html';
-            }
-            closeModal();
-        };
-
-        // Update auth status display
-        function updateAuthStatus({ user, error }) {
-            const statusDiv = document.getElementById('auth-status');
-            if (user) {
-                statusDiv.textContent = 'Authentication successful! Redirecting...';
-                statusDiv.style.backgroundColor = '#d4edda';
-                statusDiv.style.color = '#155724';
-                statusDiv.style.border = '1px solid #c3e6cb';
-            } else if (error) {
-                statusDiv.textContent = `Error: ${error}`;
-                statusDiv.style.backgroundColor = '#f8d7da';
-                statusDiv.style.color = '#721c24';
-                statusDiv.style.border = '1px solid #f5c6cb';
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('authorityModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
-    </script>
 
 </body>
 </html>

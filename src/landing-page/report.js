@@ -7,17 +7,18 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
-import { signUpWithEmail, signInWithEmail, signInWithGoogle, onAuthStateChange } from '../services/auth.service.js';
-import { db } from '../config/firebase.js';
+
+// Import Firebase services
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { ValidationError, ERROR_SEVERITY } from '../utils/errorHandler.js';
+import { checkRateLimit } from './rate-limit.js';
 
 // Constants for validation
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
-const MAX_DESCRIPTION_LENGTH = 1000;
 const MIN_DESCRIPTION_LENGTH = 20;
+const MAX_DESCRIPTION_LENGTH = 1000;
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Add marker cluster styles
 const markerClusterStyles = `
@@ -66,7 +67,7 @@ if (!document.getElementById('marker-cluster-styles')) {
 }
 
 /**
- * Map Controller - Handles all map-related functionality
+ * Map Controller - Handles map initialization and interactions
  */
 class MapController {
     constructor() {
@@ -652,8 +653,11 @@ class ReportController {
             confirmButton.querySelector('.btn-text').classList.add('hidden');
             confirmButton.querySelector('.loading-spinner').classList.remove('hidden');
 
+            // Generate a random user ID for rate limiting
+            const anonymousUserId = 'anon_' + Math.random().toString(36).substring(2, 15);
+
             // Rate limit check
-            const allowed = await checkRateLimit();
+            const allowed = await checkRateLimit(anonymousUserId);
             if (!allowed) {
                 throw new ValidationError(
                     'Too many reports submitted. Please try again later.',
@@ -676,6 +680,7 @@ class ReportController {
             // Submit report
             const reportRef = await this.submitReport({
                 ...formData,
+                userId: anonymousUserId,
                 imageUrl,
                 location: this.mapController.getLocation()
             });
@@ -803,7 +808,7 @@ class ReportController {
             };
 
             // Add document to Firestore
-            const reportsRef = collection(db, 'reports');
+            const reportsRef = collection(window.db, 'reports');
             const docRef = await addDoc(reportsRef, report);
             return docRef;
         } catch (error) {

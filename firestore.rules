@@ -32,7 +32,15 @@ service cloud.firestore {
         'createdAt' in report && report.createdAt is timestamp;
     }
     
-    // Allow anyone to create a report
+    // Helper function to check rate limit
+    function isWithinRateLimit() {
+      let rateLimitDoc = get(/databases/$(database)/documents/rateLimits/$(request.auth.uid ?? request.resource.data.userId)).data;
+      let timestamps = rateLimitDoc != null ? rateLimitDoc.timestamps : [];
+      let recentTimestamps = timestamps.filter(ts => ts > (request.time.toMillis() - 3600000)); // Last hour
+      return recentTimestamps.size() < 5; // Max 5 reports per hour
+    }
+
+    // Allow anyone to create a report with rate limiting
     match /reports/{reportId} {
       allow create: if 
         // Validate required fields
@@ -50,7 +58,9 @@ service cloud.firestore {
         // Validate field constraints
         request.resource.data.description.size() >= 20 &&
         request.resource.data.description.size() <= 1000 &&
-        request.resource.data.userId.matches('anon_.*');
+        request.resource.data.userId.matches('anon_.*') &&
+        // Check rate limit
+        isWithinRateLimit();
       
       // Only allow reading your own reports using the anonymous ID
       allow read: if resource.data.userId == request.auth.uid || 
@@ -67,6 +77,12 @@ service cloud.firestore {
       
       // Admins can read/write all user data
       allow read, write: if isAdmin();
+    }
+
+    // Allow rate limit tracking
+    match /rateLimits/{userId} {
+      allow read, write: if userId == request.auth.uid || 
+                          userId == request.resource.data.userId;
     }
   }
 } 

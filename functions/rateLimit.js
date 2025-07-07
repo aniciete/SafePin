@@ -6,8 +6,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-admin.initializeApp();
-
 // Allow max 5 reports per IP per hour
 const MAX_REPORTS_PER_HOUR = 5;
 

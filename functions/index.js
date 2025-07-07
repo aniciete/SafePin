@@ -10,6 +10,10 @@
 
 const functions = require('firebase-functions');
 const cloudinary = require('cloudinary').v2;
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin
+admin.initializeApp();
 
 // Initialize Cloudinary using environment config
 cloudinary.config({
@@ -17,6 +21,9 @@ cloudinary.config({
   api_key: functions.config().cloudinary.api_key,
   api_secret: functions.config().cloudinary.api_secret,
 });
+
+// Export rate limit function
+exports.rateLimitReport = require('./rateLimit').rateLimitReport;
 
 /**
  * Callable function that returns a signed upload payload.

@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Incident with Modal - SafePin</title>
-  <script type="module" crossorigin src="/assets/report-BqLx1dWe.js"></script>
+    <!-- Add Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+  <script type="module" crossorigin src="/assets/report-Cje4UFF5.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/footer-D3GxUo90.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-D7X223rW.js">
-  <link rel="modulepreload" crossorigin href="/assets/authUtils-DlK1GYkY.js">
+  <link rel="modulepreload" crossorigin href="/assets/_commonjsHelpers-CUe2genY.js">
+  <link rel="modulepreload" crossorigin href="/assets/index.esm2017-Dg0GKcNi.js">
   <link rel="stylesheet" crossorigin href="/assets/footer-BKCO-sTW.css">
   <link rel="stylesheet" crossorigin href="/assets/report-CmZ0L3vp.css">
 </head>
@@ -242,126 +246,13 @@
         </div>
     </div>
 
+    <!-- Load Leaflet and its plugins first -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+
     <!-- Module Scripts -->
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful login
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        window.handleAuthoritySignUp = async () => {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const authorityType = document.getElementById('authorityType').value;
-            
-            try {
-                const result = await signUpWithEmail(email, password);
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful signup
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        window.handleAuthorityGoogleSignIn = async () => {
-            try {
-                const result = await signInWithGoogle();
-                if (result.user) {
-                    updateAuthStatus({
-                        user: result.user,
-                        error: null
-                    });
-                    // Redirect to authority page after successful Google sign-in
-                    setTimeout(() => {
-                        window.location.href = '../authority-page/index.html';
-                    }, 1500);
-                }
-            } catch (error) {
-                updateAuthStatus({
-                    user: null,
-                    error: error.message
-                });
-            }
-        };
-
-        // Modal functions
-        window.openModal = () => {
-            document.getElementById('authorityModal').style.display = 'flex';
-        };
-
-        window.closeModal = () => {
-            document.getElementById('authorityModal').style.display = 'none';
-        };
-
-        window.switchTab = (tab) => {
-            // Update tab buttons
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update forms
-            if (tab === 'login') {
-                document.getElementById('loginForm').style.display = 'flex';
-                document.getElementById('signupForm').style.display = 'none';
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'flex';
-            }
-        };
-
-        window.redirectTo = (type) => {
-            if (type === 'admin') {
-                window.location.href = '../admin-page/project/index.html';
-            } else if (type === 'authority') {
-                window.location.href = '../authority-page/index.html';
-            }
-            closeModal();
-        };
-
-        // Update auth status display
-        function updateAuthStatus({ user, error }) {
-            const statusDiv = document.getElementById('auth-status');
-            if (user) {
-                statusDiv.textContent = 'Authentication successful! Redirecting...';
-                statusDiv.style.backgroundColor = '#d4edda';
-                statusDiv.style.color = '#155724';
-                statusDiv.style.border = '1px solid #c3e6cb';
-            } else if (error) {
-                statusDiv.textContent = `Error: ${error}`;
-                statusDiv.style.backgroundColor = '#f8d7da';
-                statusDiv.style.color = '#721c24';
-                statusDiv.style.border = '1px solid #f5c6cb';
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('authorityModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
-    </script>
 
 </body>
 </html>
