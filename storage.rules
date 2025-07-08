@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Match any file in the 'reports' folder
+    match /reports/{userId}/{fileName} {
+      // Allow create (upload) only if the user is authenticated
+      // and the `userId` in the path matches their own UID.
+      // This prevents users from uploading files to other users' folders.
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Allow read access to anyone with the URL.
+      // This is standard for public images linked in the app.
+      allow read;
+
+      // Allow delete only if the user is authenticated and the owner of the file.
+      // This rule is primarily for client-side deletion if ever needed.
+      // The Cloud Function for deletion will use admin privileges and bypass this.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

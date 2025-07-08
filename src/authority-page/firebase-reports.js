@@ -1,7 +1,7 @@
 /*
  * Real-time Firestore integration for the Authority dashboard.
- * This script converts Firestore `reports` documents to the structures
- * expected by the existing UI helpers defined inside index.html.
+ * This script fetches Firestore `reports` documents and passes them
+ * to the UI and map controllers for rendering.
  */
 import { db } from '../config/firebase.js';
 import {
@@ -11,129 +11,147 @@ import {
   orderBy,
   onSnapshot,
 } from 'firebase/firestore';
+import { renderDashboardContent, renderReportsTable } from './ui.manager.js';
+import { loadReportsOnMap } from './map.controller.js';
 
 // --- Global State ---
-let lastVisible = null; // For pagination
 let allReports = []; // Local cache of all loaded reports
-let currentReportDetails = {}; // For the modal
 
-// --- UI Helper Functions ---
+/**
+ * Formats a Firestore timestamp into a readable string.
+ * @param {object} ts - The Firestore timestamp object.
+ * @returns {string} - The formatted date string.
+ */
 const formatDate = (ts) =>
   ts && ts.seconds ? new Date(ts.seconds * 1000).toLocaleString() : 'N/A';
 
-const statusConfig = {
-  verified: { text: 'Verified', color: 'blue-500', pulse: true },
-  resolved: { text: 'Resolved', color: 'green-500', pulse: false },
-  rejected: { text: 'Rejected', color: 'red-500', pulse: false },
-  pending_verification: { text: 'Pending', color: 'yellow-500', pulse: true },
-};
+/**
+ * Transforms raw report data from Firestore into a structure
+ * usable by the UI components.
+ * @param {Array} reports - The array of reports from Firestore.
+ * @returns {object} - The transformed data object.
+ */
+function transformDataForUI(reports) {
+  const reportsInJurisdiction = reports.slice(0, 2).map(r => ({
+    id: r.id,
+    street: r.locationName || 'Unknown Street',
+    date: formatDate(r.createdAt),
+    type: r.incidentType,
+    category: r.incidentType,
+    description: r.description,
+    suspect: 'Unknown',
+    status: r.status,
+    verification: r.status,
+  }));
 
-function buildDashboardData(reports) {
-  // --- Summary Cards ---
-  const totalReports = reports.length;
-  const highSeverity = reports.filter((r) => r.severityLevel === 'High').length;
-  const newToday = reports.filter((r) => {
-    const today = new Date();
-    const reportDate = new Date(r.createdAt.seconds * 1000);
-    return today.toDateString() === reportDate.toDateString();
-  }).length;
+  const pendingVerifications = reports.filter(r => r.status === 'pending_verification').map(r => ({
+      id: r.id,
+      location: r.locationName || 'Unknown Location',
+      anonymousId: r.userId || 'Anonymous',
+      date: formatDate(r.createdAt),
+      type: r.incidentType,
+      category: r.incidentType,
+      description: r.description,
+      status: r.status,
+  }));
 
-  document.getElementById('total-reports-value').textContent = totalReports;
-  document.getElementById('high-severity-value').textContent = highSeverity;
-  document.getElementById('new-today-value').textContent = newToday;
+  const resolvedIncidents = reports.filter(r => r.status === 'resolved');
+  const resolvedIncidentsBreakdown = resolvedIncidents.reduce((acc, report) => {
+      const type = report.incidentType || 'Other';
+      const existing = acc.find(item => item.type === type);
+      if (existing) {
+          existing.count++;
+      } else {
+          acc.push({ type, count: 1 });
+      }
+      return acc;
+  }, []);
 
-  // --- Reports Table ---
-  const tableBody = document.getElementById('reports-table-body');
-  tableBody.innerHTML = ''; // Clear existing rows
-  reports.forEach((report) => {
-    const status = statusConfig[report.status] || { text: 'Unknown', color: 'gray-500' };
-    const row = `
-      <tr class="hover:bg-gray-50">
-        <td class="py-4 px-6 text-sm font-medium text-gray-900">${report.incidentType}</td>
-        <td class="py-4 px-6 text-sm text-gray-500">${report.severityLevel}</td>
-        <td class="py-4 px-6 text-sm text-gray-500">${report.description.substring(0, 50)}...</td>
-        <td class="py-4 px-6 text-sm text-gray-500">${formatDate(report.createdAt)}</td>
-        <td class="py-4 px-6 text-sm">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${status.color.split('-')[0]}-100 text-${status.color}">
-            ${status.pulse ? `<span class="mr-1.5 h-2 w-2 bg-${status.color} rounded-full animate-pulse-custom"></span>` : ''}
-            ${status.text}
-          </span>
-        </td>
-        <td class="py-4 px-6 text-sm font-medium text-right">
-          <button onclick="showReportDetails('${report.id}')" class="text-indigo-600 hover:text-indigo-900">View</button>
-        </td>
-      </tr>
-    `;
-    tableBody.innerHTML += row;
-  });
 
-  // --- Map Markers ---
-  updateMapMarkers(reports);
-}
-
-function updateMapMarkers(reports) {
-  if (window.map && window.map.markers) {
-    window.map.markers.forEach((marker) => marker.setMap(null));
-    window.map.markers = [];
-  } else if (window.map) {
-    window.map.markers = [];
-  }
-
-  reports.forEach((report) => {
-    if (window.google && window.map && report.location) {
-      const marker = new google.maps.Marker({
-        position: report.location,
-        map: window.map,
-        title: report.incidentType,
-      });
-      window.map.markers.push(marker);
+  return {
+    jurisdiction: {
+      district: '3 - Santa Cruz', // This should be dynamic in a real app
+      barangay: '370',
+    },
+    reportsInJurisdiction,
+    pendingVerifications,
+    recentActivity: [], // Placeholder for now
+    resolvedIncidents: {
+      total: resolvedIncidents.length,
+      breakdown: resolvedIncidentsBreakdown,
+      crimeApprehensionRate: reports.length > 0 ? Math.round((resolvedIncidents.length / reports.length) * 100) : 0,
+    },
+    profile: {
+        name: 'Isko H. Versosa', // This should be dynamic
+        role: 'Barangay 370 Chairman (Level 2 SafePin Access)',
+        code: '102-121-320'
     }
-  });
+  };
 }
 
-window.showReportDetails = function (reportId) {
-  const report = allReports.find((r) => r.id === reportId);
-  if (!report) return;
-
-  currentReportDetails = report;
-
-  document.getElementById('modal-title').textContent = report.incidentType;
-  document.getElementById('modal-status').textContent = report.status;
-  document.getElementById('modal-severity').textContent = report.severityLevel;
-  document.getElementById('modal-timestamp').textContent = formatDate(report.createdAt);
-  document.getElementById('modal-description').textContent = report.description;
-  document.getElementById('modal-image').src = report.imageUrl;
-  document.getElementById('modal-location').textContent = `Lat: ${report.location.lat}, Lng: ${report.location.lng}`;
-
-  document.getElementById('report-details-modal').classList.remove('hidden');
-}
-
-window.hideReportDetails = function () {
-  document.getElementById('report-details-modal').classList.add('hidden');
-}
-
+/**
+ * Fetches reports from Firestore and listens for real-time updates.
+ */
 function listenForReports() {
   const reportsCol = collection(db, 'reports');
   const reportsQuery = query(
     reportsCol,
-    where('status', 'in', ['verified', 'resolved']),
+    // where('status', 'in', ['verified', 'resolved', 'pending_verification']), // Example filter
     orderBy('createdAt', 'desc')
   );
 
   onSnapshot(reportsQuery, (snapshot) => {
     allReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    buildDashboardData(allReports);
+    
+    // Transform data and render UI
+    const uiData = transformDataForUI(allReports);
+    renderDashboardContent(uiData);
+    renderReportsTable(allReports.map(r => ({
+        id: r.id,
+        street: r.locationName || 'Unknown',
+        wanted: 'Unknown',
+        progress: r.status,
+        category: r.incidentType,
+        description: r.description,
+        verification: r.status,
+        date: formatDate(r.createdAt),
+        reporter: 'Anonymous',
+        lat: r.location ? r.location.latitude : null,
+        lng: r.location ? r.location.longitude : null,
+    })));
+
+    // Update map if it's visible
+    if (!document.getElementById('mapview-content').classList.contains('hidden')) {
+        loadReportsOnMap(getReports());
+    }
+
   }, (error) => {
     console.error("Error fetching reports: ", error);
   });
 }
 
+/**
+ * Returns the cached array of all reports.
+ * @returns {Array}
+ */
+export function getReports() {
+    return allReports.map(r => ({
+        id: r.id,
+        street: r.locationName || 'Unknown',
+        wanted: 'Unknown',
+        progress: r.status,
+        category: r.incidentType,
+        description: r.description,
+        verification: r.status,
+        date: formatDate(r.createdAt),
+        reporter: 'Anonymous',
+        lat: r.location ? r.location.latitude : null,
+        lng: r.location ? r.location.longitude : null,
+    }));
+}
+
+
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Make sure lucide icons are loaded
-  if (window.lucide) {
-    lucide.createIcons();
-  }
-
   listenForReports();
 });

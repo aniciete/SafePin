@@ -19,19 +19,6 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
     }
     
-    function isValidReport() {
-      let report = request.resource.data;
-      return report.size() == 8 &&
-        'incidentType' in report && report.incidentType is string &&
-        'severityLevel' in report && report.severityLevel in ['low', 'medium', 'high', 'critical'] &&
-        'description' in report && report.description is string && 
-        report.description.size() >= 20 && report.description.size() <= 1000 &&
-        'imageUrl' in report && report.imageUrl is string &&
-        'location' in report && report.location is map &&
-        'status' in report && report.status in ['pending_verification', 'verified', 'resolved', 'rejected'] &&
-        'createdAt' in report && report.createdAt is timestamp;
-    }
-    
     // Helper function to check rate limit
     function isWithinRateLimit() {
       // Determine the user ID from the request.
@@ -63,6 +50,7 @@ service cloud.firestore {
         request.resource.data.severityLevel is string &&
         request.resource.data.description is string &&
         request.resource.data.status == 'pending_verification' &&
+        'imageUrl' in request.resource.data && request.resource.data.imageUrl is string && request.resource.data.imageUrl.matches('https://firebasestorage.googleapis.com/.*') &&
         // Validate field constraints
         request.resource.data.description.size() >= 20 &&
         request.resource.data.description.size() <= 1000 &&
@@ -70,9 +58,10 @@ service cloud.firestore {
         // Check rate limit
         isWithinRateLimit();
       
-      // Only allow reading your own reports using the anonymous ID
-      allow read: if resource.data.userId == request.auth.uid || 
-                   resource.data.userId == request.query.anonymousId;
+      // Allow anyone to get a single report by ID, but only allow
+      // authorized users to list all reports.
+      allow get: if true;
+      allow list: if isAuthority() || isAdmin();
       
       // No updates or deletes from client side
       allow update, delete: if false;

@@ -16,13 +16,13 @@ export class SafePinFooter {
             <footer>
                 <div class="container footer-container">
                     <div class="footer-column">
-                        <h4><img src="https://via.placeholder.com/20x20.png?text=S" alt="" style="vertical-align: middle; margin-right: 5px;">SafePin</h4>
+                        <h4><img src="/SafePin Map Logo.png" alt="SafePin Logo" style="vertical-align: middle; margin-right: 5px; width: 20px; height: 20px;">SafePin</h4>
                         <p>Copyright © ${this.currentYear} SafePin <br> All rights reserved.</p>
                         <div class="social-icons" style="margin-top:10px;">
-                            <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=in" alt="LinkedIn"></a>
-                            <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=X" alt="Twitter/X"></a>
-                            <a href="#" style="margin-right:10px;"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=yt" alt="YouTube"></a>
-                            <a href="#"><img src="https://via.placeholder.com/20x20/ffffff/5a9a42?Text=ig" alt="Instagram"></a>
+                            <a href="#" style="margin-right:10px;"><img src="/SafePin Map Logo.png" alt="LinkedIn" style="width: 20px; height: 20px;"></a>
+                            <a href="#" style="margin-right:10px;"><img src="/SafePin Map Logo.png" alt="Twitter/X" style="width: 20px; height: 20px;"></a>
+                            <a href="#" style="margin-right:10px;"><img src="/SafePin Map Logo.png" alt="YouTube" style="width: 20px; height: 20px;"></a>
+                            <a href="#"><img src="/SafePin Map Logo.png" alt="Instagram" style="width: 20px; height: 20px;"></a>
                         </div>
                     </div>
                     <div class="footer-column">
@@ -48,7 +48,7 @@ export class SafePinFooter {
                         <h4>Stay up to date</h4>
                         <form class="newsletter-form" onsubmit="return handleNewsletterSubmit(event)">
                             <input type="email" placeholder="Enter your email address" required>
-                            <button type="submit" class="subscribe-btn"><img src="https://via.placeholder.com/16x16/ffffff/5a9a42?Text=%3E" alt="Send"></button>
+                            <button type="submit" class="subscribe-btn"><img src="/SafePin Map Logo.png" alt="Send" style="width: 16px; height: 16px;"></button>
                         </form>
                     </div>
                 </div>

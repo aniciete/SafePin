@@ -55,7 +55,7 @@ export function sanitizeHtml(input, options = {}) {
         SANITIZE_DOM: true,
         RETURN_DOM: false,
         RETURN_DOM_FRAGMENT: false,
-        RETURN_TRUSTED_TYPE: true
+        RETURN_TRUSTED_TYPE: false
     };
 
     // If links are allowed, ensure they open safely

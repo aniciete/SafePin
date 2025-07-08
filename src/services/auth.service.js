@@ -13,7 +13,7 @@ import { auth, db } from '../config/firebase.js';
 import { validateEmail, validatePassword } from '../utils/validation.js';
 import { ValidationError, AuthError } from '../utils/errorHandler.js';
 import { sanitizeText } from '../utils/security.js';
-import { showAuthFeedback } from '../utils/authUtils.js';
+import { showAuthFeedback } from '../utils/ui.js';
 
 // Track failed login attempts
 const loginAttempts = new Map();

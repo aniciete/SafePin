@@ -4,21 +4,9 @@
  * Keeps reports anonymous (no user tracking).
  */
 
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const cloudinary = require('cloudinary').v2;
-const { sanitize } = require('./utils/security');
-
-if (admin.apps.length === 0) {
-  admin.initializeApp();
-}
-
-// Initialize Cloudinary using environment config
-cloudinary.config({
-  cloud_name: functions.config().cloudinary.cloud_name,
-  api_key: functions.config().cloudinary.api_key,
-  api_secret: functions.config().cloudinary.api_secret,
-});
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import admin from 'firebase-admin';
+import { sanitizeInput as sanitize } from './utils/security.js';
 
 // List of required fields for a report
 const REQUIRED_FIELDS = [
@@ -31,9 +19,12 @@ const REQUIRED_FIELDS = [
   'createdAt',
 ];
 
-exports.validateReport = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snap, context) => {
+export const validateReport = onDocumentCreated('reports/{reportId}', async (event) => {
+    const snap = event.data;
+    if (!snap) {
+      console.log("No data associated with the event");
+      return;
+    }
     const data = snap.data();
     const missing = REQUIRED_FIELDS.filter(field => !(field in data));
     let errors = [];
@@ -53,8 +44,8 @@ exports.validateReport = functions.firestore
     if (typeof data.description !== 'string' || !data.description) {
       errors.push('description must be a non-empty string');
     }
-    if (typeof data.imageUrl !== 'string' || !data.imageUrl.startsWith('https://')) {
-      errors.push('imageUrl must be a valid HTTPS URL');
+    if (typeof data.imageUrl !== 'string' || !data.imageUrl.startsWith('https://firebasestorage.googleapis.com/')) {
+      errors.push('imageUrl must be a valid Firebase Storage URL');
     }
     if (
       !data.location ||
@@ -75,22 +66,17 @@ exports.validateReport = functions.firestore
     if (errors.length > 0) {
       console.error(`Invalid report submission: ${errors.join('; ')}`);
 
-      // Clean up the orphaned image in Cloudinary before deleting the report
+      // Since the image is now uploaded before the report is created,
+      // we need to delete the orphaned image from Firebase Storage.
       const { imageUrl } = data;
-      if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('https://')) {
+      if (imageUrl && typeof imageUrl === 'string') {
         try {
-          // Extract public_id from URL. Assumes "safepin_reports" folder.
-          const matches = imageUrl.match(/\/v\d+\/(?:safepin_reports\/)?([^\.\/]+)\.[a-z]+$/i);
-          if (matches && matches[1]) {
-            const publicId = `safepin_reports/${matches[1]}`;
-            await cloudinary.uploader.destroy(publicId, { invalidate: true });
-            console.log(`Successfully deleted orphaned image: ${publicId}`);
-          } else {
-            console.warn(`Could not extract public_id from invalid imageUrl: ${imageUrl}`);
-          }
+          const storage = admin.storage();
+          const fileRef = storage.refFromURL(imageUrl);
+          await fileRef.delete();
+          console.log(`Successfully deleted orphaned image: ${imageUrl}`);
         } catch (err) {
-          console.error('Failed to delete Cloudinary image during validation cleanup:', err);
-          // Do not re-throw, as we still want to delete the invalid Firestore document.
+          console.error('Failed to delete Firebase Storage image during validation cleanup:', err);
         }
       }
 
@@ -108,7 +94,7 @@ exports.validateReport = functions.firestore
 
     // Update the document with sanitized fields
     await snap.ref.update(sanitizedData);
-    console.log(`Report ${context.params.reportId} has been sanitized and updated.`);
+    console.log(`Report ${event.params.reportId} has been sanitized and updated.`);
 
     return null;
   });

@@ -3,53 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Incident - SafePin</title>
-  <script type="module" crossorigin src="/assets/verification-CJ1p1XoR.js"></script>
+    <title>Check Report Status - SafePin</title>
+  <script type="module" crossorigin src="/assets/verification-B_GoCoxs.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/footer-D3GxUo90.js">
-  <link rel="modulepreload" crossorigin href="/assets/index.esm2017-D2n27qVW.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-BL5aywsU.js">
-  <link rel="modulepreload" crossorigin href="/assets/_commonjsHelpers-CUe2genY.js">
-  <link rel="modulepreload" crossorigin href="/assets/auth.service-CuZ98gXb.js">
+  <link rel="modulepreload" crossorigin href="/assets/footer-DUkHhUr-.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-BftwqhE1.js">
   <link rel="stylesheet" crossorigin href="/assets/footer-BKCO-sTW.css">
+  <link rel="stylesheet" crossorigin href="/assets/verification-DYcf9qS_.css">
 </head>
 <body>
+
     <!-- Header Container -->
     <div id="header-container"></div>
 
-    <main class="verification-container">
+    <section class="page-title-section">
         <div class="container">
-            <div class="verification-header">
-                <h1>Verify Incident</h1>
-            </div>
-        
-            <div class="status-banner">
-                <h2>Status: Your report #01347659 is due for verification</h2>
-            </div>
-            
-            <div class="process-steps">
-                <div class="step" data-step="1">
-                    <h3>Report</h3>
-                    <p>Anonymous reports can be submitted by placing a pin on our interactive map and providing details about what happened.</p>
-                </div>
+            <h1>Check Report Status</h1>
+        </div>
+    </section>
 
-                <div class="step" data-step="2">
-                    <h3>Verify</h3>
-                    <p>Local authorities review and verify reports for accuracy using our verification tools.</p>
+    <section class="verification-form-section">
+        <div class="verification-form-card">
+            <div class="verification-form-header">
+                <span class="icon">🔎</span>
+                <h2>Enter Your Report ID</h2>
+            </div>
+            <form id="verificationForm">
+                <div class="form-group">
+                    <label for="reportId">Report ID</label>
+                    <input type="text" id="reportId" name="reportId" placeholder="Enter your report ID" required>
                 </div>
+                <div class="submit-button-container">
+                    <button type="submit" class="btn btn-primary-green">
+                        <span class="btn-text">Check Status</span>
+                        <div class="loading-spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
 
-                <div class="step" data-step="3">
-                    <h3>Inform</h3>
-                    <p>Verified reports appear on the public map, helping community members stay informed about safety concerns.</p>
-                </div>
-                
-                <div class="step" data-step="4">
-                    <h3>Act</h3>
-                    <p>Community awareness leads to better decision-making, improved responses from authorities, and ultimately safer neighborhoods.</p>
-                </div>
+    <section id="status-display-section" class="hidden">
+        <div class="status-display-card">
+            <div class="status-display-header">
+                <span class="icon">📊</span>
+                <h2>Report Status</h2>
+            </div>
+            <div id="status-details">
+                <!-- Status details will be populated by JavaScript -->
             </div>
         </div>
-    </main>
+    </section>
 
     <!-- Footer Container -->
     <div id="footer-container"></div>

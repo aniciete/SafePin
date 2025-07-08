@@ -3,17 +3,17 @@
  * Keeps reports anonymous (no user tracking).
  */
 
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import admin from 'firebase-admin';
 
 // Allow max 5 reports per IP per hour
 const MAX_REPORTS_PER_HOUR = 5;
 
-exports.rateLimitReport = functions.https.onCall(async (data, context) => {
+export const rateLimitReport = onCall(async (request) => {
   // Extract IP from context
-  const ip = context.rawRequest.ip || context.rawRequest.headers['x-forwarded-for'] || 'unknown';
+  const ip = request.rawRequest.ip || request.rawRequest.headers['x-forwarded-for'] || 'unknown';
   if (ip === 'unknown') {
-    throw new functions.https.HttpsError('failed-precondition', 'Cannot determine IP address for rate limiting.');
+    throw new HttpsError('failed-precondition', 'Cannot determine IP address for rate limiting.');
   }
 
   const now = Date.now();
@@ -28,7 +28,7 @@ exports.rateLimitReport = functions.https.onCall(async (data, context) => {
     timestamps = timestamps.filter(ts => ts > oneHourAgo);
   }
   if (timestamps.length >= MAX_REPORTS_PER_HOUR) {
-    throw new functions.https.HttpsError('resource-exhausted', 'Too many reports submitted from this IP. Please try again later.');
+    throw new HttpsError('resource-exhausted', 'Too many reports submitted from this IP. Please try again later.');
   }
   // Add current timestamp
   timestamps.push(now);

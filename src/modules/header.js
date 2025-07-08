@@ -36,17 +36,17 @@ export class SafePinHeader {
         return `
             <header>
                 <div class="container">
-                    <a href="${this.getHomeLink()}" class="logo">
-                        <img src="${this.getLogoPath()}" alt="SafePin Logo">
+                    <a href="/index.html" class="logo">
+                        <img src="/SafePin Logo Green.svg" alt="SafePin Logo">
                         SafePin
                     </a>
                     <nav>
                         <ul>
-                            <li><a href="${this.getHomeLink()}" ${this.currentPage === 'home' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>Home</a></li>
-                            <li><a href="${this.getFeaturesLink()}" ${this.currentPage === 'features' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>Features</a></li>
-                            <li><a href="${this.getAboutLink()}" ${this.currentPage === 'about' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>About Us</a></li>
-                            <li><a href="${this.getFaqLink()}" ${this.currentPage === 'faq' ? 'style="color: #6ab04c; font-weight: bold;"' : ''}>FAQ</a></li>
-                            <li><a href="${this.getLoginLink()}" class="nav-button">Authority Access</a></li>
+                            <li><a href="/index.html" class="${this.currentPage === 'home' ? 'active' : ''}">Home</a></li>
+                            <li><a href="/landing-page/features.html" class="${this.currentPage === 'features' ? 'active' : ''}">Features</a></li>
+                            <li><a href="/landing-page/about-us.html" class="${this.currentPage === 'about' ? 'active' : ''}">About Us</a></li>
+                            <li><a href="/landing-page/faq.html" class="${this.currentPage === 'faq' ? 'active' : ''}">FAQ</a></li>
+                            <li><a href="/login.html" class="nav-button">Authority Access</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -54,71 +54,6 @@ export class SafePinHeader {
         `;
     }
 
-    /**
-     * Get the appropriate home link based on current page location
-     */
-    getHomeLink() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return '../index.html';
-        }
-        return 'index.html';
-    }
-
-    /**
-     * Get the appropriate logo path based on current page location
-     */
-    getLogoPath() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return '../landing-page/SafePin Logo Green.svg';
-        }
-        return 'landing-page/SafePin Logo Green.svg';
-    }
-
-    /**
-     * Get the appropriate about link based on current page location
-     */
-    getAboutLink() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return 'about-us.html';
-        }
-        return 'landing-page/about-us.html';
-    }
-
-    /**
-     * Get the appropriate features link based on current page location
-     */
-    getFeaturesLink() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return 'features.html';
-        }
-        return 'landing-page/features.html';
-    }
-
-    /**
-     * Get the appropriate FAQ link based on current page location
-     */
-    getFaqLink() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return 'faq.html';
-        }
-        return 'landing-page/faq.html';
-    }
-
-    /**
-     * Get the appropriate login link based on current page location
-     */
-    getLoginLink() {
-        const path = window.location.pathname;
-        if (path.includes('landing-page/')) {
-            return '../login.html';
-        }
-        return 'login.html';
-    }
 
     /**
      * Insert the header into the page

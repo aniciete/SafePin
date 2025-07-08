@@ -3,6 +3,7 @@
  * Provides centralized validation for all user inputs across the application
  * @module validation
  */
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Validates and sanitizes text input
@@ -76,12 +77,7 @@ export const validateText = (input, options = {}) => {
         };
     }
 
-    // Basic XSS prevention - remove potentially dangerous characters
-    const sanitizedValue = trimmedInput
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/javascript:/gi, '')
-        .replace(/on\w+\s*=/gi, '');
+    const sanitizedValue = DOMPurify.sanitize(trimmedInput);
 
     return {
         isValid: true,
@@ -344,16 +340,5 @@ export const validateIncidentReport = (reportData) => {
  * @returns {string} - Sanitized HTML
  */
 export const sanitizeHtml = (html) => {
-    if (!html) return '';
-    
-    // Basic HTML sanitization - remove dangerous tags and attributes
-    return html
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
-        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-        .replace(/javascript:/gi, '')
-        .replace(/vbscript:/gi, '')
-        .replace(/data:/gi, '');
+    return DOMPurify.sanitize(html);
 };

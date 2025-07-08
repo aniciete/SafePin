@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Incident with Modal - SafePin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/landing-page/style.css">
     <link rel="stylesheet" href="/landing-page/report-styles.css">
-    <!-- Add Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <!-- Google Maps will be initialized via JS, no separate CSS needed -->
 </head>
 <body>
 
@@ -112,7 +110,7 @@
                         <div class="file-upload-container">
                             <input type="file" id="image-upload" name="image" accept="image/*" required>
                             <div class="file-upload-preview">
-                                <img id="image-preview" src="" alt="" class="hidden">
+                                <img id="image-preview" src="" alt="Image preview for upload" class="hidden">
                                 <div class="file-info">
                                     <span class="file-name"></span>
                                     <span class="file-size"></span>
@@ -133,6 +131,9 @@
                     </div>
                 </div>
             </form>
+            <div class="check-status-link-container">
+                <a href="verification.html" class="check-status-link">Check Existing Report Status</a>
+            </div>
         </div>
     </section>
 
@@ -226,6 +227,7 @@
                 <form onsubmit="handleAuthoritySignUp(); return false;">
                     <input type="email" id="signupEmail" placeholder="Email" autocomplete="username" required>
                     <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password" required>
+                    <label for="authorityType">Authority Type</label>
                     <select id="authorityType" required>
                         <option value="">Select Authority Type</option>
                         <option value="police">Police</option>
@@ -241,37 +243,8 @@
         </div>
     </div>
 
-    <!-- Load Leaflet and its plugins first -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getFunctions } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPyEkv4KR0xXE7lh2QqEQDhXnQxQkqbXE",
-            authDomain: "safepin-4c82c.firebaseapp.com",
-            projectId: "safepin-4c82c",
-            storageBucket: "safepin-4c82c.appspot.com",
-            messagingSenderId: "1095800409544",
-            appId: "1:1095800409544:web:e6e1d1f3c6c9c7e7d7c7d7"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        
-        // Initialize Firestore and Functions
-        const db = getFirestore(app);
-        const functions = getFunctions(app);
-
-        // Make Firebase instances available globally
-        window.db = db;
-        window.functions = functions;
-    </script>
+    <!-- Google Maps API Script -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=marker" async defer></script>
 
     <!-- Module Scripts -->
     <script type="module" src="/modules/header.js"></script>

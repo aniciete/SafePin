@@ -1,5 +1,5 @@
-const { getAuth } = require('firebase-admin/auth');
-const { HttpsError } = require('firebase-functions/v1/https');
+import { getAuth } from 'firebase-admin/auth';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
 /**
  * Fetches a list of all users from Firebase Authentication.
@@ -32,14 +32,12 @@ async function getAllUsers() {
 /**
  * A callable Cloud Function that returns a list of all users.
  * The function checks if the caller is an admin before returning data.
- * @param {object} data - The data passed to the function.
- * @param {object} context - The context of the function call, including auth information.
  */
-async function listUsers(data, context) {
+export const listUsers = onCall(async (request) => {
   // To secure this function, you should implement a role-based access system.
   // For now, we'll just check if the user is authenticated.
-  // In a real app, you'd check if `context.auth.token.admin` is true.
-  if (!context.auth) {
+  // In a real app, you'd check if `request.auth.token.admin` is true.
+  if (!request.auth) {
     throw new HttpsError('unauthenticated', 'The function must be called while authenticated.');
   }
 
@@ -50,6 +48,4 @@ async function listUsers(data, context) {
     console.error('Error listing users:', error);
     throw new HttpsError('internal', 'Unable to list users.');
   }
-}
-
-module.exports = { listUsers };
+});
