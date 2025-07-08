@@ -39,34 +39,13 @@ export class MapController {
      */
     async _initialize() {
         try {
-            await this._waitForGoogleMaps();
+            // The global window.mapApiInitialized promise is created in report.html
+            await window.mapApiInitialized;
             this._initMap();
         } catch (error) {
             console.error("Map initialization failed:", error);
             this.showErrorModal("Could not load the map. Please check your connection and try again.");
         }
-    }
-
-    /**
-     * Waits for the global 'google' object to become available.
-     * @private
-     * @returns {Promise<void>} A promise that resolves when the API is ready.
-     */
-    _waitForGoogleMaps() {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-            const checkGoogle = () => {
-                if (window.google && window.google.maps) {
-                    resolve();
-                } else if (attempts < 100) { // Timeout after 10 seconds
-                    attempts++;
-                    setTimeout(checkGoogle, 100);
-                } else {
-                    reject(new Error("Google Maps API failed to load."));
-                }
-            };
-            checkGoogle();
-        });
     }
 
     /**
@@ -107,34 +86,32 @@ export class MapController {
      * @param {google.maps.MapMouseEvent} e - The marker drag event.
      */
     handleMarkerDragEnd(e) {
-        this.updateAddress(e.latLng);
+        const latLng = e.target.position;
+        this.updateAddress(new google.maps.LatLng(latLng.lat, latLng.lng));
     }
 
     /**
      * Places or moves the incident marker on the map.
      * @param {google.maps.LatLng} latLng - The coordinates for the marker.
      */
-    placeIncidentMarker(latLng) {
+    async placeIncidentMarker(latLng) {
         this.currentLocation = { lat: latLng.lat(), lng: latLng.lng() };
 
+        // AdvancedMarkerElement requires the marker library
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
         if (this.incidentMarker) {
-            this.incidentMarker.setPosition(latLng);
+            this.incidentMarker.position = latLng;
         } else {
-            this.incidentMarker = new google.maps.Marker({
+            const markerIcon = document.createElement('div');
+            markerIcon.className = 'incident-marker-icon';
+            
+            this.incidentMarker = new AdvancedMarkerElement({
                 position: latLng,
                 map: this.map,
-                draggable: true,
+                gmpDraggable: true,
                 title: 'Drag to adjust incident location',
-                // Custom icon to match the previous style
-                icon: {
-                    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-                    fillColor: '#ff4444',
-                    fillOpacity: 1,
-                    strokeWeight: 0,
-                    rotation: 0,
-                    scale: 1.5,
-                    anchor: new google.maps.Point(12, 24),
-                },
+                content: markerIcon,
             });
             this.incidentMarker.addListener('dragend', this.handleMarkerDragEnd);
         }
