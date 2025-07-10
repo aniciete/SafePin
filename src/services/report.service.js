@@ -14,6 +14,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase.js';
 import { ValidationError, ERROR_SEVERITY } from '../utils/errorHandler.js';
 import { downloadReportAsTxt } from '../utils/ui.js';
+import { ReportValidator } from './report/validation.js';
+import { OfflineReportManager } from './report/offline.js';
 
 /**
  * Uploads an image to Firebase Storage and returns the download URL.
@@ -44,66 +46,114 @@ export async function uploadReportImage(imageFile, userId) {
 }
 
 /**
- * Gathers data, uploads the image, submits the report to Firestore, and handles UI updates.
- * @param {object} reportData - The report data from the form.
- * @param {File} imageFile - The image file to upload.
- * @returns {Promise<string>} The ID of the newly created report.
+ * Submits a report with offline support and validation
+ * @param {object} reportData - The report data from the form
+ * @param {File} imageFile - The image file to upload
+ * @returns {Promise<{id: string, status: 'online'|'offline'}>} The submission result
  */
 export async function submitReport(reportData, imageFile) {
     try {
-        // 1. Upload image and get URL
+        // 1. Validate report data
+        const validationErrors = ReportValidator.validate(reportData);
+        if (validationErrors.length > 0) {
+            throw new ValidationError(
+                'Validation failed',
+                ERROR_SEVERITY.MEDIUM,
+                { errors: validationErrors }
+            );
+        }
+
+        // 2. Check if we're online
+        if (!navigator.onLine) {
+            // Queue report for later submission
+            const tempId = await OfflineReportManager.queueReport({
+                ...reportData,
+                imageFile: imageFile // Store file reference for later upload
+            });
+            
+            return {
+                id: tempId,
+                status: 'offline'
+            };
+        }
+
+        // 3. If online, proceed with normal submission
+        // Upload image first
         const imageUrl = await uploadReportImage(imageFile, reportData.userId);
 
-        // 2. Submit to Firestore with the new image URL
+        // Submit to Firestore
         const reportsCollection = collection(db, 'reports');
         const docRef = await addDoc(reportsCollection, {
             ...reportData,
-            imageUrl, // Add the image URL to the document
+            imageUrl,
             createdAt: serverTimestamp(),
-            status: 'pending_verification', // Initial status
+            status: 'pending_verification'
         });
-        console.log('Report submitted with ID: ', docRef.id);
 
-        // 3. Create and download local backup file
-        downloadReportAsTxt({ ...reportData, id: docRef.id, imageUrl });
+        // Create local backup
+        downloadReportAsTxt({
+            ...reportData,
+            id: docRef.id,
+            imageUrl
+        });
 
-        return docRef.id;
+        return {
+            id: docRef.id,
+            status: 'online'
+        };
     } catch (error) {
         console.error('Submission failed:', error);
-        // Re-throw a more specific error to be handled by the UI controller
+        
+        // If it's not a validation error, try to queue for offline submission
+        if (!(error instanceof ValidationError) && !navigator.onLine) {
+            const tempId = await OfflineReportManager.queueReport({
+                ...reportData,
+                imageFile: imageFile
+            });
+            
+            return {
+                id: tempId,
+                status: 'offline'
+            };
+        }
+
         throw new ValidationError(
             error.message || 'Failed to submit report. Please try again later.',
-            error.severity || ERROR_SEVERITY.CRITICAL
+            error.severity || ERROR_SEVERITY.CRITICAL,
+            { originalError: error }
         );
     }
 }
 
 /**
- * Updates the status of a specific report in Firestore.
- * @param {string} reportId - The ID of the report to update.
- * @param {string} newStatus - The new status to set for the report.
+ * Updates the status of a specific report in Firestore
+ * @param {string} reportId - The ID of the report to update
+ * @param {string} newStatus - The new status to set
  * @returns {Promise<void>}
  */
 export async function updateReportStatus(reportId, newStatus) {
-  if (!reportId || !newStatus) {
-    throw new ValidationError(
-      'Report ID and new status are required.',
-      ERROR_SEVERITY.MEDIUM,
-    );
-  }
+    // Validate the new status
+    const validationErrors = ReportValidator.validateField('status', newStatus, 'validStatus');
+    if (validationErrors) {
+        throw new ValidationError(
+            validationErrors.message,
+            ERROR_SEVERITY.MEDIUM
+        );
+    }
 
-  const reportRef = doc(db, 'reports', reportId);
+    const reportRef = doc(db, 'reports', reportId);
 
-  try {
-    await updateDoc(reportRef, {
-      status: newStatus,
-    });
-    console.log(`Report ${reportId} status updated to ${newStatus}`);
-  } catch (error) {
-    console.error('Failed to update report status:', error);
-    throw new ValidationError(
-      'Failed to update report status. Please try again.',
-      ERROR_SEVERITY.CRITICAL,
-    );
-  }
+    try {
+        await updateDoc(reportRef, {
+            status: newStatus,
+            updatedAt: serverTimestamp()
+        });
+        console.log(`Report ${reportId} status updated to ${newStatus}`);
+    } catch (error) {
+        console.error('Failed to update report status:', error);
+        throw new ValidationError(
+            'Failed to update report status. Please try again.',
+            ERROR_SEVERITY.CRITICAL
+        );
+    }
 }

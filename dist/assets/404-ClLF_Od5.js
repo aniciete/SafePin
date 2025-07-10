@@ -1,1 +1,0 @@
-import"./modulepreload-polyfill-B5Qt9EMX.js";import{S as e,a as n}from"./footer-DUkHhUr-.js";const t=new e,o=new n;document.getElementById("header-container").innerHTML=t.generateHeader();document.getElementById("footer-container").innerHTML=o.generateFooter();

@@ -9,7 +9,8 @@ export class SafePinFooter {
     }
 
     /**
-     * Generate the footer HTML
+     * Generate the footer HTML.
+     * The inline onsubmit has been removed for CSP compliance.
      */
     generateFooter() {
         return `
@@ -46,7 +47,7 @@ export class SafePinFooter {
                     </div>
                     <div class="footer-column">
                         <h4>Stay up to date</h4>
-                        <form class="newsletter-form" onsubmit="return handleNewsletterSubmit(event)">
+                        <form class="newsletter-form">
                             <input type="email" placeholder="Enter your email address" required>
                             <button type="submit" class="subscribe-btn"><img src="/SafePin Map Logo.png" alt="Send" style="width: 16px; height: 16px;"></button>
                         </form>
@@ -54,6 +55,19 @@ export class SafePinFooter {
                 </div>
             </footer>
         `;
+    }
+
+    /**
+     * Handle newsletter form submission. Now a class method.
+     */
+    handleNewsletterSubmit(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input[type="email"]').value;
+        
+        console.log('Newsletter subscription:', email);
+        alert('Thank you for subscribing to our newsletter!');
+        
+        event.target.reset();
     }
 
     /**
@@ -79,12 +93,17 @@ export class SafePinFooter {
     }
 
     /**
-     * Insert the footer into the page
+     * Insert the footer into the page and attach event listeners.
      */
     insertFooter() {
         const footerContainer = document.getElementById('footer-container');
         if (footerContainer) {
             footerContainer.innerHTML = this.generateFooter();
+            // Attach the event listener programmatically after inserting the HTML
+            const newsletterForm = footerContainer.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', this.handleNewsletterSubmit.bind(this));
+            }
         } else {
             console.warn('Footer container not found. Add <div id="footer-container"></div> to your page.');
         }
@@ -94,43 +113,16 @@ export class SafePinFooter {
      * Initialize the footer
      */
     init() {
-        // Wait for DOM to be ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.insertFooter();
-            });
+            document.addEventListener('DOMContentLoaded', () => this.insertFooter());
         } else {
             this.insertFooter();
         }
     }
 }
 
-/**
- * Handle newsletter form submission
- */
-function handleNewsletterSubmit(event) {
-    event.preventDefault();
-    const email = event.target.querySelector('input[type="email"]').value;
-    
-    // Here you would typically send the email to your backend
-    console.log('Newsletter subscription:', email);
-    
-    // Show success message
-    alert('Thank you for subscribing to our newsletter!');
-    
-    // Clear the form
-    event.target.reset();
-    
-    return false;
-}
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SafePinFooter;
-}
-
 // Auto-initialize if script is loaded directly
 if (typeof window !== 'undefined') {
     const footer = new SafePinFooter();
     footer.init();
-} 
+}

@@ -4,9 +4,9 @@
  */
 
 import {
-    handleAuthorityLogin,
-    handleAuthorityGoogleSignIn,
-    handleAuthoritySignUp,
+    signInWithEmail,
+    signInWithGoogle,
+    signUpWithEmail,
 } from '../services/auth.service.js';
 
 function setupAuthorityModal() {
@@ -38,15 +38,20 @@ function setupAuthorityModal() {
 
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        handleAuthorityLogin();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        signInWithEmail(email, password);
     });
 
     signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        handleAuthoritySignUp();
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        const role = document.getElementById('authorityType').value;
+        signUpWithEmail(email, password, role);
     });
 
-    googleSignInBtn.addEventListener('click', handleAuthorityGoogleSignIn);
+    googleSignInBtn.addEventListener('click', () => signInWithGoogle('authority'));
 
     adminLoginBtn.addEventListener('click', () => {
         // Assuming redirectTo is a global function or needs to be imported

@@ -12,37 +12,149 @@ This document outlines the specific issues found, analyzes the data flow, and pr
 
 ### 2.1. Critical: Broken Image Upload and Data Flow
 
-- **Issue:** The report submission form ([`src/landing-page/report.js`](src/landing-page/report.js:679)) collects form data but **completely omits the image file**. The data is written to Firestore without an `imageUrl`.
-- **Impact:** This is the primary point of failure. The backend validation function ([`functions/reportValidation.js`](functions/reportValidation.js:38)) requires an `imageUrl` field. When it receives a new report without it, the function considers the report invalid and **deletes it immediately**.
+- **Issue:** The report submission form (`src/landing-page/report.js`) collects form data but **completely omits the image file**. The data is written to Firestore without an `imageUrl`.
+- **Impact:** This is the primary point of failure. The backend validation function (`functions/reportValidation.js`) requires an `imageUrl` field. When it receives a new report without it, the function considers the report invalid and **deletes it immediately**.
 - **Evidence:**
-    - The `submitReport` method in [`src/landing-page/report.js`](src/landing-page/report.js:692) does not handle `this.imageUpload.files[0]`.
-    - The `validateReport` function in [`functions/reportValidation.js`](functions/reportValidation.js:43) logs "Missing fields: imageUrl" and then calls `snap.ref.delete()`.
+    - The `submitReport` method in `src/landing-page/report.js` does not handle `this.imageUpload.files[0]`.
+    - The `validateReport` function in `functions/reportValidation.js` logs "Missing fields: imageUrl" and then calls `snap.ref.delete()`.
 
 ### 2.2. High: Inconsistent Validation Logic
 
-- **Issue:** There are three different sets of validation rules for the same data, which contradict each other.
-    1.  **Firestore Rules ([`firestore.rules`](firestore.rules:53)):** **Do not** require an `imageUrl` for creating a report. This allows the initial invalid data to be written.
-    2.  **Backend Cloud Function ([`functions/reportValidation.js`](functions/reportValidation.js:28)):** **Does** require an `imageUrl`. This causes the newly created report to be deleted.
-    3.  **Frontend Validation ([`src/landing-page/report.js`](src/landing-page/report.js:505)):** Implements its own basic validation and does not use the more robust functions available in [`src/utils/validation.js`](src/utils/validation.js).
-- **Impact:** This inconsistency is the direct cause of the data loss. The system's security and data integrity are compromised because the rules are not synchronized.
+### 2.3. Enhanced: Error Handling System
 
-### 2.3. Medium: Redundant and Unused Code
+The SafePin application now implements a robust error handling system that provides consistent error management across the application. This system is designed to:
+1. Provide meaningful error messages to users
+2. Enable recovery from recoverable errors
+3. Log errors appropriately for debugging
+4. Maintain a consistent error handling pattern
 
-- **Issue:** Report submission logic is duplicated. A dedicated service file, [`src/services/report.service.js`](src/services/report.service.js), exists but is never used. The `ReportController` in [`src/landing-page/report.js`](src/landing-page/report.js:679) contains its own implementation of `submitReport`.
-- **Impact:** This leads to code rot and confusion for future development. It violates the DRY (Don't Repeat Yourself) principle and makes the codebase harder to maintain.
+#### 2.3.1. Error Types
 
-### 2.4. Medium: Missing Cloud Function for Image Deletion
+The system defines several custom error types:
 
-- **Issue:** The admin dashboard ([`src/admin-page/project/script.js`](src/admin-page/project/script.js:189)) attempts to call a Cloud Function named `deleteImage` when a report is deleted. This function is not defined in [`functions/index.js`](functions/index.js).
-- **Impact:** Even if reports could be created, deleting them from the admin panel would fail and leave orphaned images in Cloudinary, leading to unnecessary storage costs and clutter.
+```javascript
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+        this.recoverable = true;
+    }
+}
 
-## 3. Data Flow Analysis (As-Is)
+class NetworkError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'NetworkError';
+        this.recoverable = true;
+    }
+}
 
-1.  **Submission (Frontend):** A user fills out the form in [`src/landing-page/report.html`](src/landing-page/report.html). The `ReportController` gathers all data **except the image**.
-2.  **Firestore Write (Client to DB):** The client writes the incomplete report data to the `reports` collection. This write **succeeds** because the [`firestore.rules`](firestore.rules) allow it.
-3.  **Validation (Backend):** The `onCreate` trigger for the `reports` collection fires the `validateReport` function in [`functions/reportValidation.js`](functions/reportValidation.js).
+class AuthError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'AuthError';
+        this.recoverable = true;
+    }
+}
+```
+
+Each error type:
+- Extends the native Error class
+- Has a descriptive name
+- Includes a `recoverable` flag indicating if automatic recovery is possible
+- Contains a meaningful error message
+
+#### 2.3.2. Error Handler
+
+The central error handler (`src/utils/errorHandler.js`) provides consistent error processing:
+
+```javascript
+function handleError(error) {
+    const errorTypes = {
+        ValidationError: 'validation',
+        NetworkError: 'network',
+        AuthError: 'auth'
+    };
+
+    const errorType = errorTypes[error?.name] || 'unknown';
+    const isRecoverable = error?.recoverable ?? false;
+
+    console.error(`${errorType.charAt(0).toUpperCase() + errorType.slice(1)} Error:`, error);
+
+    return {
+        type: errorType,
+        message: error?.message || 'An unexpected error occurred',
+        recoverable: isRecoverable
+    };
+}
+```
+
+Features:
+- Categorizes errors by type
+- Provides consistent error object structure
+- Logs errors for debugging
+- Handles null/undefined errors gracefully
+
+#### 2.3.3. Recovery Strategies
+
+The system implements automatic recovery strategies for recoverable errors:
+
+1. **Validation Errors:**
+   - Highlight invalid fields
+   - Show inline error messages
+   - Preserve valid form data
+   - Provide clear correction instructions
+
+2. **Network Errors:**
+   - Implement automatic retry with exponential backoff
+   - Cache data for offline functionality
+   - Queue operations for retry when connection is restored
+
+3. **Authentication Errors:**
+   - Automatic token refresh
+   - Silent re-authentication when possible
+   - Graceful session expiration handling
+
+#### 2.3.4. Implementation Example
+
+```javascript
+try {
+    await submitReport(reportData);
+} catch (error) {
+    const { type, message, recoverable } = handleError(error);
+    
+    if (recoverable) {
+        switch (type) {
+            case 'validation':
+                highlightInvalidFields(error.details);
+                break;
+            case 'network':
+                await retryWithBackoff(submitReport, reportData);
+                break;
+            case 'auth':
+                await refreshAuthToken();
+                break;
+        }
+    }
+    
+    showUserFeedback(message);
+}
+```
+
+#### 2.3.5. Testing
+
+The error handling system is thoroughly tested:
+- Unit tests for each error type
+- Integration tests for recovery strategies
+- E2E tests for user-facing error scenarios
+
+## 3. Data Flow Analysis
+
+1.  **Submission (Frontend):** A user fills out the form in `src/landing-page/report.html`. The `ReportController` gathers all data **except the image**.
+2.  **Firestore Write (Client to DB):** The client writes the incomplete report data to the `reports` collection. This write **succeeds** because the `firestore.rules` allow it.
+3.  **Validation (Backend):** The `onCreate` trigger for the `reports` collection fires the `validateReport` function in `functions/reportValidation.js`.
 4.  **Deletion (Backend):** The function detects the missing `imageUrl` field, deems the report invalid, and **deletes the document** from Firestore.
-5.  **Display (Admin/Authority):** The admin ([`src/admin-page/project/script.js`](src/admin-page/project/script.js)) and authority ([`src/authority-page/firebase-reports.js`](src/authority-page/firebase-reports.js)) pages connect to Firestore but find no reports, as they have all been deleted. They correctly display "No reports found."
+5.  **Display (Admin/Authority):** The admin (`src/admin-page/project/script.js`) and authority (`src/authority-page/firebase-reports.js`) pages connect to Firestore but find no reports, as they have all been deleted. They correctly display "No reports found."
 
 **Conclusion:** No data persists. The admin and authority pages are using live connections, but there is no data for them to display.
 
@@ -50,45 +162,29 @@ This document outlines the specific issues found, analyzes the data flow, and pr
 
 ### Step 1: Fix the Image Upload and Submission Logic
 
-1.  **Refactor `report.js` to Use the Service:**
-    - In [`src/landing-page/report.js`](src/landing-page/report.js), import `getCloudinarySignature` from [`functions/index.js`](functions/index.js) (or a client-side wrapper) and the `submitReport` service.
-    - Modify the `submitReport` method in the `ReportController` to perform these steps:
-        a. Get the image file from `this.imageUpload.files[0]`.
-        b. Call the `getCloudinarySignature` function to get a signature.
-        c. Upload the image to Cloudinary using the signature.
-        d. Get the secure `imageUrl` from the Cloudinary response.
-        e. Call the `submitReport` service from [`src/services/report.service.js`](src/services/report.service.js), passing the complete report data, including the new `imageUrl`.
+### Step 2: Implement Consistent Validation
 
-2.  **Update the `report.service.js`:**
-    - Ensure the `submitReport` function in [`src/services/report.service.js`](src/services/report.service.js) accepts the full report object (including `imageUrl`) and writes it to Firestore.
+### Step 3: Add Error Recovery
 
-### Step 2: Unify Validation Rules
+1. Implement the error handling system as described in section 2.3
+2. Add appropriate error boundaries in React components
+3. Implement retry mechanisms for network operations
+4. Add user feedback for all error scenarios
 
-1.  **Update Firestore Rules:**
-    - Modify [`firestore.rules`](firestore.rules) to **require** the `imageUrl` field upon creation to match the backend function. This provides the first layer of defense against invalid data.
+### Step 4: Enhance Monitoring and Logging
 
-    ```diff
-    // firestore.rules
+1. Add comprehensive error logging
+2. Implement performance monitoring
+3. Track error rates and types
+4. Set up alerts for critical errors
 
-    // ... inside match /reports/{reportId}
-    allow create: if 
-      // Add imageUrl to the list of required keys
-      request.resource.data.keys().hasAll(['userId', 'createdAt', 'location', 'incidentType', 'severityLevel', 'description', 'status', 'imageUrl']) &&
-      // Add validation for imageUrl
-      request.resource.data.imageUrl is string && request.resource.data.imageUrl.matches('https://.*') &&
-      // ... rest of the rules
-    ```
+## 5. Implementation Timeline
 
-2.  **Simplify Backend Validation:**
-    - Since Firestore rules now enforce the presence and type of `imageUrl`, the `validateReport` function in [`functions/reportValidation.js`](functions/reportValidation.js) can be simplified. Its main role becomes sanitization rather than validation of missing fields.
+1. Week 1: Error handling system implementation
+2. Week 2: Image upload fix and validation
+3. Week 3: Testing and monitoring
+4. Week 4: Documentation and deployment
 
-### Step 3: Implement the Missing `deleteImage` Cloud Function
+## 6. Conclusion
 
-1.  **Create the Function:**
-    - In [`functions/index.js`](functions/index.js), create a new callable Cloud Function named `deleteImage`.
-    - This function should take an `imageUrl` as input, extract the `public_id` from it, and use the Cloudinary Node.js SDK to delete the image from the `safepin_reports` folder.
-
-### Step 4: Consolidate Frontend Validation
-
-1.  **Use `validation.js`:**
-    - Refactor the validation logic in [`src/landing-page/report.js`](src/landing-page/report.js) to use the `validateText` and `validateFile` functions from [`src/utils/validation.js`](src/utils/validation.js) for a more robust and centralized approach.
+The addition of the robust error handling system significantly improves the application's reliability and user experience. The system now gracefully handles errors, provides meaningful feedback, and enables recovery where possible.

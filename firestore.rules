@@ -19,67 +19,116 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
     }
     
-    // Helper function to check rate limit
+    // Enhanced rate limit check with IP-based tracking
     function isWithinRateLimit() {
-      // Determine the user ID from the request.
       let userId = request.auth != null ? request.auth.uid : request.resource.data.userId;
+      let clientIP = request.resource.data.clientIP;
       let rateLimitPath = /databases/$(database)/documents/rateLimits/$(userId);
+      let ipLimitPath = /databases/$(database)/documents/ipLimits/$(clientIP);
       
-      // The rule is satisfied if either no rate limit document exists for the user,
-      // OR the number of reports in the last hour is less than 5.
-      // This is a single expression, which is valid syntax.
-      return !exists(rateLimitPath) || (
+      // Check user-based rate limit
+      let userLimit = !exists(rateLimitPath) || (
         get(rateLimitPath).data.timestamps
           .filter(ts, ts > (request.time - duration.time(1, 0, 0, 0)))
           .size() < 5
       );
+      
+      // Check IP-based rate limit
+      let ipLimit = !exists(ipLimitPath) || (
+        get(ipLimitPath).data.timestamps
+          .filter(ts, ts > (request.time - duration.time(1, 0, 0, 0)))
+          .size() < 10
+      );
+      
+      return userLimit && ipLimit;
+    }
+    
+    // Enhanced input validation
+    function isValidReport() {
+      let data = request.resource.data;
+      
+      // Required fields check
+      let hasRequiredFields = data.keys().hasAll([
+        'userId', 'createdAt', 'location', 'incidentType', 
+        'severityLevel', 'description', 'status', 'imageUrl'
+      ]);
+      
+      // Data type validation
+      let hasValidTypes = 
+        data.userId is string &&
+        data.createdAt is timestamp &&
+        data.location is map &&
+        data.location.latitude is number &&
+        data.location.longitude is number &&
+        data.incidentType is string &&
+        data.severityLevel is string &&
+        data.description is string &&
+        data.imageUrl is string;
+      
+      // Content validation
+      let hasValidContent =
+        data.description.size() >= 20 &&
+        data.description.size() <= 1000 &&
+        data.userId.matches('anon_.*') &&
+        data.imageUrl.matches('https://firebasestorage.googleapis.com/.*') &&
+        data.status == 'pending_verification';
+      
+      // Location bounds (Metro Manila)
+      let hasValidLocation =
+        data.location.latitude >= 14.4 &&
+        data.location.latitude <= 14.8 &&
+        data.location.longitude >= 120.9 &&
+        data.location.longitude <= 121.1;
+      
+      // Incident type validation
+      let validIncidentTypes = [
+        'theft', 'harassment', 'vandalism', 'assault',
+        'suspicious_activity', 'traffic_violation', 'other'
+      ];
+      let hasValidIncidentType = validIncidentTypes.hasAny([data.incidentType]);
+      
+      // Severity level validation
+      let validSeverityLevels = ['low', 'medium', 'high'];
+      let hasValidSeverityLevel = validSeverityLevels.hasAny([data.severityLevel]);
+      
+      return hasRequiredFields && hasValidTypes && hasValidContent && 
+             hasValidLocation && hasValidIncidentType && hasValidSeverityLevel;
     }
 
-    // Allow anyone to create a report with rate limiting
+    // Reports collection
     match /reports/{reportId} {
       allow create: if 
-        // Validate required fields
-        request.resource.data.keys().hasAll(['userId', 'createdAt', 'location', 'incidentType', 'severityLevel', 'description', 'status']) &&
-        // Validate data types
-        request.resource.data.userId is string &&
-        request.resource.data.createdAt is timestamp &&
-        request.resource.data.location is map &&
-        request.resource.data.location.latitude is number &&
-        request.resource.data.location.longitude is number &&
-        request.resource.data.incidentType is string &&
-        request.resource.data.severityLevel is string &&
-        request.resource.data.description is string &&
-        request.resource.data.status == 'pending_verification' &&
-        'imageUrl' in request.resource.data && request.resource.data.imageUrl is string && request.resource.data.imageUrl.matches('https://firebasestorage.googleapis.com/.*') &&
-        // Validate field constraints
-        request.resource.data.description.size() >= 20 &&
-        request.resource.data.description.size() <= 1000 &&
-        request.resource.data.userId.matches('anon_.*') &&
-        // Check rate limit
+        isValidReport() &&
         isWithinRateLimit();
       
-      // Allow anyone to get a single report by ID, but only allow
-      // authorized users to list all reports.
       allow get: if true;
       allow list: if isAuthority() || isAdmin();
       
-      // No updates or deletes from client side
-      allow update, delete: if false;
+      // Allow authorities to update status
+      allow update: if 
+        isAuthority() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifiedBy', 'verifiedAt']) &&
+        request.resource.data.verifiedBy == request.auth.uid &&
+        request.resource.data.verifiedAt is timestamp;
+      
+      allow delete: if false;
+    }
+    
+    // Rate limits collection
+    match /rateLimits/{userId} {
+      allow read: if userId == request.auth.uid;
+      allow write: if false; // Only allow writes from server
+    }
+    
+    // IP-based rate limits collection
+    match /ipLimits/{ip} {
+      allow read, write: if false; // Only allow access from server
     }
     
     // Users collection
     match /users/{userId} {
-      // Users can read/write their own data
-      allow read, write: if request.auth.uid == userId;
-      
-      // Admins can read/write all user data
-      allow read, write: if isAdmin();
-    }
-
-    // Allow rate limit tracking
-    match /rateLimits/{userId} {
-      allow read, write: if userId == request.auth.uid || 
-                          userId == request.resource.data.userId;
+      allow read: if request.auth.uid == userId;
+      allow write: if isAdmin();
     }
   }
 } 

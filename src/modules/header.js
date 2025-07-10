@@ -37,7 +37,7 @@ export class SafePinHeader {
             <header>
                 <div class="container">
                     <a href="/index.html" class="logo">
-                        <img src="/SafePin%20Logo%20Green.svg" alt="SafePin Logo">
+                        <img src="/SafePin Logo Green.svg" alt="SafePin Logo">
                         SafePin
                     </a>
                     <nav>

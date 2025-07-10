@@ -16,7 +16,7 @@ class a{constructor(){this.currentPage=this.getCurrentPage()}getCurrentPage(){co
                     </nav>
                 </div>
             </header>
-        `}insertHeader(){const e=document.getElementById("header-container");e?e.innerHTML=this.generateHeader():console.warn('Header container not found. Add <div id="header-container"></div> to your page.')}init(){document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>{this.insertHeader()}):this.insertHeader()}}typeof window<"u"&&new a().init();class i{constructor(){this.currentYear=new Date().getFullYear()}generateFooter(){return`
+        `}insertHeader(){const e=document.getElementById("header-container");e?e.innerHTML=this.generateHeader():console.warn('Header container not found. Add <div id="header-container"></div> to your page.')}init(){document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>{this.insertHeader()}):this.insertHeader()}}typeof window<"u"&&new a().init();class r{constructor(){this.currentYear=new Date().getFullYear()}generateFooter(){return`
             <footer>
                 <div class="container footer-container">
                     <div class="footer-column">
@@ -50,11 +50,11 @@ class a{constructor(){this.currentPage=this.getCurrentPage()}getCurrentPage(){co
                     </div>
                     <div class="footer-column">
                         <h4>Stay up to date</h4>
-                        <form class="newsletter-form" onsubmit="return handleNewsletterSubmit(event)">
+                        <form class="newsletter-form">
                             <input type="email" placeholder="Enter your email address" required>
                             <button type="submit" class="subscribe-btn"><img src="/SafePin Map Logo.png" alt="Send" style="width: 16px; height: 16px;"></button>
                         </form>
                     </div>
                 </div>
             </footer>
-        `}getAboutLink(){return window.location.pathname.includes("landing-page/")?"about-us.html":"landing-page/about-us.html"}getFaqLink(){return window.location.pathname.includes("landing-page/")?"faq.html":"landing-page/faq.html"}insertFooter(){const e=document.getElementById("footer-container");e?e.innerHTML=this.generateFooter():console.warn('Footer container not found. Add <div id="footer-container"></div> to your page.')}init(){document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>{this.insertFooter()}):this.insertFooter()}}typeof module<"u"&&module.exports&&(module.exports=i);typeof window<"u"&&new i().init();export{a as S,i as a};
+        `}handleNewsletterSubmit(e){e.preventDefault();const t=e.target.querySelector('input[type="email"]').value;console.log("Newsletter subscription:",t),alert("Thank you for subscribing to our newsletter!"),e.target.reset()}getAboutLink(){return window.location.pathname.includes("landing-page/")?"about-us.html":"landing-page/about-us.html"}getFaqLink(){return window.location.pathname.includes("landing-page/")?"faq.html":"landing-page/faq.html"}insertFooter(){const e=document.getElementById("footer-container");if(e){e.innerHTML=this.generateFooter();const t=e.querySelector(".newsletter-form");t&&t.addEventListener("submit",this.handleNewsletterSubmit.bind(this))}else console.warn('Footer container not found. Add <div id="footer-container"></div> to your page.')}init(){document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>this.insertFooter()):this.insertFooter()}}typeof window<"u"&&new r().init();export{a as S,r as a};

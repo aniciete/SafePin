@@ -1,6 +1,6 @@
 # SafePin
 
-A secure web application for [brief description of your app].
+A secure web application for anonymous crime reporting and community safety monitoring in Metro Manila.
 
 ## Project Structure
 
@@ -53,14 +53,72 @@ cd functions && npm install
 npm run dev
 ```
 
-## Security Features
+## Features
 
+### Security
 - Email verification required
 - Rate limiting on authentication endpoints
 - Session management with timeout
 - Input validation and sanitization
 - CSRF protection
 - XSS prevention
+
+### Error Handling
+- Custom error types for different scenarios
+- Automatic error recovery where possible
+- Consistent error messaging
+- Comprehensive error logging
+- Retry mechanisms for network operations
+
+### Accessibility
+SafePin is committed to providing an accessible experience for all users. Our accessibility features include:
+
+#### Keyboard Navigation
+- Full keyboard support for all interactive elements
+- Focus management and trapping in modals
+- Skip links for main content
+- Visible focus indicators
+- Logical tab order
+
+#### Screen Reader Support
+- ARIA landmarks and labels
+- Semantic HTML structure
+- Descriptive link text
+- Form input labels
+- Status announcements
+- Image alt text
+
+#### Visual Accessibility
+- High contrast mode support
+- Adjustable text size
+- Color-independent design
+- Clear visual hierarchy
+- Consistent layout
+
+#### Motion and Animation
+- Reduced motion support
+- No auto-playing content
+- Pausable animations
+- Optional transitions
+
+#### Assistive Components
+1. **Help Component**
+   - Expandable sections
+   - Keyboard-accessible navigation
+   - Screen reader announcements
+   - Context-sensitive help
+
+2. **Breadcrumbs Component**
+   - Clear navigation path
+   - Current page indication
+   - ARIA landmark navigation
+   - Semantic list structure
+
+3. **Footer Component**
+   - Organized navigation sections
+   - Accessible forms
+   - Language selection
+   - Contact information
 
 ## Development Guidelines
 
@@ -79,12 +137,66 @@ npm run dev
    - Test security measures thoroughly
    - Run tests before committing
 
+4. **Accessibility**
+   - Follow WCAG 2.1 Level AA guidelines
+   - Test with screen readers
+   - Support keyboard navigation
+   - Maintain color contrast
+   - Provide text alternatives
+
 ## Contributing
 
 1. Create a feature branch
 2. Make your changes
 3. Write/update tests
 4. Submit a pull request
+
+### Accessibility Checklist for Contributors
+
+When contributing to SafePin, ensure your changes meet these accessibility requirements:
+
+1. **Semantic HTML**
+   - Use appropriate HTML elements
+   - Maintain proper heading hierarchy
+   - Include ARIA attributes when needed
+
+2. **Keyboard Support**
+   - All interactive elements are focusable
+   - Logical tab order
+   - Keyboard shortcuts where appropriate
+   - Focus management in modals/popups
+
+3. **Screen Readers**
+   - Meaningful alt text for images
+   - Descriptive link text
+   - Form labels and instructions
+   - Status updates and notifications
+
+4. **Visual Design**
+   - Sufficient color contrast (WCAG AA)
+   - Text resizing support
+   - Visible focus indicators
+   - Flexible layouts
+
+5. **Motion and Animation**
+   - Respect reduced motion preferences
+   - No flashing content
+   - Pausable animations
+   - Optional transitions
+
+## Testing
+
+```bash
+# Run unit and integration tests
+npm run test
+
+# Run E2E tests
+npm run cypress:open  # Interactive mode
+npm run cypress:run   # Headless mode
+
+# Run accessibility tests
+npm run test:a11y
+```
 
 ## License
 

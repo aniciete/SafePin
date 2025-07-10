@@ -18,6 +18,9 @@ export const ERROR_TYPES = {
     RATE_LIMIT: 'rate_limit',
     DATABASE: 'database',
     STORAGE: 'storage',
+    MAP: 'map',
+    UPLOAD: 'upload',
+    FORM: 'form',
     UNKNOWN: 'unknown'
 };
 
@@ -42,7 +45,10 @@ export const RECOVERY_STRATEGIES = {
     RESET: 'reset',           // Reset to initial state
     RELOAD: 'reload',         // Reload the page/component
     NOTIFY: 'notify',         // Just notify user
-    REDIRECT: 'redirect'      // Redirect to safe state
+    REDIRECT: 'redirect',      // Redirect to safe state
+    CLEAR_FORM: 'clear_form', // Clear form data
+    RETRY_UPLOAD: 'retry_upload', // Retry file upload
+    REINIT_MAP: 'reinit_map'  // Reinitialize map component
 };
 
 /**
@@ -149,6 +155,38 @@ export class StorageError extends BaseError {
     constructor(message, resource = null) {
         super(message, ERROR_TYPES.STORAGE, ERROR_SEVERITY.HIGH);
         this.resource = resource;
+    }
+}
+
+/**
+ * Map-related error class
+ */
+export class MapError extends BaseError {
+    constructor(message, mapInstance = null) {
+        super(message, ERROR_TYPES.MAP, ERROR_SEVERITY.HIGH);
+        this.mapInstance = mapInstance;
+    }
+}
+
+/**
+ * Upload-related error class
+ */
+export class UploadError extends BaseError {
+    constructor(message, file = null, maxSize = null) {
+        super(message, ERROR_TYPES.UPLOAD, ERROR_SEVERITY.HIGH);
+        this.file = file;
+        this.maxSize = maxSize;
+    }
+}
+
+/**
+ * Form-related error class
+ */
+export class FormError extends BaseError {
+    constructor(message, formData = null, validationErrors = {}) {
+        super(message, ERROR_TYPES.FORM, ERROR_SEVERITY.MEDIUM);
+        this.formData = formData;
+        this.validationErrors = validationErrors;
     }
 }
 
@@ -382,6 +420,103 @@ class ErrorRecovery {
     static notify(error) {
         showErrorMessage(error);
         return null;
+    }
+
+    /**
+     * Handle map-related errors
+     * @param {MapError} error - The map error to handle
+     * @returns {Promise<boolean>} Whether recovery was successful
+     */
+    static async handleMapError(error) {
+        try {
+            if (error.mapInstance) {
+                // Try to reinitialize the map instance
+                await error.mapInstance.setOptions({ zoom: 12 });
+                return true;
+            } else if (window.initMap) {
+                // Try to reinitialize the entire map
+                await window.initMap();
+                return true;
+            }
+            return false;
+        } catch (e) {
+            console.error('Map recovery failed:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Handle upload-related errors
+     * @param {UploadError} error - The upload error to handle
+     * @returns {Promise<boolean>} Whether recovery was successful
+     */
+    static async handleUploadError(error) {
+        try {
+            if (!error.file) return false;
+
+            // If file is too large, suggest optimization
+            if (error.maxSize && error.file.size > error.maxSize) {
+                const message = `File size (${(error.file.size / 1024 / 1024).toFixed(2)}MB) exceeds limit (${(error.maxSize / 1024 / 1024).toFixed(2)}MB). Please compress the image or choose a smaller file.`;
+                this.notify({ message, type: 'warning' });
+                return false;
+            }
+
+            // For other upload errors, suggest retry
+            this.notify({ 
+                message: 'Upload failed. Please try again.',
+                type: 'error'
+            });
+            return false;
+        } catch (e) {
+            console.error('Upload error recovery failed:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Handle form-related errors
+     * @param {FormError} error - The form error to handle
+     * @returns {Promise<boolean>} Whether recovery was successful
+     */
+    static async handleFormError(error) {
+        try {
+            if (!error.formData) return false;
+
+            // Display validation errors
+            if (error.validationErrors) {
+                Object.entries(error.validationErrors).forEach(([field, message]) => {
+                    const element = document.querySelector(`[name="${field}"]`);
+                    if (element) {
+                        this.showFieldError(element, message);
+                    }
+                });
+            }
+
+            // Focus on the first field with error
+            const firstErrorField = Object.keys(error.validationErrors)[0];
+            if (firstErrorField) {
+                const element = document.querySelector(`[name="${firstErrorField}"]`);
+                if (element) element.focus();
+            }
+
+            return true;
+        } catch (e) {
+            console.error('Form error recovery failed:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Show field-level error
+     * @private
+     */
+    static showFieldError(element, message) {
+        const feedbackElement = element.parentElement.querySelector('.validation-feedback');
+        if (feedbackElement) {
+            feedbackElement.textContent = message;
+            feedbackElement.style.display = 'block';
+            element.classList.add('error');
+        }
     }
 }
 

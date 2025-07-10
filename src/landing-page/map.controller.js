@@ -1,229 +1,149 @@
 /**
- * @fileoverview Map Controller for SafePin report page using Google Maps API.
- * Handles map initialization, markers, and geocoding.
- * @module map.controller
+ * @fileoverview Map controller for the report page
+ * Handles map initialization and marker management
  */
+
+import { MapLoader } from '../utils/map-loader.js';
+import { MapError } from '../utils/errorHandler.js';
+
+const MAPS_CONFIG = {
+    API_KEY: 'AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM',
+    DEFAULT_CENTER: { lat: 14.5995, lng: 121.0364 }, // Metro Manila
+    DEFAULT_ZOOM: 12,
+    BOUNDS: {
+        north: 14.7565, // Metro Manila bounds
+        south: 14.4755,
+        east: 121.0851,
+        west: 120.9321
+    }
+};
+
+let map;
+let marker;
 
 /**
- * Map Controller - Handles Google Maps initialization and interactions.
+ * Initialize the map
  */
-export class MapController {
-    constructor() {
-        this.map = null;
-        this.incidentMarker = null;
-        this.geocoder = null;
-        this.currentLocation = { lat: 14.6042, lng: 120.9822 }; // Default: Manila
-        this.mapInitialized = false;
-        this.mapContainer = document.getElementById('map');
-        this.addressBar = document.getElementById('addressBar');
+export async function initMap() {
+    try {
+        // Load Google Maps API
+        await MapLoader.loadGoogleMaps(MAPS_CONFIG.API_KEY);
 
-        // Bind methods to ensure 'this' context is correct
-        this.handleMapClick = this.handleMapClick.bind(this);
-        this.handleMarkerDragEnd = this.handleMarkerDragEnd.bind(this);
-        this.handleCurrentLocationClick = this.handleCurrentLocationClick.bind(this);
-
-        // This promise ensures that methods depending on the map
-        // do not run until it is fully initialized.
-        this.initPromise = this._initialize();
-
-        const currentLocationBtn = document.getElementById('currentLocationBtn');
-        if (currentLocationBtn) {
-            currentLocationBtn.addEventListener('click', this.handleCurrentLocationClick);
+        // Initialize map
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            throw new MapError('Map container not found');
         }
-    }
 
-    /**
-     * Initializes the controller by waiting for the Google Maps API to be ready,
-     * then setting up the map.
-     * @private
-     */
-    async _initialize() {
-        try {
-            // The global window.mapApiInitialized promise is created in report.html
-            await window.mapApiInitialized;
-            this._initMap();
-        } catch (error) {
-            console.error("Map initialization failed:", error);
-            this.showErrorModal("Could not load the map. Please check your connection and try again.");
-        }
-    }
-
-    /**
-     * Sets up the Google Map, geocoder, and initial event listeners.
-     * @private
-     */
-    _initMap() {
-        if (this.mapInitialized || !this.mapContainer) return;
-
-        this.geocoder = new google.maps.Geocoder();
-        this.map = new google.maps.Map(this.mapContainer, {
-            center: this.currentLocation,
-            zoom: 15,
-            mapTypeControl: false,
+        map = new google.maps.Map(mapElement, {
+            center: MAPS_CONFIG.DEFAULT_CENTER,
+            zoom: MAPS_CONFIG.DEFAULT_ZOOM,
+            restriction: {
+                latLngBounds: MAPS_CONFIG.BOUNDS,
+                strictBounds: false
+            },
+            mapTypeControl: true,
             streetViewControl: false,
-            fullscreenControl: false,
-            zoomControl: true,
+            fullscreenControl: false
         });
 
-        this.map.addListener('click', this.handleMapClick);
-        this.mapInitialized = true;
+        // Create marker
+        marker = new google.maps.Marker({
+            map,
+            position: map.getCenter(),
+            draggable: true,
+            title: 'Drag to set incident location'
+        });
 
-        // Attempt to fetch the user's location upon initialization.
-        this.getCurrentLocation();
+        // Add marker drag event listener
+        marker.addListener('dragend', () => {
+            const position = marker.getPosition();
+            updateAddressBar(position);
+            updateLocationField(position);
+        });
+
+        // Add click event listener to map
+        map.addListener('click', (event) => {
+            const position = event.latLng;
+            marker.setPosition(position);
+            updateAddressBar(position);
+            updateLocationField(position);
+        });
+
+        // Initialize current location button
+        initCurrentLocationButton();
+
+        console.log('Map initialized successfully');
+        return { map, marker };
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        throw new MapError('Failed to initialize map: ' + error.message);
     }
+}
 
-    /**
-     * Handles clicks on the map to place the incident marker.
-     * @param {google.maps.MapMouseEvent} e - The map click event.
-     */
-    handleMapClick(e) {
-        this.placeIncidentMarker(e.latLng);
-        this.updateAddress(e.latLng);
-    }
-
-    /**
-     * Handles the end of a marker drag event.
-     * @param {google.maps.MapMouseEvent} e - The marker drag event.
-     */
-    handleMarkerDragEnd(e) {
-        const latLng = e.target.position;
-        this.updateAddress(new google.maps.LatLng(latLng.lat, latLng.lng));
-    }
-
-    /**
-     * Places or moves the incident marker on the map.
-     * @param {google.maps.LatLng} latLng - The coordinates for the marker.
-     */
-    async placeIncidentMarker(latLng) {
-        this.currentLocation = { lat: latLng.lat(), lng: latLng.lng() };
-
-        // AdvancedMarkerElement requires the marker library
-        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-
-        if (this.incidentMarker) {
-            this.incidentMarker.position = latLng;
-        } else {
-            const markerIcon = document.createElement('div');
-            markerIcon.className = 'incident-marker-icon';
-            
-            this.incidentMarker = new AdvancedMarkerElement({
-                position: latLng,
-                map: this.map,
-                gmpDraggable: true,
-                title: 'Drag to adjust incident location',
-                content: markerIcon,
-            });
-            this.incidentMarker.addListener('dragend', this.handleMarkerDragEnd);
+/**
+ * Update the address bar with the current location
+ * @param {google.maps.LatLng} position
+ */
+async function updateAddressBar(position) {
+    try {
+        const geocoder = new google.maps.Geocoder();
+        const result = await geocoder.geocode({ location: position });
+        if (result.results[0]) {
+            const address = result.results[0].formatted_address;
+            document.getElementById('address-display').textContent = address;
         }
+    } catch (error) {
+        console.error('Error getting address:', error);
+        document.getElementById('address-display').textContent = 'Address not found';
     }
+}
 
-    /**
-     * Updates the address display using the Google Maps Geocoding service.
-     * @param {google.maps.LatLng} latLng - The coordinates to geocode.
-     */
-    async updateAddress(latLng) {
-        if (!this.addressBar) return;
-        this.addressBar.innerHTML = `<em>Loading address...</em>`;
+/**
+ * Update the hidden location field with coordinates
+ * @param {google.maps.LatLng} position
+ */
+function updateLocationField(position) {
+    const locationField = document.getElementById('location');
+    if (locationField) {
+        const location = {
+            lat: position.lat(),
+            lng: position.lng()
+        };
+        locationField.value = JSON.stringify(location);
+    }
+}
 
-        try {
-            const response = await this.geocoder.geocode({ location: latLng });
-            if (response.results && response.results[0]) {
-                this.addressBar.innerHTML = `<strong>${response.results[0].formatted_address}</strong>`;
+/**
+ * Initialize the current location button
+ */
+function initCurrentLocationButton() {
+    const currentLocationBtn = document.getElementById('current-location-btn');
+    if (currentLocationBtn) {
+        currentLocationBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                currentLocationBtn.disabled = true;
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        map.setCenter(pos);
+                        marker.setPosition(pos);
+                        updateAddressBar(pos);
+                        updateLocationField(pos);
+                        currentLocationBtn.disabled = false;
+                    },
+                    (error) => {
+                        console.error('Error getting current location:', error);
+                        currentLocationBtn.disabled = false;
+                        alert('Error getting your location. Please try again.');
+                    }
+                );
             } else {
-                throw new Error('No address found for this location.');
+                alert('Geolocation is not supported by your browser');
             }
-        } catch (error) {
-            console.warn('Geocoding error:', error);
-            this.addressBar.innerHTML = `<strong>Lat: ${latLng.lat().toFixed(6)}, Lng: ${latLng.lng().toFixed(6)}</strong>`;
-        }
-    }
-
-    /**
-     * Handles the click event for the 'Use Current Location' button.
-     */
-    async handleCurrentLocationClick() {
-        const btn = document.getElementById('currentLocationBtn');
-        const btnText = btn.querySelector('.btn-text');
-        const spinner = btn.querySelector('.loading-spinner');
-
-        btnText.textContent = 'Fetching...';
-        spinner.classList.remove('hidden');
-
-        try {
-            await this.getCurrentLocation();
-        } catch (error) {
-            console.error('Error getting current location:', error);
-        } finally {
-            btnText.textContent = 'Using current location';
-            spinner.classList.add('hidden');
-        }
-    }
-
-    /**
-     * Fetches the user's current geolocation and updates the map.
-     */
-    async getCurrentLocation() {
-        await this.initPromise; // Ensure map is ready before proceeding.
-
-        if (!navigator.geolocation) {
-            this.showErrorModal('Geolocation is not supported by this browser.');
-            this._fallBackToDefaultLocation();
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
-                const latLng = new google.maps.LatLng(pos.lat, pos.lng);
-                this.map.setCenter(pos);
-                this.map.setZoom(16);
-                this.placeIncidentMarker(latLng);
-                this.updateAddress(latLng);
-            },
-            (error) => {
-                let message = 'Could not get current location. Please enable location services.';
-                if (error.code === 2) {
-                    message = 'Location information is unavailable. Check your network and try again.';
-                }
-                this.showErrorModal(message);
-                this._fallBackToDefaultLocation();
-            }
-        );
-    }
-
-    /**
-     * Sets the map to the default location if geolocation fails.
-     * @private
-     */
-    _fallBackToDefaultLocation() {
-        const latLng = new google.maps.LatLng(this.currentLocation.lat, this.currentLocation.lng);
-        this.map.setCenter(latLng);
-        this.placeIncidentMarker(latLng);
-        this.updateAddress(latLng);
-    }
-
-    /**
-     * Gets the current incident location. This is the public method used by other modules.
-     * @public
-     * @returns {{lat: number, lng: number}} The current coordinates.
-     */
-    getLocation() {
-        return this.currentLocation;
-    }
-
-    /**
-     * Shows an error modal with a specific message.
-     * @param {string} message - The error message to display.
-     */
-    showErrorModal(message) {
-        const errorModal = document.getElementById('errorModal');
-        const errorMessage = document.getElementById('error-message');
-        if (errorModal && errorMessage) {
-            errorMessage.textContent = message;
-            errorModal.style.display = 'flex';
-        }
+        });
     }
 }

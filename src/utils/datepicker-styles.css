@@ -1,0 +1,13 @@
+.rdp-button_reset {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    color: inherit;
+    outline: none;
+    background: none;
+    font: inherit;
+} 
