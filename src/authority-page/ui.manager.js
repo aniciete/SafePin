@@ -34,40 +34,40 @@ export function renderDashboardContent(data) {
   }
 
   // Reports in Jurisdiction (Overview Card)
-  const reportsInJurisdictionList = document.getElementById('reports-in-jurisdiction-list');
-  if (reportsInJurisdictionList) {
-    reportsInJurisdictionList.innerHTML = ''; // Clear previous content
-    if (data.reportsInJurisdiction) {
-      data.reportsInJurisdiction.forEach(report => {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between items-center bg-yellow-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-yellow-200';
-        div.innerHTML = `
-          <span class="font-semibold text-yellow-800">${report.id}</span>
-          <span class="text-gray-700">${report.street}</span>
-          <span class="text-gray-500 text-sm">${report.date}</span>
-        `;
-        div.addEventListener('click', () => showReportDetail(report));
-        reportsInJurisdictionList.appendChild(div);
-      });
+  if (data.reportsInJurisdiction) {
+    const reportsInJurisdictionList = document.getElementById('reports-in-jurisdiction-list');
+    if (reportsInJurisdictionList) {
+        reportsInJurisdictionList.innerHTML = ''; // Clear previous content
+        data.reportsInJurisdiction.forEach(report => {
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center bg-yellow-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-yellow-200';
+            div.innerHTML = `
+              <span class="font-semibold text-yellow-800">${report.id}</span>
+              <span class="text-gray-700">${report.street}</span>
+              <span class="text-gray-500 text-sm">${report.date}</span>
+            `;
+            div.addEventListener('click', () => showReportDetail(report));
+            reportsInJurisdictionList.appendChild(div);
+        });
     }
   }
 
   // Pending Verifications
-  const pendingList = document.getElementById('pending-verifications-list');
-  if (pendingList) {
-    pendingList.innerHTML = ''; // Clear previous content
-    if (data.pendingVerifications) {
-      data.pendingVerifications.forEach(verification => {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between items-center bg-blue-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-blue-200';
-        div.innerHTML = `
-          <span class="font-semibold text-blue-800">${verification.location}</span>
-          <span class="text-gray-700">${verification.anonymousId}</span>
-          <span class="text-gray-500 text-sm">${verification.date}</span>
-        `;
-        div.addEventListener('click', () => showVerificationDetail(verification));
-        pendingList.appendChild(div);
-      });
+  if (data.pendingVerifications) {
+    const pendingList = document.getElementById('pending-verifications-list');
+    if (pendingList) {
+        pendingList.innerHTML = ''; // Clear previous content
+        data.pendingVerifications.forEach(verification => {
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center bg-blue-100 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-blue-200';
+            div.innerHTML = `
+              <span class="font-semibold text-blue-800">${verification.location}</span>
+              <span class="text-gray-700">${verification.anonymousId}</span>
+              <span class="text-gray-500 text-sm">${verification.date}</span>
+            `;
+            div.addEventListener('click', () => showVerificationDetail(verification));
+            pendingList.appendChild(div);
+        });
     }
   }
 

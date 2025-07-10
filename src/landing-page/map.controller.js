@@ -7,7 +7,7 @@ import { MapLoader } from '../utils/map-loader.js';
 import { MapError } from '../utils/errorHandler.js';
 
 const MAPS_CONFIG = {
-    API_KEY: 'AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM',
+    API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     DEFAULT_CENTER: { lat: 14.5995, lng: 121.0364 }, // Metro Manila
     DEFAULT_ZOOM: 12,
     BOUNDS: {

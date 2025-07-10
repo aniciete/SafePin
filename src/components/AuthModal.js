@@ -1,9 +1,3 @@
-import {
-    signInWithEmail,
-    signInWithGoogle,
-    signUpWithEmail,
-} from '../services/auth.service.js';
-
 const MODAL_HTML = `
 <div class="auth-container">
     <div class="auth-header">
@@ -103,7 +97,7 @@ export function setupAuthModal(modal) {
         e.preventDefault();
         const email = modal.querySelector('#loginEmail').value;
         const password = modal.querySelector('#loginPassword').value;
-        signInWithEmail(email, password);
+        modal.dispatchEvent(new CustomEvent('login', { detail: { email, password } }));
     });
 
     credentialsStep.addEventListener('submit', (e) => {
@@ -111,11 +105,17 @@ export function setupAuthModal(modal) {
         const email = modal.querySelector('#signupEmail').value;
         const password = modal.querySelector('#signupPassword').value;
         const role = modal.querySelector('#role').value;
-        signUpWithEmail(email, password, role);
+        modal.dispatchEvent(new CustomEvent('signup', { detail: { email, password, role } }));
     });
 
-    googleSignInBtn.addEventListener('click', () => signInWithGoogle('authority'));
-    googleSignUpBtn.addEventListener('click', () => signInWithGoogle(modal.querySelector('#role').value));
+    googleSignInBtn.addEventListener('click', () => {
+        modal.dispatchEvent(new CustomEvent('googleSignIn', { detail: { role: 'authority' } }));
+    });
+
+    googleSignUpBtn.addEventListener('click', () => {
+        const role = modal.querySelector('#role').value;
+        modal.dispatchEvent(new CustomEvent('googleSignIn', { detail: { role } }));
+    });
 
     if (adminLoginBtn) {
         adminLoginBtn.addEventListener('click', () => {

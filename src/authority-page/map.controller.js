@@ -50,7 +50,8 @@ export async function initMap() {
  * Loads report data as markers on the map.
  * @param {Array} reports - An array of report objects.
  */
-export function loadReportsOnMap(reports) {
+export function loadReportsOnMap(getReports) {
+    const reports = getReports();
     const mapReportsList = document.getElementById('map-reports-list');
     mapReportsList.innerHTML = '';
 

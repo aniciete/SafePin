@@ -9,6 +9,8 @@ import {
   query,
   orderBy,
   onSnapshot,
+  where,
+  limit,
 } from 'firebase/firestore';
 import { renderDashboardContent, renderReportsTable } from './ui.manager.js';
 import { loadReportsOnMap } from './map.controller.js';
@@ -25,108 +27,88 @@ const formatDate = (ts) =>
   ts && ts.seconds ? new Date(ts.seconds * 1000).toLocaleString() : 'N/A';
 
 /**
- * Transforms raw report data from Firestore into a structure
- * usable by the UI components.
- * @param {Array} reports - The array of reports from Firestore.
- * @returns {object} - The transformed data object.
+ * Fetches recent reports for the jurisdiction.
  */
-function transformDataForUI(reports) {
-  const reportsInJurisdiction = reports.slice(0, 2).map(r => ({
-    id: r.id,
-    street: r.locationName || 'Unknown Street',
-    date: formatDate(r.createdAt),
-    type: r.incidentType,
-    category: r.incidentType,
-    description: r.description,
-    suspect: 'Unknown',
-    status: r.status,
-    verification: r.status,
-  }));
+function listenForRecentReports() {
+    const reportsCol = collection(db, 'reports');
+    const recentReportsQuery = query(
+        reportsCol,
+        orderBy('createdAt', 'desc'),
+        limit(2)
+    );
 
-  const pendingVerifications = reports.filter(r => r.status === 'pending_verification').map(r => ({
-      id: r.id,
-      location: r.locationName || 'Unknown Location',
-      anonymousId: r.userId || 'Anonymous',
-      date: formatDate(r.createdAt),
-      type: r.incidentType,
-      category: r.incidentType,
-      description: r.description,
-      status: r.status,
-  }));
-
-  const resolvedIncidents = reports.filter(r => r.status === 'resolved');
-  const resolvedIncidentsBreakdown = resolvedIncidents.reduce((acc, report) => {
-      const type = report.incidentType || 'Other';
-      const existing = acc.find(item => item.type === type);
-      if (existing) {
-          existing.count++;
-      } else {
-          acc.push({ type, count: 1 });
-      }
-      return acc;
-  }, []);
-
-
-  return {
-    jurisdiction: {
-      district: '3 - Santa Cruz', // This should be dynamic in a real app
-      barangay: '370',
-    },
-    reportsInJurisdiction,
-    pendingVerifications,
-    recentActivity: [], // Placeholder for now
-    resolvedIncidents: {
-      total: resolvedIncidents.length,
-      breakdown: resolvedIncidentsBreakdown,
-      crimeApprehensionRate: reports.length > 0 ? Math.round((resolvedIncidents.length / reports.length) * 100) : 0,
-    },
-    profile: {
-        name: 'Isko H. Versosa', // This should be dynamic
-        role: 'Barangay 370 Chairman (Level 2 SafePin Access)',
-        code: '102-121-320'
-    }
-  };
+    onSnapshot(recentReportsQuery, (snapshot) => {
+        const recentReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const transformedReports = transformRecentReports(recentReports);
+        renderDashboardContent({ reportsInJurisdiction: transformedReports });
+    });
 }
 
 /**
- * Fetches reports from Firestore and listens for real-time updates.
+ * Fetches pending verification reports.
  */
-function listenForReports() {
-  const reportsCol = collection(db, 'reports');
-  const reportsQuery = query(
-    reportsCol,
-    // where('status', 'in', ['verified', 'resolved', 'pending_verification']), // Example filter
-    orderBy('createdAt', 'desc')
-  );
+function listenForPendingVerifications() {
+    const reportsCol = collection(db, 'reports');
+    const pendingReportsQuery = query(
+        reportsCol,
+        where('status', '==', 'pending_verification'),
+        orderBy('createdAt', 'desc')
+    );
 
-  onSnapshot(reportsQuery, (snapshot) => {
-    allReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    
-    // Transform data and render UI
-    const uiData = transformDataForUI(allReports);
-    renderDashboardContent(uiData);
-    renderReportsTable(allReports.map(r => ({
-        id: r.id,
-        street: r.locationName || 'Unknown',
-        wanted: 'Unknown',
-        progress: r.status,
-        category: r.incidentType,
-        description: r.description,
-        verification: r.status,
-        date: formatDate(r.createdAt),
-        reporter: 'Anonymous',
-        lat: r.location ? r.location.latitude : null,
-        lng: r.location ? r.location.longitude : null,
-    })));
+    onSnapshot(pendingReportsQuery, (snapshot) => {
+        const pendingReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const transformedReports = transformPendingVerifications(pendingReports);
+        renderDashboardContent({ pendingVerifications: transformedReports });
+    });
+}
 
-    // Update map if it's visible
-    if (!document.getElementById('mapview-content').classList.contains('hidden')) {
-        loadReportsOnMap(getReports());
-    }
+/**
+ * Fetches resolved incidents.
+ */
+function listenForResolvedIncidents() {
+    const reportsCol = collection(db, 'reports');
+    const resolvedReportsQuery = query(
+        reportsCol,
+        where('status', '==', 'resolved')
+    );
 
-  }, (error) => {
-    console.error('Error fetching reports: ', error);
-  });
+    onSnapshot(resolvedReportsQuery, (snapshot) => {
+        const resolvedReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const transformedReports = transformResolvedIncidents(resolvedReports);
+        renderDashboardContent({ resolvedIncidents: transformedReports });
+    });
+}
+
+/**
+ * Fetches all reports for the table and map view.
+ */
+function listenForAllReports() {
+    const reportsCol = collection(db, 'reports');
+    const allReportsQuery = query(
+        reportsCol,
+        orderBy('createdAt', 'desc')
+    );
+
+    onSnapshot(allReportsQuery, (snapshot) => {
+        allReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        renderReportsTable(allReports.map(r => ({
+            id: r.id,
+            street: r.locationName || 'Unknown',
+            wanted: 'Unknown',
+            progress: r.status,
+            category: r.incidentType,
+            description: r.description,
+            verification: r.status,
+            date: formatDate(r.createdAt),
+            reporter: 'Anonymous',
+            lat: r.location ? r.location.latitude : null,
+            lng: r.location ? r.location.longitude : null,
+        })));
+
+        if (!document.getElementById('mapview-content').classList.contains('hidden')) {
+            loadReportsOnMap(getReports());
+        }
+    });
 }
 
 /**
@@ -149,8 +131,10 @@ export function getReports() {
     }));
 }
 
-
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
-  listenForReports();
+    listenForRecentReports();
+    listenForPendingVerifications();
+    listenForResolvedIncidents();
+    listenForAllReports();
 });
