@@ -1,6 +1,21 @@
-export class SafePinFooter {
-    generateFooter() {
-        return `
+class t{generateHeader(){return`
+        <header>
+            <div class="container">
+                <a href="/" class="logo">
+                    <img src="/assets/SafePin Logo Green.svg" alt="SafePin Logo">
+                    <span>SafePin</span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="/landing-page/about-us.html">About Us</a></li>
+                        <li><a href="/landing-page/features.html">Features</a></li>
+                        <li><a href="/landing-page/faq.html">FAQ</a></li>
+                        <li><a href="/login.html" class="nav-button">Authority Login</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        `}init(){const e=document.getElementById("header-container");e&&(e.innerHTML=this.generateHeader())}}function r(a){const e=new t;a.innerHTML=e.generateHeader()}class n{generateFooter(){return`
         <footer>
             <div class="footer-container">
                 <div class="footer-column">
@@ -33,18 +48,4 @@ export class SafePinFooter {
                 </div>
             </div>
         </footer>
-        `;
-    }
-
-    init() {
-        const footerContainer = document.getElementById('footer-container');
-        if (footerContainer) {
-            footerContainer.innerHTML = this.generateFooter();
-        }
-    }
-}
-
-export function renderFooter(container) {
-    const footer = new SafePinFooter();
-    container.innerHTML = footer.generateFooter();
-}
+        `}init(){const e=document.getElementById("footer-container");e&&(e.innerHTML=this.generateFooter())}}function o(a){const e=new n;a.innerHTML=e.generateFooter()}export{t as S,n as a,o as b,r};

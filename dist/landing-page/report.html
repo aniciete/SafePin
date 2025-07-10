@@ -6,18 +6,17 @@
     <title>Report Incident - SafePin</title>
     <link rel="preload" href="https://fonts.gstatic.com/s/roboto/v48/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://fonts.gstatic.com/s/roboto/v48/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2" as="font" type="font/woff2" crossorigin>
-  <script type="module" crossorigin src="/assets/report-BH2OkVfn.js"></script>
+  <script type="module" crossorigin src="/assets/report-DEeGxHHJ.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/footer-BKgixQtT.js">
+  <link rel="modulepreload" crossorigin href="/assets/Footer-CykYVVMc.js">
   <link rel="modulepreload" crossorigin href="/assets/browser-Cx9Z-D_s.js">
   <link rel="modulepreload" crossorigin href="/assets/map-loader-Bcj24iLN.js">
   <link rel="modulepreload" crossorigin href="/assets/errorHandler-CxKsmf1R.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-ByQbh0Mr.js">
-  <link rel="stylesheet" crossorigin href="/assets/footer-HnW0g57N.css">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-C5y3UOfw.js">
+  <link rel="stylesheet" crossorigin href="/assets/Footer-BEArXKDS.css">
   <link rel="stylesheet" crossorigin href="/assets/auth-styles-CKdps9dl.css">
 </head>
 <body>
-    <!-- Header Container -->
     <div id="header-container"></div>
 
     <section class="page-title-section">
@@ -31,7 +30,7 @@
         <form id="report-form" class="report-form">
             <div class="form-group" data-field="incidentType">
                 <label for="incidentType">Incident Type <span class="required">*</span></label>
-                <select id="incidentType" name="incidentType" required aria-required="true">
+                <select id="incidentType" name="incidentType" required aria-required="true" aria-describedby="incidentType-error">
                     <option value="">Select incident type</option>
                     <option value="theft">Theft</option>
                     <option value="harassment">Harassment</option>
@@ -44,7 +43,7 @@
 
             <div class="form-group" data-field="severity">
                 <label for="severity">Severity Level <span class="required">*</span></label>
-                <select id="severity" name="severity" required aria-required="true">
+                <select id="severity" name="severity" required aria-required="true" aria-describedby="severity-error">
                     <option value="">Select severity level</option>
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -65,15 +64,15 @@
                         Use Current Location
                     </button>
                 </div>
-                <input type="hidden" id="location" name="location">
+                <input type="hidden" id="location" name="location" aria-describedby="location-error">
                 <div id="location-error" class="validation-feedback"></div>
             </div>
 
             <div class="form-group" data-field="description">
                 <label for="description">Description (Optional)</label>
-                <textarea id="description" name="description" rows="4" maxlength="500" 
+                <textarea id="description" name="description" rows="4" maxlength="500"
                     placeholder="Provide additional details about the incident"
-                    aria-label="Incident description"></textarea>
+                    aria-label="Incident description" aria-describedby="description-error"></textarea>
                 <div class="character-count">0/500</div>
                 <div id="description-error" class="validation-feedback"></div>
             </div>
@@ -83,7 +82,7 @@
                 <div class="file-upload-container">
                     <input type="file" id="image-upload" name="image" accept="image/*"
                         aria-label="Upload an image of the incident"
-                        title="Choose an image to upload">
+                        title="Choose an image to upload" aria-describedby="image-error">
                     <p>Drop image here or click to upload</p>
                     <p class="file-info">Maximum size: 5MB</p>
                 </div>
@@ -97,7 +96,6 @@
         </form>
     </div>
 
-    <!-- Footer Container -->
     <div id="footer-container"></div>
 
 </body>

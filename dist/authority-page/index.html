@@ -76,10 +76,10 @@
     </style>
     <!-- Leaflet CSS for Map View -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-  <script type="module" crossorigin src="/assets/authority-ItMwvjgX.js"></script>
+  <script type="module" crossorigin src="/assets/authority-BAZvwQo0.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/map-loader-Bcj24iLN.js">
-  <link rel="modulepreload" crossorigin href="/assets/firebase-ByQbh0Mr.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-C5y3UOfw.js">
   <link rel="modulepreload" crossorigin href="/assets/errorHandler-CxKsmf1R.js">
   <link rel="stylesheet" crossorigin href="/assets/auth-styles-CKdps9dl.css">
 </head>
@@ -92,34 +92,34 @@
                 <h1 class="text-2xl font-bold text-white">SafePin</h1>
             </div>
             <nav class="space-y-4">
-                <button id="overview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 bg-green-600 text-white shadow-md">
+                <button id="overview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 bg-green-600 text-white shadow-md" aria-label="Dashboard Overview">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home mr-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <span class="font-medium">Overview</span>
                 </button>
-                <button id="reports-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <button id="reports-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="View Reports">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell mr-3"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     <span class="font-medium">Reports</span>
                 </button>
-                <button id="mapview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <button id="mapview-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="View Map">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin mr-3"><path d="M12 12.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"/><path d="M19 12c0 7-7 9-7 9s-7-2-7-9a7 7 0 0 1 14 0Z"/><path d="M12 2v.01"/></svg>
                     <span class="font-medium">Map View</span>
                 </button>
-                <button id="profile-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <button id="profile-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="View Profile">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user mr-3"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span class="font-medium">Profile</span>
                 </button>
-                <button id="settings-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <button id="settings-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="View Settings">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings mr-3"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.28a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.56a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.78 1.28a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.28a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.56a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.78-1.28a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span class="font-medium">Settings</span>
                 </button>
-                <button id="help-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+                <button id="help-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="Get Help">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle mr-3"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
                     <span class="font-medium">Help</span>
                 </button>
             </nav>
         </div>
         <div>
-            <button id="logout-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white">
+            <button id="logout-btn" class="flex items-center w-full py-3 px-6 rounded-lg text-left transition-colors duration-200 text-gray-300 hover:bg-gray-700 hover:text-white" aria-label="Log out">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out mr-3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                 <span class="font-medium">Log out</span>
             </button>
@@ -147,7 +147,7 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Reports in Jurisdiction</h3>
                 <div id="reports-in-jurisdiction-list" class="space-y-4">
                     </div>
-                <button id="reports-in-jurisdiction-see-more" class="text-green-600 hover:underline mt-2">See more ..</button>
+                <button id="reports-in-jurisdiction-see-more" class="text-green-600 hover:underline mt-2" aria-label="See more reports in your jurisdiction">See more ..</button>
             </div>
 
             <div class="flex flex-col items-center justify-center bg-white p-6 rounded-xl shadow-lg">
@@ -207,7 +207,7 @@
                             <span class="font-medium text-gray-700">Map Center:</span>
                             <span id="addressBar" class="ml-2 font-semibold text-gray-800"></span>
                         </div>
-                        <button id="currentLocationBtn" class="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200 w-full md:w-auto">
+                        <button id="currentLocationBtn" class="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200 w-full md:w-auto" aria-label="Go to your current location">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-locate-fixed inline-block mr-2"><path d="M2 12s2-4 6-4s6 4 10 4 6-4 6-4"/><path d="M12 12c-1.93 0-3.5-1.57-3.5-3.5S10.07 5 12 5s3.5 1.57 3.5 3.5S13.93 12 12 12z"/></svg>
                             Go to Current Location
                         </button>
@@ -238,19 +238,19 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold" aria-label="View Account Information">
                     Account Information
                 </button>
-                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold" aria-label="View Notification Preferences">
                     Notification Preferences
                 </button>
-                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold" aria-label="View Jurisdiction Settings">
                     Jurisdiction Settings
                 </button>
-                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold" aria-label="View Activity History">
                     Activity History
                 </button>
-                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2">
+                <button class="bg-green-600 text-white py-4 px-6 rounded-xl shadow-md hover:bg-green-700 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2" aria-label="View Security Settings">
                     Security Settings
                 </button>
             </div>
@@ -259,19 +259,19 @@
         <section id="settings-content" class="hidden">
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Authorized Settings</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold" aria-label="View General Settings">
                     General Settings
                 </button>
-                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold" aria-label="View Notification Settings">
                     Notification Settings
                 </button>
-                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold" aria-label="View Privacy Settings">
                     Privacy Settings
                 </button>
-                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold" aria-label="Manage Jurisdiction">
                     Jurisdiction Management
                 </button>
-                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2">
+                <button class="bg-white text-gray-800 py-4 px-6 rounded-xl shadow-md hover:bg-gray-100 transition-colors duration-200 text-lg font-semibold col-span-1 md:col-span-2" aria-label="View Security and Authentication Settings">
                     Security & Authentication
                 </button>
             </div>
@@ -302,17 +302,17 @@
         <section id="logout-content" class="hidden flex flex-col items-center justify-center h-96 bg-white rounded-xl shadow-lg text-gray-800 text-2xl">
             <p class="mb-8 font-semibold">You are about to log out. Confirm?</p>
             <div class="flex space-x-6">
-                <button id="confirm-logout-btn" class="bg-green-600 text-white py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 text-xl font-semibold">
+                <button id="confirm-logout-btn" class="bg-green-600 text-white py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 text-xl font-semibold" aria-label="Confirm Log out">
                     Confirm
                 </button>
-                <button id="cancel-logout-btn" class="bg-gray-400 text-white py-3 px-8 rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200 text-xl font-semibold">
+                <button id="cancel-logout-btn" class="bg-gray-400 text-white py-3 px-8 rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200 text-xl font-semibold" aria-label="Cancel Log out">
                     Cancel
                 </button>
             </div>
         </section>
 
         <section id="report-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
-            <button id="back-from-report-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+            <button id="back-from-report-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200" aria-label="Go back to the previous page">
                 &larr; Back to Reports
             </button>
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Incident Details: <span id="detail-report-id"></span></h2>
@@ -333,13 +333,13 @@
             <div class="mt-6 md:col-span-2">
                 <label for="status-select" class="block text-lg font-semibold text-gray-800 mb-2">Update Status:</label>
                 <div class="flex items-center space-x-4">
-                    <select id="status-select" class="flex-grow p-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <select id="status-select" class="flex-grow p-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Update the status of the report">
                         <option value="pending_verification">Pending Verification</option>
                         <option value="verified">Verified</option>
                         <option value="resolved">Resolved</option>
                         <option value="rejected">Rejected</option>
                     </select>
-                    <button id="save-status-btn" class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">
+                    <button id="save-status-btn" class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200" aria-label="Save the updated status">
                         Save
                     </button>
                 </div>
@@ -348,7 +348,7 @@
         </section>
 
         <section id="verification-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
-            <button id="back-from-verification-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+            <button id="back-from-verification-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200" aria-label="Go back to the overview page">
                 &larr; Back to Overview
             </button>
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Verification Details: <span id="detail-verification-id"></span></h2>
@@ -362,14 +362,14 @@
                 <p class="md:col-span-2"><span class="font-semibold">Description:</span> <span id="detail-verification-description"></span></p>
             </div>
             <div class="mt-8 flex space-x-4">
-                <button class="bg-green-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200">Verify</button>
-                <button class="bg-yellow-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-yellow-600 transition-colors duration-200">Request More Info</button>
-                <button class="bg-red-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200">Reject</button>
+                <button class="bg-green-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200" aria-label="Verify this report">Verify</button>
+                <button class="bg-yellow-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-yellow-600 transition-colors duration-200" aria-label="Request more information about this report">Request More Info</button>
+                <button class="bg-red-500 text-white py-3 px-6 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200" aria-label="Reject this report">Reject</button>
             </div>
         </section>
 
         <section id="activity-detail-content" class="hidden bg-white p-8 rounded-xl shadow-lg">
-            <button id="back-from-activity-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+            <button id="back-from-activity-detail" class="mb-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200" aria-label="Go back to the overview page">
                 &larr; Back to Overview
             </button>
             <h2 class="text-3xl font-bold text-gray-900 mb-6">Activity Details</h2>

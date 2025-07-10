@@ -9,10 +9,6 @@
 </head>
 <body>
 
-    <script type="module">
-        import { renderHeader } from './components/Header.js';
-        renderHeader(document.getElementById('header-container'));
-    </script>
     <div id="header-container"></div>
 
     <main>
@@ -109,7 +105,7 @@
                 <h2>Recent Alerts</h2>
                 <div class="alerts-grid">
                     <div class="alert-card">
-                        <img src="https://od2-image-api.abs-cbn.com/prod/20250613130620/5babc293462ef2bee1831a07fa07bdd858c85184c1c0ac7dc139131757ecb32a.jpg?w=306&h=204" alt="Image of a motorcycle crash" class="alert-image">
+                        <img src="https://od2-image-api.abs-cbn.com/prod/20250613130620/5babc293462ef2bee1831a07fa07bdd858c85184c1c0ac7dc139131757ecb32a.jpg?w=306&h=204" alt="Image of a motorcycle crash" class="alert-image" loading="lazy">
                         <div class="alert-content">
                             <h3>3 sugatan sa banggaan ng 2 motorsiklo sa QC</h3>
                             <p>Tatlo ang sugatan sa banggaan ng dalawang motorsiklo sa Quezon City...</p>
@@ -117,7 +113,7 @@
                         </div>
                     </div>
                     <div class="alert-card">
-                        <img src="https://od2-image-api.abs-cbn.com/prod/20250613010640/99bc67940a8ae9a983e6b9714c1696ea46279812c2485cb1a7b5d8a298a41a06.jpg?w=306&h=204" alt="Image of two men arrested in Manila for robbery and stabbing" class="alert-image">
+                        <img src="https://od2-image-api.abs-cbn.com/prod/20250613010640/99bc67940a8ae9a983e6b9714c1696ea46279812c2485cb1a7b5d8a298a41a06.jpg?w=306&h=204" alt="Image of two men arrested in Manila for robbery and stabbing" class="alert-image" loading="lazy">
                         <div class="alert-content">
                             <h3>Lalaking naaresto sa pagsusugal, nahulihan ng baril nang kapkapan ng pulis</h3>
                             <p>Arestado ang 25-anyos na lalaki matapos mahuling nagsusugal...</p>
@@ -125,7 +121,7 @@
                         </div>
                     </div>
                     <div class="alert-card">
-                        <img src="https://od2-image-api.abs-cbn.com/prod/20250611140636/65ca9f803a900067dbc9564bf0e0c4625e60ebe9ace494916cd8183f704b94ff.jpg?w=306&h=204" alt="Image of a road accident involving a scooter rider and a tricycle" class="alert-image">
+                        <img src="https://od2-image-api.abs-cbn.com/prod/20250611140636/65ca9f803a900067dbc9564bf0e0c4625e60ebe9ace494916cd8183f704b94ff.jpg?w=306&h=204" alt="Image of a road accident involving a scooter rider and a tricycle" class="alert-image" loading="lazy">
                         <div class="alert-content">
                             <h3>Higit 1 toneladang shabu na nakuha sa dagat galing sa Sam Gor syndicate</h3>
                             <p>Ibinunyag ng Philippine Drug Enforcement Agency na konektado...</p>
@@ -137,14 +133,10 @@
         </section>
     </main>
 
-    <script type="module">
-        import { renderFooter } from './components/Footer.js';
-        renderFooter(document.getElementById('footer-container'));
-    </script>
     <div id="footer-container"></div>
 
     <!-- Module Scripts -->
-    <script type="module" src="./utils/sessionManager.js"></script>
+    <script type="module" src="./landing-page/main.js" defer></script>
 
 </body>
 </html>

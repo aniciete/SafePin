@@ -1,0 +1,92 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "SafePin Logo SafePin":
+    - /url: /
+    - img "SafePin Logo"
+    - text: SafePin
+  - navigation:
+    - list:
+      - listitem:
+        - link "About Us":
+          - /url: /landing-page/about-us.html
+      - listitem:
+        - link "Features":
+          - /url: /landing-page/features.html
+      - listitem:
+        - link "FAQ":
+          - /url: /landing-page/faq.html
+      - listitem:
+        - link "Authority Login":
+          - /url: /login.html
+- heading "Report an Incident" [level=1]
+- paragraph: Help keep your community safe by reporting incidents anonymously.
+- text: Incident Type *
+- combobox "Incident Type *":
+  - option "Select incident type" [selected]
+  - option "Theft"
+  - option "Harassment"
+  - option "Assault"
+  - option "Vandalism"
+  - option "Suspicious Activity"
+- text: Severity Level *
+- combobox "Severity Level *":
+  - option "Select severity level" [selected]
+  - option "Low"
+  - option "Medium"
+  - option "High"
+- text: Location * Select a location on the map
+- application "Interactive map to select incident location":
+  - button "Keyboard shortcuts"
+  - region "Map"
+  - img "Drag to set incident location"
+  - menubar:
+    - menuitemradio "Show street map" [checked]: Map
+    - menuitemradio "Show satellite imagery": Satellite
+  - button "Map camera controls"
+  - link "Open this area in Google Maps (opens a new window)":
+    - /url: https://maps.google.com/maps?ll=14.5995,121.0086&z=12&t=m&hl=en-US&gl=US&mapclient=apiv3
+    - img "Google"
+  - button "Keyboard shortcuts"
+  - text: Map data ©2025
+  - link "Terms":
+    - /url: https://www.google.com/intl/en-US_US/help/terms_maps.html
+  - link "Report a map error":
+    - /url: https://www.google.com/maps/@14.5995,121.0086,12z/data=!10m1!1e1!12b1?source=apiv3&rapsrc=apiv3
+- button "Use current location":
+  - img "Current Location"
+  - text: Use Current Location
+- text: Description (Optional)
+- textbox "Incident description"
+- text: 0/500 Upload Image (Optional)
+- button "Upload an image of the incident"
+- paragraph: Drop image here or click to upload
+- paragraph: "Maximum size: 5MB"
+- button "Submit Report"
+- contentinfo:
+  - heading "About Us" [level=4]
+  - paragraph: SafePin is a community-driven safety platform dedicated to creating safer neighborhoods through anonymous reporting and transparent information sharing.
+  - heading "Quick Links" [level=4]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /landing-page/about-us.html
+    - listitem:
+      - link "Features":
+        - /url: /landing-page/features.html
+    - listitem:
+      - link "FAQ":
+        - /url: /landing-page/faq.html
+    - listitem:
+      - link "Authority Login":
+        - /url: /login.html
+  - heading "Contact Us" [level=4]
+  - list:
+    - listitem: "Email: support@safepin.com"
+    - listitem: "Phone: (123) 456-7890"
+  - heading "Stay Updated" [level=4]
+  - paragraph: Subscribe to our newsletter for the latest updates and safety alerts.
+  - textbox "Enter your email"
+  - button "Subscribe"
+```

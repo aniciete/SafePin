@@ -13,8 +13,8 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { firebaseConfig } from '../config/firebase';
 import { MapLoader } from '../utils/map-loader';
-import { SafePinHeader } from '../modules/header';
-import { SafePinFooter } from '../modules/footer';
+import { SafePinHeader } from '../components/Header.js';
+import { SafePinFooter } from '../components/Footer.js';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
