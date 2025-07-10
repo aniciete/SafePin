@@ -69,7 +69,7 @@ export class Onboarding {
                     
                     <div class="onboarding-actions">
                         ${this.currentStep > 0 ? 
-                            `<button class="btn-secondary" onclick="window.handlePrevStep()">Back</button>` : 
+                            '<button class="btn-secondary" onclick="window.handlePrevStep()">Back</button>' : 
                             ''
                         }
                         <button class="btn-primary" onclick="window.handleNextStep()">${step.action}</button>

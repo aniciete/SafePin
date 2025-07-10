@@ -7,7 +7,6 @@ import { db } from '../config/firebase.js';
 import {
   collection,
   query,
-  where,
   orderBy,
   onSnapshot,
 } from 'firebase/firestore';
@@ -126,7 +125,7 @@ function listenForReports() {
     }
 
   }, (error) => {
-    console.error("Error fetching reports: ", error);
+    console.error('Error fetching reports: ', error);
   });
 }
 

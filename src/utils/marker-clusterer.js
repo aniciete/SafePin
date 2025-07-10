@@ -2,8 +2,6 @@
  * Utility class for marker clustering
  */
 export class MarkerClusterer {
-    static #instance = null;
-    static #map = null;
 
     /**
      * Initialize marker clusterer
@@ -11,11 +9,11 @@ export class MarkerClusterer {
      * @returns {Promise<void>}
      */
     static async initialize(map) {
-        if (this.#instance) {
+        if (MarkerClusterer._instance) {
             return;
         }
 
-        this.#map = map;
+        MarkerClusterer._map = map;
 
         try {
             // Load MarkerClusterer script
@@ -29,10 +27,10 @@ export class MarkerClusterer {
             });
 
             // Initialize clusterer
-            this.#instance = new MarkerClusterer({
-                map: this.#map,
+            this._instance = new window.markerClusterer.MarkerClusterer({
+                map: this._map,
                 markers: [],
-                algorithm: new SuperClusterAlgorithm({
+                algorithm: new window.markerClusterer.SuperClusterAlgorithm({
                     radius: 60,
                     maxZoom: 16
                 }),
@@ -68,8 +66,8 @@ export class MarkerClusterer {
      * @param {Array<google.maps.Marker>} markers - Array of markers to add
      */
     static addMarkers(markers) {
-        if (this.#instance) {
-            this.#instance.addMarkers(markers);
+        if (MarkerClusterer._instance) {
+            MarkerClusterer._instance.addMarkers(markers);
         }
     }
 
@@ -77,8 +75,8 @@ export class MarkerClusterer {
      * Clear all markers from the cluster
      */
     static clearMarkers() {
-        if (this.#instance) {
-            this.#instance.clearMarkers();
+        if (MarkerClusterer._instance) {
+            MarkerClusterer._instance.clearMarkers();
         }
     }
 
@@ -87,6 +85,9 @@ export class MarkerClusterer {
      * @returns {MarkerClusterer|null}
      */
     static getInstance() {
-        return this.#instance;
+        return MarkerClusterer._instance;
     }
-} 
+}
+
+MarkerClusterer._instance = null;
+MarkerClusterer._map = null;

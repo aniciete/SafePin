@@ -1,6 +1,6 @@
 // Chart initialization and update functions for Admin Page
 
-let barChart, pieChart, radarChart, areaChart;
+export let barChart, pieChart, radarChart, areaChart;
 
 export function initializeCharts() {
     // ... (copy the full initializeCharts function from script.js)

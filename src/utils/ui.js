@@ -37,16 +37,16 @@ export function showSessionWarning() {
         <div class="modal-content">
             <h3>Session Expiring Soon</h3>
             <p>Your session will expire in 5 minutes due to inactivity.</p>
-            <button onclick="window.extendSession()" class="btn btn-primary">Stay Logged In</button>
+            <button id="extend-session-btn" class="btn btn-primary">Stay Logged In</button>
         </div>
     `;
     document.body.appendChild(warningModal);
 
-    // Add the extend session function to window
-    window.extendSession = () => {
+    const extendBtn = document.getElementById('extend-session-btn');
+    extendBtn.addEventListener('click', () => {
         warningModal.remove();
-        resetSessionTimer();
-    };
+        // The session manager will be responsible for resetting the timer
+    });
 }
 
 /**
@@ -56,8 +56,8 @@ export function showSessionWarning() {
  */
 export function downloadReportAsTxt(reportData) {
     const content = [
-        `Incident Report`,
-        `---------------------------`,
+        'Incident Report',
+        '---------------------------',
         `Date: ${new Date().toLocaleString()}`,
         `Report ID: ${reportData.id || 'N/A'}`,
         `User ID: ${reportData.userId}`,

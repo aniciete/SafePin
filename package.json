@@ -30,6 +30,7 @@
     "isomorphic-dompurify": "^2.25.0"
   },
   "devDependencies": {
+    "cypress": "^13.11.0",
     "eslint": "^9.30.1",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
@@ -37,7 +38,6 @@
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
     "vite": "^7.0.2",
-    "vitest": "^1.6.0",
-    "cypress": "^13.11.0"
+    "vitest": "^1.6.0"
   }
 }

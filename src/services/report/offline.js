@@ -2,9 +2,6 @@
  * Manages offline report submission functionality
  */
 export class OfflineReportManager {
-  static DB_NAME = 'safepin_offline';
-  static STORE_NAME = 'pending_reports';
-  static DB_VERSION = 1;
 
   /**
    * Initializes the offline database and sync manager
@@ -130,3 +127,6 @@ export class OfflineReportManager {
     });
   }
 } 
+OfflineReportManager.DB_NAME = 'safepin_offline';
+OfflineReportManager.STORE_NAME = 'pending_reports';
+OfflineReportManager.DB_VERSION = 1;

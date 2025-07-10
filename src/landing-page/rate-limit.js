@@ -1,5 +1,5 @@
 // Client-side logic to call the rate limit function before submitting a report
-import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export async function checkRateLimit(userId) {
   try {

@@ -223,7 +223,7 @@ export const signOutUser = async () => {
     try {
         await signOut(auth);
         return { error: null };
-    } catch (error) {
+    } catch {
         return { error: 'An error occurred during sign out' };
     }
 };

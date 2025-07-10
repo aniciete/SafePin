@@ -267,7 +267,7 @@ class ErrorLogger {
      * Send error to external service
      * @private
      */
-    async sendToExternalService(errorLog) {
+    async sendToExternalService() {
         // TODO: Implement external service integration
         // This could be Sentry, LogRocket, etc.
         console.warn('External error logging not implemented');

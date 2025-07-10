@@ -12,12 +12,14 @@ export class ImageOptimizer {
     /**
      * Default optimization options
      */
-    static DEFAULT_OPTIONS = {
-        maxWidth: 1200,
-        maxHeight: 1200,
-        quality: 0.8,
-        format: 'jpeg'
-    };
+    static DEFAULT_OPTIONS() {
+        return {
+            maxWidth: 1200,
+            maxHeight: 1200,
+            quality: 0.8,
+            format: 'jpeg'
+        };
+    }
 
     /**
      * Optimize an image file
@@ -167,7 +169,7 @@ export class ImageOptimizer {
                 img.height > settings.maxHeight ||
                 file.size > 1024 * 1024 // 1MB
             );
-        } catch (error) {
+        } catch {
             return true; // If we can't check, better optimize
         }
     }

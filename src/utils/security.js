@@ -33,7 +33,7 @@ export function sanitizeHtml(input, options = {}) {
     // Convert input to string
     try {
         input = String(input);
-    } catch (e) {
+    } catch {
         throw new TypeError('Input cannot be converted to string');
     }
 
@@ -98,7 +98,7 @@ export function sanitizeText(input) {
     // Convert input to string
     try {
         input = String(input);
-    } catch (e) {
+    } catch {
         throw new TypeError('Input cannot be converted to string');
     }
 

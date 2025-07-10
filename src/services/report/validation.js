@@ -7,14 +7,16 @@ export class ReportValidator {
   /**
    * @private
    */
-  static RULES = {
+  static RULES() {
+    return {
     incidentType: ['required', 'validIncidentType'],
     severityLevel: ['required', 'validSeverityLevel'],
     description: ['required', 'minLength:20', 'maxLength:500'],
     location: ['required', 'validLocation'],
     imageUrl: ['validImageUrl'],
     status: ['required', 'validStatus']
-  };
+    };
+  }
 
   /**
    * Validates the entire report data

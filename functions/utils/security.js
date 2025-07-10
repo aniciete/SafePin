@@ -41,13 +41,13 @@ export const securityMiddleware = {
     helmet: helmet({
         contentSecurityPolicy: {
             directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", 'https://apis.google.com'],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", 'data:', 'https:'],
-                connectSrc: ["'self'", 'https://*.firebaseio.com', 'https://*.cloudfunctions.net'],
-                frameSrc: ["'none'"],
-                objectSrc: ["'none'"],
+                defaultSrc: ['\'self\''],
+                scriptSrc: ['\'self\'', '\'unsafe-inline\'', 'https://apis.google.com'],
+                styleSrc: ['\'self\'', '\'unsafe-inline\''],
+                imgSrc: ['\'self\'', 'data:', 'https:'],
+                connectSrc: ['\'self\'', 'https://*.firebaseio.com', 'https://*.cloudfunctions.net'],
+                frameSrc: ['\'none\''],
+                objectSrc: ['\'none\''],
                 upgradeInsecureRequests: [],
             },
         },

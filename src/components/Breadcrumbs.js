@@ -81,7 +81,7 @@ export class Breadcrumbs {
     setupKeyboardNavigation() {
         const breadcrumbLinks = this.container.querySelectorAll('.breadcrumb-item a');
         
-        breadcrumbLinks.forEach((link, index) => {
+        breadcrumbLinks.forEach((link) => {
             link.addEventListener('keydown', (e) => {
                 const items = Array.from(breadcrumbLinks);
                 const currentIndex = items.indexOf(e.target);

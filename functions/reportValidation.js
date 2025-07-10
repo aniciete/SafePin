@@ -22,7 +22,7 @@ const REQUIRED_FIELDS = [
 export const validateReport = onDocumentCreated('reports/{reportId}', async (event) => {
     const snap = event.data;
     if (!snap) {
-      console.log("No data associated with the event");
+      console.log('No data associated with the event');
       return;
     }
     const data = snap.data();

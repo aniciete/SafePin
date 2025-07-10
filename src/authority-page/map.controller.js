@@ -12,7 +12,7 @@ let currentLocation = { lat: 14.6042, lng: 120.9822 }; // Default to Manila
 export async function initMap() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
-        console.error("Map container not found!");
+        console.error('Map container not found!');
         return;
     }
 

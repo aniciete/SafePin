@@ -3,10 +3,6 @@
  * Handles form validation, image optimization, and submission
  */
 
-import { ImageOptimizer } from '../utils/imageOptimizer.js';
-import { ValidationError, UploadError, FormError, withErrorHandling } from '../utils/errorHandler.js';
-import { sanitizeText } from '../utils/security.js';
-import { getSelectedLocation } from './map.controller.js';
 
 /**
  * Form Controller class
@@ -248,7 +244,7 @@ export class FormController {
      * @param {Object} reportData
      * @private
      */
-    async submitReport(reportData) {
+    async submitReport() {
         // Implementation depends on your backend API
         // This is just a placeholder
         return new Promise((resolve) => {

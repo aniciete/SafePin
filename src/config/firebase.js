@@ -7,13 +7,13 @@ import { getAnalytics, setAnalyticsCollectionEnabled } from 'firebase/analytics'
 
 // Firebase configuration
 export const firebaseConfig = {
-    apiKey: "AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM",
-    authDomain: "safepin-1d951.firebaseapp.com",
-    projectId: "safepin-1d951",
-    storageBucket: "safepin-1d951.appspot.com",
-    messagingSenderId: "177195659244",
-    appId: "1:177195659244:web:5f9f9f9f9f9f9f9f9f9f9f",
-    measurementId: "G-7FKZQV0WFB"
+    apiKey: 'AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM',
+    authDomain: 'safepin-1d951.firebaseapp.com',
+    projectId: 'safepin-1d951',
+    storageBucket: 'safepin-1d951.appspot.com',
+    messagingSenderId: '177195659244',
+    appId: '1:177195659244:web:5f9f9f9f9f9f9f9f9f9f9f',
+    measurementId: 'G-7FKZQV0WFB'
 };
 
 // Initialize Firebase

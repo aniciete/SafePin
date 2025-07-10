@@ -1,7 +1,7 @@
 import {
     getAuth,
     signOut
-} from "firebase/auth";
+} from 'firebase/auth';
 import {
     collection,
     getDocs,
@@ -18,17 +18,16 @@ import {
     Timestamp
 } from 'firebase/firestore';
 import {
-    getFunctions,
     httpsCallable
 } from 'firebase/functions';
 import {
     db,
-    functions
+    functions,
+    auth
 } from '../../config/firebase.js';
 
 // --- MODAL AND UI HELPER FUNCTIONS ---
 
-let currentPromptCallback = null;
 let currentConfirmCallback = null;
 let currentDropdownPromptCallback = null;
 
@@ -103,7 +102,7 @@ function listenForReports() {
         updateAnalyticsCharts(reportsData); // Update analytics with new data
 
     }, (error) => {
-        console.error("Error fetching reports: ", error);
+        console.error('Error fetching reports: ', error);
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Error loading reports.</td></tr>';
     });
 }
@@ -217,6 +216,15 @@ function getStatusClass(status) {
 }
 
 /**
+ * Shows the details of a report in a modal.
+ * @param {object} report - The report object to display.
+ */
+function showReportDetail(report) {
+    console.log('Report details:', report);
+    // In a real application, you would populate a modal with the report details.
+}
+
+/**
  * Fetches user statistics and listens for recent activity to populate the Overview tab.
  */
 function updateDashboardData() {
@@ -235,15 +243,15 @@ function updateDashboardData() {
         const newUsersQuery = query(usersRef, where('createdAt', '>=', oneWeekAgoTimestamp));
         getDocs(newUsersQuery).then(newUsersSnapshot => {
             document.getElementById('new-users').textContent = newUsersSnapshot.size;
-        }).catch(err => console.error("Error fetching new users:", err));
+        }).catch(err => console.error('Error fetching new users:', err));
 
         const activeUsersQuery = query(usersRef, where('lastLogin', '>=', oneWeekAgoTimestamp));
         getDocs(activeUsersQuery).then(activeUsersSnapshot => {
             document.getElementById('active-users').textContent = activeUsersSnapshot.size;
-        }).catch(err => console.error("Error fetching active users:", err));
+        }).catch(err => console.error('Error fetching active users:', err));
 
     }).catch(error => {
-        console.error("Error fetching user stats: ", error);
+        console.error('Error fetching user stats: ', error);
         document.getElementById('total-users').textContent = 'Error';
         document.getElementById('new-users').textContent = 'Error';
         document.getElementById('active-users').textContent = 'Error';
@@ -266,7 +274,7 @@ function updateDashboardData() {
             container.appendChild(activityElement);
         });
     }, (error) => {
-        console.error("Error fetching recent activity: ", error);
+        console.error('Error fetching recent activity: ', error);
         const container = document.getElementById('recent-updates-container');
         container.innerHTML = '<p class="text-xs text-red-500">Error loading activity.</p>';
     });
