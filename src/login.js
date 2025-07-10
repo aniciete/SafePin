@@ -36,7 +36,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     if (user) {
         showStatus('Authentication successful! Redirecting...', 'success');
         setTimeout(() => {
-            window.location.href = 'authority-page/index.html';
+            navigateTo(PATHS.AUTHORITY_DASHBOARD);
         }, 1500);
     } else {
         showStatus(error || 'Authentication failed', 'error');
@@ -78,7 +78,7 @@ const handleGoogleAuth = async (role = null) => {
     if (user) {
         showStatus('Authentication successful! Redirecting...', 'success');
         setTimeout(() => {
-            window.location.href = 'authority-page/index.html';
+            navigateTo(PATHS.AUTHORITY_DASHBOARD);
         }, 1500);
     } else {
         showStatus(error || 'Authentication failed', 'error');
