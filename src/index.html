@@ -9,7 +9,10 @@
 </head>
 <body>
 
-    <!-- Header Container -->
+    <script type="module">
+        import { renderHeader } from './components/Header.js';
+        renderHeader(document.getElementById('header-container'));
+    </script>
     <div id="header-container"></div>
 
     <main>
@@ -20,8 +23,8 @@
                 </div>
                 <h1>This is a test. Creating Safer Communities</h1>
                 <p>SafePin empowers citizens to anonymously report incidents and stay informed about safety concerns in your community.</p>
-                <a href="landing-page/report.html" class="btn btn-primary btn-hero">Report Incident</a>
-                <a href="landing-page/verification.html" class="check-status-link">Check Existing Report Status</a>
+                <a href="landing-page/report.html" class="btn btn-primary btn-hero" aria-label="Report a new incident">Report Incident</a>
+                <a href="landing-page/verification.html" class="check-status-link" aria-label="Check the status of an existing report">Check Existing Report Status</a>
             </div>
         </section>
 
@@ -134,12 +137,13 @@
         </section>
     </main>
 
-    <!-- Footer Container -->
+    <script type="module">
+        import { renderFooter } from './components/Footer.js';
+        renderFooter(document.getElementById('footer-container'));
+    </script>
     <div id="footer-container"></div>
 
     <!-- Module Scripts -->
-    <script type="module" src="./modules/header.js"></script>
-    <script type="module" src="./modules/footer.js"></script>
     <script type="module" src="./main.js"></script>
 
 </body>

@@ -56,10 +56,9 @@ export function handleTabClick(tabName) {
   }
 }
 
-// Make handleTabClick globally available for now for ui.manager.js
-window.handleTabClick = handleTabClick;
-
 document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('tab-change', (e) => handleTabClick(e.detail.tabName));
+
   document.getElementById('overview-btn').addEventListener('click', () => handleTabClick('Overview'));
   document.getElementById('reports-btn').addEventListener('click', () => handleTabClick('Reports'));
   document.getElementById('mapview-btn').addEventListener('click', () => handleTabClick('Map View'));
@@ -76,29 +75,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('cancel-logout-btn').addEventListener('click', () => {
     handleTabClick('Overview');
+  });
   
-    document.getElementById('save-status-btn').addEventListener('click', async () => {
-      const reportId = document.getElementById('detail-report-id').textContent;
-      const newStatus = document.getElementById('status-select').value;
-      const successMessage = document.getElementById('update-success-message');
-  
-      if (reportId && newStatus) {
-        try {
-          await updateReportStatus(reportId, newStatus);
-          document.getElementById('detail-report-status').textContent = newStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          
-          // Show success message
-          successMessage.classList.remove('hidden');
-          setTimeout(() => {
-            successMessage.classList.add('hidden');
-          }, 3000); // Hide after 3 seconds
-  
-        } catch (error) {
-          console.error('Error updating status:', error);
-          alert('Failed to update status. Please try again.');
-        }
+  document.getElementById('save-status-btn').addEventListener('click', async () => {
+    const reportId = document.getElementById('detail-report-id').textContent;
+    const newStatus = document.getElementById('status-select').value;
+    const successMessage = document.getElementById('update-success-message');
+
+    if (reportId && newStatus) {
+      try {
+        await updateReportStatus(reportId, newStatus);
+        document.getElementById('detail-report-status').textContent = newStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        // Show success message
+        successMessage.classList.remove('hidden');
+        setTimeout(() => {
+          successMessage.classList.add('hidden');
+        }, 3000); // Hide after 3 seconds
+
+      } catch (error) {
+        console.error('Error updating status:', error);
+        alert('Failed to update status. Please try again.');
       }
-    });
+    }
   });
 
   // Set initial view

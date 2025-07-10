@@ -8,7 +8,10 @@
 </head>
 <body>
 
-    <!-- Header Container -->
+    <script type="module">
+        import { renderHeader } from '../components/Header.js';
+        renderHeader(document.getElementById('header-container'));
+    </script>
     <div id="header-container"></div>
 
     <section class="page-title-section">
@@ -53,7 +56,10 @@
         </div>
     </section>
 
-    <!-- Footer Container -->
+    <script type="module">
+        import { renderFooter } from '../components/Footer.js';
+        renderFooter(document.getElementById('footer-container'));
+    </script>
     <div id="footer-container"></div>
 
     <!-- Module Scripts -->

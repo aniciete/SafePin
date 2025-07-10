@@ -9,7 +9,10 @@
 </head>
 <body>
 
-    <!-- Header Container -->
+    <script type="module">
+        import { renderHeader } from '../components/Header.js';
+        renderHeader(document.getElementById('header-container'));
+    </script>
     <div id="header-container"></div>
 
     <section class="page-title-section">
@@ -30,7 +33,7 @@
                     <input type="text" id="reportId" name="reportId" placeholder="Enter your report ID" required>
                 </div>
                 <div class="submit-button-container">
-                    <button type="submit" class="btn btn-primary-green">
+                    <button type="submit" class="btn btn-primary-green" aria-label="Check the status of your report">
                         <span class="btn-text">Check Status</span>
                         <div class="loading-spinner hidden"></div>
                     </button>
@@ -51,12 +54,13 @@
         </div>
     </section>
 
-    <!-- Footer Container -->
+    <script type="module">
+        import { renderFooter } from '../components/Footer.js';
+        renderFooter(document.getElementById('footer-container'));
+    </script>
     <div id="footer-container"></div>
 
     <!-- Module Scripts -->
-    <script type="module" src="../modules/header.js"></script>
-    <script type="module" src="../modules/footer.js"></script>
     <script type="module" src="./verification.js"></script>
 
 </body>

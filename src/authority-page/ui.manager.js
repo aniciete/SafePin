@@ -166,8 +166,7 @@ export function showReportDetail(report, returnToTab = 'Overview') {
   const backButton = document.getElementById('back-from-report-detail');
   backButton.textContent = `← Back to ${returnToTab}`;
   backButton.onclick = () => {
-    // This is a bit of a hack, we'll fix it later by importing the controller
-    window.handleTabClick(returnToTab);
+    document.dispatchEvent(new CustomEvent('tab-change', { detail: { tabName: returnToTab } }));
   };
 }
 
@@ -188,7 +187,9 @@ export function showVerificationDetail(verification) {
   document.getElementById('detail-verification-status').textContent = verification.status;
   document.getElementById('detail-verification-description').textContent = verification.description;
 
-  document.getElementById('back-from-verification-detail').onclick = () => window.handleTabClick('Overview');
+  document.getElementById('back-from-verification-detail').onclick = () => {
+    document.dispatchEvent(new CustomEvent('tab-change', { detail: { tabName: 'Overview' } }));
+  };
 }
 
 /**
@@ -203,5 +204,7 @@ export function showActivityDetail(activity) {
   document.getElementById('detail-activity-datetime').textContent = activity.date;
   document.getElementById('detail-activity-user').textContent = activity.user;
 
-  document.getElementById('back-from-activity-detail').onclick = () => window.handleTabClick('Overview');
+  document.getElementById('back-from-activity-detail').onclick = () => {
+    document.dispatchEvent(new CustomEvent('tab-change', { detail: { tabName: 'Overview' } }));
+  };
 }
