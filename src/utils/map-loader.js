@@ -25,8 +25,8 @@ export class MapLoader {
             script.src = url;
             script.async = true;
             script.defer = true;
-            script.onerror = () => reject(new Error('Failed to load Google Maps API'));
             script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Google Maps API'));
             document.head.appendChild(script);
         });
     }

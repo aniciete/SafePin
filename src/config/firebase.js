@@ -7,13 +7,13 @@ import { getAnalytics, setAnalyticsCollectionEnabled } from 'firebase/analytics'
 
 // Firebase configuration
 export const firebaseConfig = {
-    apiKey: 'AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM',
-    authDomain: 'safepin-1d951.firebaseapp.com',
-    projectId: 'safepin-1d951',
-    storageBucket: 'safepin-1d951.appspot.com',
-    messagingSenderId: '177195659244',
-    appId: '1:177195659244:web:5f9f9f9f9f9f9f9f9f9f9f',
-    measurementId: 'G-7FKZQV0WFB'
+  apiKey: "AIzaSyDTwxz4f0JQbwRRCgP8z85xYS52sH_wb_s",
+  authDomain: "safepin-1d951.firebaseapp.com",
+  projectId: "safepin-1d951",
+  storageBucket: "safepin-1d951.firebasestorage.app",
+  messagingSenderId: "177195659244",
+  appId: "1:177195659244:web:cffe2d8295601de5b05ac9",
+  measurementId: "G-7FKZQV0WFB"
 };
 
 // Initialize Firebase
@@ -30,9 +30,9 @@ let analytics = null;
 if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     try {
         analytics = getAnalytics(app);
-        setAnalyticsCollectionEnabled(analytics, false);
+        setAnalyticsCollectionEnabled(analytics, true); // Enable analytics
     } catch (error) {
-        console.warn('Analytics initialization failed:', error);
+        console.warn('Analytics initialization failed:', error.message);
     }
 }
 

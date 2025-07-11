@@ -3,6 +3,7 @@
  * Handles form validation, image optimization, and submission
  */
 
+import { submitReport } from '../services/report.service.js';
 
 /**
  * Form Controller class
@@ -55,13 +56,22 @@ export class FormController {
                 severity: formData.get('severity'),
                 description: formData.get('description'),
                 location: JSON.parse(formData.get('location')),
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                userId: `anon_${Date.now()}`
             };
 
+            console.log('Submitting report:', reportData);
+
             // Submit report
-            await this.submitReport(reportData);
+            const imageFile = this.imageInput.files[0];
+            const result = await submitReport(reportData, imageFile);
 
             // Show success message
+            if (result.status === 'online') {
+                this.showSuccessMessage('Report submitted successfully!');
+            } else {
+                this.showSuccessMessage('You are offline. Your report has been saved and will be submitted when you reconnect.');
+            }
             this.showSuccessMessage();
             this.form.reset();
 
@@ -244,11 +254,4 @@ export class FormController {
      * @param {Object} reportData
      * @private
      */
-    async submitReport() {
-        // Implementation depends on your backend API
-        // This is just a placeholder
-        return new Promise((resolve) => {
-            setTimeout(resolve, 1000);
-        });
-    }
 }

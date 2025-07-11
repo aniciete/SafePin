@@ -15,6 +15,7 @@ import { firebaseConfig } from '../config/firebase';
 import { MapLoader } from '../utils/map-loader';
 import { SafePinHeader } from '../components/Header.js';
 import { SafePinFooter } from '../components/Footer.js';
+import { FormController } from './form.controller.js';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -22,7 +23,7 @@ getFirestore(app);
 getStorage(app);
 
 // Load header and footer
-document.addEventListener('DOMContentLoaded', async () => {
+(async () => {
     try {
         // Initialize header and footer
         const headerContainer = document.getElementById('header-container');
@@ -39,10 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initialize map
         await initializePage();
+
+        // Initialize form controller
+        new FormController();
     } catch (error) {
         console.error('Error initializing page:', error);
     }
-});
+})();
 
 async function initializePage() {
     try {
@@ -87,7 +91,7 @@ withErrorHandling(async function() {
     }
     
     // Validate location
-    const locationField = document.getElementById('selected-location');
+    const locationField = document.getElementById('location');
     if (!locationField || !locationField.value) {
         throw new MapError('Please select a location on the map');
     }

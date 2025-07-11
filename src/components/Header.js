@@ -4,7 +4,7 @@ export class SafePinHeader {
         <header>
             <div class="container">
                 <a href="/" class="logo">
-                    <img src="/assets/SafePin Logo Green.svg" alt="SafePin Logo">
+                    <img src="/SafePin Logo Green.svg" alt="SafePin Logo">
                     <span>SafePin</span>
                 </a>
                 <nav>

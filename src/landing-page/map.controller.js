@@ -44,19 +44,21 @@ export async function initMap() {
             },
             mapTypeControl: true,
             streetViewControl: false,
-            fullscreenControl: false
+            fullscreenControl: false,
+            mapId: '806380e33fb5c6cabe7df0e4' // Replace with your Map ID
         });
 
         // Create marker
-        marker = new google.maps.Marker({
+        marker = new google.maps.marker.AdvancedMarkerElement({
             map,
             position: map.getCenter(),
-            draggable: true,
+            gmpDraggable: true,
             title: 'Drag to set incident location'
         });
 
         // Add marker drag event listener
         marker.addListener('dragend', () => {
+            console.log('Marker dragend event fired');
             const position = marker.getPosition();
             updateAddressBar(position);
             updateLocationField(position);
@@ -64,6 +66,7 @@ export async function initMap() {
 
         // Add click event listener to map
         map.addListener('click', (event) => {
+            console.log('Map click event fired');
             const position = event.latLng;
             marker.setPosition(position);
             updateAddressBar(position);
