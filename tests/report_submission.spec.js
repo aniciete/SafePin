@@ -5,6 +5,9 @@ test.describe('Anonymous Report Submission', () => {
     // Visit the report submission page
     await page.goto('/landing-page/report.html');
 
+   // Wait for the map to be visible to ensure the page is fully loaded
+   await page.waitForSelector('#map', { state: 'visible' });
+
     // Fill out the form
     await page.locator('#crime-type').selectOption('Theft');
     await page.locator('#description').fill('My bike was stolen from the park.');

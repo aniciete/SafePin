@@ -57,7 +57,7 @@ export async function initMap() {
         });
 
         // Add marker drag event listener
-        marker.addListener('dragend', () => {
+        marker.addEventListener('gmp-dragend', () => {
             console.log('Marker dragend event fired');
             const position = marker.getPosition();
             updateAddressBar(position);
