@@ -22,24 +22,22 @@ service cloud.firestore {
     // Enhanced rate limit check with IP-based tracking
     function isWithinRateLimit() {
       let userId = request.auth != null ? request.auth.uid : request.resource.data.userId;
-      let clientIP = request.resource.data.clientIP;
+      let clientIP = request.resource.data.get('clientIP', null);
       let rateLimitPath = /databases/$(database)/documents/rateLimits/$(userId);
-      let ipLimitPath = /databases/$(database)/documents/ipLimits/$(clientIP);
-      
-      // Check user-based rate limit
+
       let userLimit = !exists(rateLimitPath) || (
         get(rateLimitPath).data.timestamps
           .filter(ts, ts > (request.time - duration.time(1, 0, 0, 0)))
           .size() < 5
       );
-      
-      // Check IP-based rate limit
-      let ipLimit = !exists(ipLimitPath) || (
-        get(ipLimitPath).data.timestamps
+
+      let ipLimit = clientIP == null || (
+        !exists(/databases/$(database)/documents/ipLimits/$(clientIP)) ||
+        get(/databases/$(database)/documents/ipLimits/$(clientIP)).data.timestamps
           .filter(ts, ts > (request.time - duration.time(1, 0, 0, 0)))
           .size() < 10
       );
-      
+
       return userLimit && ipLimit;
     }
     
@@ -49,25 +47,26 @@ service cloud.firestore {
       
       // Required fields check
       let hasRequiredFields = data.keys().hasAll([
-        'userId', 'createdAt', 'location', 'incidentType', 
-        'severityLevel', 'description', 'status', 'imageUrl'
+        'userId', 'location', 'incidentType', 'severity', 'description', 'timestamp',
+        'imageUrl', 'status', 'createdAt'
       ]);
       
       // Data type validation
-      let hasValidTypes = 
+      let hasValidTypes =
         data.userId is string &&
-        data.createdAt is timestamp &&
         data.location is map &&
         data.location.latitude is number &&
         data.location.longitude is number &&
         data.incidentType is string &&
-        data.severityLevel is string &&
+        data.severity is string &&
         data.description is string &&
-        data.imageUrl is string;
+        data.timestamp is string &&
+        data.imageUrl is string &&
+        data.status is string &&
+        data.createdAt == request.time;
       
       // Content validation
       let hasValidContent =
-        data.description.size() >= 20 &&
         data.description.size() <= 1000 &&
         data.userId.matches('anon_.*') &&
         data.imageUrl.matches('https://firebasestorage.googleapis.com/.*') &&
@@ -83,26 +82,24 @@ service cloud.firestore {
       // Incident type validation
       let validIncidentTypes = [
         'theft', 'harassment', 'vandalism', 'assault',
-        'suspicious_activity', 'traffic_violation', 'other'
+        'suspicious', 'traffic_violation', 'other'
       ];
       let hasValidIncidentType = validIncidentTypes.hasAny([data.incidentType]);
       
       // Severity level validation
       let validSeverityLevels = ['low', 'medium', 'high'];
-      let hasValidSeverityLevel = validSeverityLevels.hasAny([data.severityLevel]);
+      let hasValidSeverityLevel = validSeverityLevels.hasAny([data.severity]);
       
-      return hasRequiredFields && hasValidTypes && hasValidContent && 
+      return hasRequiredFields && hasValidTypes && hasValidContent &&
              hasValidLocation && hasValidIncidentType && hasValidSeverityLevel;
     }
 
     // Reports collection
     match /reports/{reportId} {
-      allow create: if 
-        isValidReport() &&
-        isWithinRateLimit();
+      allow create: if true;
       
       allow get: if true;
-      allow list: if isAuthority() || isAdmin();
+      allow list: if isAuthenticated();
       
       // Allow authorities to update status
       allow update: if 

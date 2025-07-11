@@ -7,12 +7,11 @@ import '../utils/auth-styles.css';
 // Import utilities
 import { UploadError, FormError, MapError, withErrorHandling } from '../utils/errorHandler.js';
 import { sanitizeText } from '../utils/security.js';
-import { initMap } from './map.controller.js';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { firebaseConfig } from '../config/firebase';
-import { MapLoader } from '../utils/map-loader';
+import { MapController } from '../components/map.js';
 import { SafePinHeader } from '../components/Header.js';
 import { SafePinFooter } from '../components/Footer.js';
 import { FormController } from './form.controller.js';
@@ -50,75 +49,77 @@ getStorage(app);
 
 async function initializePage() {
     try {
-        // Load Google Maps script using MapLoader
-        await MapLoader.loadGoogleMaps('AIzaSyCJg_Q-5GlDaZAPTTUFe8Lk1hzz0-K4BvM');
-        
-        // Initialize map after script is loaded
-        await initMap();
+        const mapController = new MapController('map');
+        const map = await mapController.initMap({
+            center: { lat: 14.5995, lng: 121.0364 }, // Metro Manila
+            zoom: 12,
+        });
 
-    } catch (error) {
-        console.error('Error initializing map:', error);
-        throw error;
+        const marker = mapController.addMarker({
+            map,
+            position: map.getCenter(),
+            gmpDraggable: true,
+            title: 'Drag to set incident location',
+        });
+        updateLocationField(map.getCenter());
+
+        map.addListener('click', (event) => {
+            marker.position = event.latLng;
+            updateLocationField(event.latLng);
+        });
+
+        marker.addListener('dragend', () => {
+            updateLocationField(marker.position);
+        });
+ 
+        const currentLocationBtn = document.getElementById('current-location-btn');
+        if (currentLocationBtn) {
+            currentLocationBtn.addEventListener('click', () => handleCurrentLocation(mapController));
+        }
+ 
+     } catch (error) {
+         console.error('Error initializing map:', error);
+         throw error;
+     }
+}
+
+function handleCurrentLocation(mapController) {
+    console.log('Attempting to get current location...');
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newPosition = { lat: latitude, lng: longitude };
+                console.log('Successfully retrieved location:', newPosition);
+                
+                mapController.getMap().setCenter(newPosition);
+                const marker = mapController.markers[0];
+                if (marker) {
+                    marker.position = newPosition;
+                }
+                updateLocationField(newPosition);
+            },
+            (error) => {
+                console.error('Error getting current location:', error);
+                alert('Could not retrieve your location. Please select it manually on the map.');
+            }
+        );
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+
+function updateLocationField(position) {
+    const locationField = document.getElementById('location');
+    if (locationField) {
+        const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
+        const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
+        locationField.value = JSON.stringify({ lat, lng });
+        console.log('Location field updated:', locationField.value);
     }
 }
 
 
-/**
- * Enhanced form validation with error handling
- */
-withErrorHandling(async function() {
-    const formData = new FormData(document.getElementById('reportIncidentForm'));
-    const validationErrors = {};
-    
-    // Validate and sanitize description
-    const description = sanitizeText(formData.get('description'));
-    if (!description) {
-        validationErrors.description = 'Description is required';
-    } else if (description.length < 20) {
-        validationErrors.description = 'Description must be at least 20 characters long';
-    }
-    
-    // Validate incident type
-    const incidentType = formData.get('incident-type');
-    if (!incidentType) {
-        validationErrors.incidentType = 'Please select an incident type';
-    }
-    
-    // Validate severity level
-    const severityLevel = formData.get('severity-level');
-    if (!severityLevel) {
-        validationErrors.severityLevel = 'Please select a severity level';
-    }
-    
-    // Validate location
-    const locationField = document.getElementById('location');
-    if (!locationField || !locationField.value) {
-        throw new MapError('Please select a location on the map');
-    }
-    
-    // Validate image
-    const imageFile = formData.get('image-upload');
-    if (!imageFile) {
-        validationErrors.image = 'Please upload an image';
-    } else {
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (imageFile.size > maxSize) {
-            throw new UploadError('Image file is too large', imageFile, maxSize);
-        }
-        
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!validTypes.includes(imageFile.type)) {
-            throw new UploadError('Invalid image format. Please use JPG, PNG, or GIF', imageFile);
-        }
-    }
-    
-    // If there are validation errors, throw FormError
-    if (Object.keys(validationErrors).length > 0) {
-        throw new FormError('Please fix the form errors', formData, validationErrors);
-    }
-    
-    return true;
-});
 
 
 

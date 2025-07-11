@@ -51,11 +51,19 @@ export class FormController {
 
             // Get form data
             const formData = new FormData(this.form);
+            let location;
+            try {
+                location = JSON.parse(formData.get('location'));
+            } catch (error) {
+                this.displayErrors({ location: 'Please select a valid location on the map.' });
+                return;
+            }
+
             const reportData = {
                 incidentType: formData.get('incidentType'),
                 severity: formData.get('severity'),
                 description: formData.get('description'),
-                location: JSON.parse(formData.get('location')),
+                location,
                 timestamp: new Date().toISOString(),
                 userId: `anon_${Date.now()}`
             };
@@ -116,9 +124,11 @@ export class FormController {
             errors.description = 'Description must be less than 500 characters';
         }
 
-        // Check image size
+        // Check image
         const image = this.imageInput.files[0];
-        if (image && image.size > 5 * 1024 * 1024) {
+        if (!image) {
+            errors.image = 'Please upload an image';
+        } else if (image.size > 5 * 1024 * 1024) {
             errors.image = 'Image size must be less than 5MB';
         }
 

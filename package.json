@@ -26,6 +26,8 @@
   },
   "homepage": "https://github.com/aniciete/SafePin#readme",
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.10",
+    "@googlemaps/markerclusterer": "^2.6.2",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2",

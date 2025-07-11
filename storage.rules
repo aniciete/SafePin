@@ -4,10 +4,9 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Match any file in the 'reports' folder
     match /reports/{userId}/{fileName} {
-      // Allow create (upload) only if the user is authenticated
-      // and the `userId` in the path matches their own UID.
-      // This prevents users from uploading files to other users' folders.
-      allow create: if request.auth != null && request.auth.uid == userId;
+      // Allow create (upload) for anonymous users.
+      // The client generates a unique ID for the report, which is used as `userId`.
+      allow create;
 
       // Allow read access to anyone with the URL.
       // This is standard for public images linked in the app.

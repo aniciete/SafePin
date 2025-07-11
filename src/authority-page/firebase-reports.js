@@ -11,6 +11,7 @@ import {
   onSnapshot,
   where,
   limit,
+  getDocs,
 } from 'firebase/firestore';
 import { renderDashboardContent, renderReportsTable } from './ui.manager.js';
 import { loadReportsOnMap } from './map.controller.js';
@@ -91,7 +92,7 @@ function listenForAllReports() {
 
     onSnapshot(allReportsQuery, (snapshot) => {
         allReports = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        renderReportsTable(allReports.map(r => ({
+        const transformedReports = allReports.map(r => ({
             id: r.id,
             street: r.locationName || 'Unknown',
             wanted: 'Unknown',
@@ -103,7 +104,8 @@ function listenForAllReports() {
             reporter: 'Anonymous',
             lat: r.location ? r.location.latitude : null,
             lng: r.location ? r.location.longitude : null,
-        })));
+        }));
+        renderReportsTable(transformedReports);
 
         if (!document.getElementById('mapview-content').classList.contains('hidden')) {
             loadReportsOnMap(getReports());
@@ -129,6 +131,32 @@ export function getReports() {
         lat: r.location ? r.location.latitude : null,
         lng: r.location ? r.location.longitude : null,
     }));
+}
+
+export async function getReportsInBounds(bounds) {
+    // This is a simplified example. A real implementation would use geohashing.
+    const center = bounds.getCenter();
+    const lat = center.lat();
+    const lng = center.lng();
+    const radius = 10; // in km
+
+    const lowerLat = lat - (radius / 111.045);
+    const upperLat = lat + (radius / 111.045);
+    const lowerLng = lng - (radius / (111.045 * Math.cos(lat * (Math.PI / 180))));
+    const upperLng = lng + (radius / (111.045 * Math.cos(lat * (Math.PI / 180))));
+
+    const reportsCol = collection(db, 'reports');
+    const q = query(
+        reportsCol,
+        where('location.latitude', '>', lowerLat),
+        where('location.latitude', '<', upperLat),
+    );
+
+    const snapshot = await getDocs(q);
+    const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // Additional filtering for longitude since Firestore doesn't support multiple range queries
+    return reports.filter(report => report.location.longitude > lowerLng && report.location.longitude < upperLng);
 }
 
 // --- Initial Load ---
