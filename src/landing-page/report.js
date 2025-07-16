@@ -7,18 +7,11 @@ import '../utils/auth-styles.css';
 // Import utilities
 import { UploadError, FormError, MapError, withErrorHandling } from '../utils/errorHandler.js';
 import { sanitizeText } from '../utils/security.js';
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { firebaseConfig } from '../config/firebase';
 import { MapController } from '../components/map.js';
 import { SafePinHeader } from '../components/Header.js';
 import { SafePinFooter } from '../components/Footer.js';
 import { FormController } from './form.controller.js';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-getFirestore(app);
 getStorage(app);
 
 // Load header and footer

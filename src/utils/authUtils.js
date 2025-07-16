@@ -1,5 +1,4 @@
-import { auth } from '../config/firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged } from '@supabase/supabase-js';
 import { initSessionManagement } from './sessionManager.js';
 import { showAuthFeedback } from './ui.js';
 

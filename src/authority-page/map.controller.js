@@ -1,6 +1,5 @@
 // map.controller.js
 import { MapController } from '../components/map.js';
-import { getReportsInBounds } from './firebase-reports.js';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 
 let mapController;

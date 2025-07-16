@@ -3,25 +3,17 @@
  * @module report.service
  */
 
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  doc,
-  updateDoc,
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../config/firebase.js';
+import { supabase } from '../config/supabase.js';
 import { ValidationError, ERROR_SEVERITY } from '../utils/errorHandler.js';
 import { downloadReportAsTxt } from '../utils/ui.js';
 import { ReportValidator } from './report/validation.js';
 import { OfflineReportManager } from './report/offline.js';
 
 /**
- * Uploads an image to Firebase Storage and returns the download URL.
+ * Uploads an image to Supabase Storage and returns the file path.
  * @param {File} imageFile - The image file to upload.
- * @param {string} userId - The anonymous user ID.
- * @returns {Promise<string>} The public URL of the uploaded image.
+ * @param {string} userId - The user ID.
+ * @returns {Promise<string>} The path of the uploaded file.
  */
 export async function uploadReportImage(imageFile, userId) {
     if (!imageFile) {
@@ -30,12 +22,18 @@ export async function uploadReportImage(imageFile, userId) {
 
     const timestamp = Date.now();
     const fileName = `${timestamp}-${imageFile.name}`;
-    const storageRef = ref(storage, `reports/${userId}/${fileName}`);
+    const filePath = `reports/${userId}/${fileName}`;
 
     try {
-        const snapshot = await uploadBytes(storageRef, imageFile);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
+        const { data, error } = await supabase.storage
+            .from('report-images')
+            .upload(filePath, imageFile);
+
+        if (error) {
+            throw error;
+        }
+
+        return data.path;
     } catch (error) {
         console.error('Image upload failed:', error);
         throw new ValidationError(
@@ -79,26 +77,29 @@ export async function submitReport(reportData, imageFile) {
 
         // 3. If online, proceed with normal submission
         // Upload image first
-        const imageUrl = await uploadReportImage(imageFile, reportData.userId);
+        const imagePath = await uploadReportImage(imageFile, reportData.user_id);
 
-        // Submit to Firestore
-        const reportsCollection = collection(db, 'reports');
-        const docRef = await addDoc(reportsCollection, {
-            ...reportData,
-            imageUrl,
-            createdAt: serverTimestamp(),
-            status: 'pending_verification'
-        });
+        // Submit to Supabase
+        const { data, error } = await supabase
+            .from('reports')
+            .insert([{ ...reportData, image_path: imagePath, status: 'pending_verification' }])
+            .select();
+
+        if (error) {
+            throw error;
+        }
+
+        const newReport = data[0];
 
         // Create local backup
         downloadReportAsTxt({
             ...reportData,
-            id: docRef.id,
-            imageUrl
+            id: newReport.id,
+            imagePath
         });
 
         return {
-            id: docRef.id,
+            id: newReport.id,
             status: 'online'
         };
     } catch (error) {
@@ -126,7 +127,7 @@ export async function submitReport(reportData, imageFile) {
 }
 
 /**
- * Updates the status of a specific report in Firestore
+ * Updates the status of a specific report in Supabase
  * @param {string} reportId - The ID of the report to update
  * @param {string} newStatus - The new status to set
  * @returns {Promise<void>}
@@ -141,18 +142,70 @@ export async function updateReportStatus(reportId, newStatus) {
         );
     }
 
-    const reportRef = doc(db, 'reports', reportId);
-
     try {
-        await updateDoc(reportRef, {
-            status: newStatus,
-            updatedAt: serverTimestamp()
-        });
+        const { error } = await supabase
+            .from('reports')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('id', reportId);
+
+        if (error) {
+            throw error;
+        }
+
         console.log(`Report ${reportId} status updated to ${newStatus}`);
     } catch (error) {
         console.error('Failed to update report status:', error);
         throw new ValidationError(
             'Failed to update report status. Please try again.',
+            ERROR_SEVERITY.CRITICAL
+        );
+    }
+}
+
+/**
+ * Gets a temporary signed URL for a private image.
+ * @param {string} filePath - The full path to the image in the storage bucket.
+ * @returns {Promise<string>} The signed URL.
+ */
+export async function getSignedImageUrl(filePath) {
+    try {
+        const { data, error } = await supabase.functions.invoke('get-signed-url', {
+            body: { filePath },
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        return data.signedUrl;
+    } catch (error) {
+        console.error('Failed to get signed URL:', error);
+        throw new ValidationError(
+            'Could not retrieve image. Please try again later.',
+            ERROR_SEVERITY.CRITICAL
+        );
+    }
+}
+
+/**
+ * Deletes a report image from storage.
+ * @param {string} filePath - The path of the file to delete.
+ * @param {string} reportId - The ID of the report the image belongs to.
+ * @returns {Promise<void>}
+ */
+export async function deleteReportImage(filePath, reportId) {
+    try {
+        const { error } = await supabase.functions.invoke('delete-report-image', {
+            body: { filePath, reportId },
+        });
+
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        console.error('Failed to delete image:', error);
+        throw new ValidationError(
+            'Failed to delete image. Please try again.',
             ERROR_SEVERITY.CRITICAL
         );
     }

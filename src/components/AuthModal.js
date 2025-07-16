@@ -21,7 +21,6 @@ const MODAL_HTML = `
         <button type="submit" aria-label="Sign In with email and password">Sign In</button>
         <div class="auth-divider">OR</div>
         <button type="button" class="google-signin-btn" id="googleSignInBtn" aria-label="Sign in with Google">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
             Sign in with Google
         </button>
     </form>
@@ -49,7 +48,6 @@ const MODAL_HTML = `
             <button type="submit" aria-label="Sign Up with email and password">Sign Up</button>
             <div class="auth-divider">OR</div>
             <button type="button" class="google-signin-btn" id="googleSignUpBtn" aria-label="Sign up with Google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
                 Sign up with Google
             </button>
             <button type="button" id="backToRoleBtn" style="background: #a0aec0; margin-top: 1rem;" aria-label="Go back to the previous step">Back</button>

@@ -1,7 +1,6 @@
 // dashboard.controller.js
 import { hideAllContentSections } from './ui.manager.js';
 import { initMap, loadReportsOnMap } from './map.controller.js';
-import { getReports } from './firebase-reports.js';
 import { updateReportStatus } from '../services/report.service.js';
 
 /**
@@ -35,7 +34,8 @@ export function handleTabClick(tabName) {
     case 'Map View':
       document.getElementById('mapview-content').classList.remove('hidden');
       initMap();
-      loadReportsOnMap(getReports()); // Load reports from firebase-reports module
+      // TODO: Replace with Supabase call
+      // loadReportsOnMap(getReports());
       break;
     case 'Profile':
       document.getElementById('profile-content').classList.remove('hidden');

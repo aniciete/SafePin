@@ -13,7 +13,6 @@ export class ReportValidator {
     severityLevel: ['required', 'validSeverityLevel'],
     description: ['required', 'minLength:20', 'maxLength:500'],
     location: ['required', 'validLocation'],
-    imageUrl: ['validImageUrl'],
     status: ['required', 'validStatus']
     };
   }
@@ -109,15 +108,6 @@ export class ReportValidator {
         }
         break;
 
-      case 'validImageUrl':
-        if (value && !value.startsWith('https://firebasestorage.googleapis.com/')) {
-          return {
-            field,
-            code: 'INVALID_IMAGE_URL',
-            message: 'Image URL must be from Firebase Storage'
-          };
-        }
-        break;
 
       case 'validStatus':
         if (!Object.values(REPORT_STATUS).includes(value)) {
