@@ -98,7 +98,7 @@ CREATE POLICY "Authorities can update report status" ON public.reports
         OLD.incident_type = NEW.incident_type AND
         OLD.severity = NEW.severity AND
         OLD.description = NEW.description AND
-        OLD.image_url = NEW.image_url AND
+        OLD.image_path = NEW.image_path AND
         OLD.created_at = NEW.created_at
     );
 
