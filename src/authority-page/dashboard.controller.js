@@ -2,6 +2,31 @@
 import { hideAllContentSections } from './ui.manager.js';
 import { initMap, loadReportsOnMap } from './map.controller.js';
 import { updateReportStatus } from '../services/report.service.js';
+import { supabase } from '../config/supabase.js'; // Import Supabase client
+
+let reportsSubscription = null; // To manage the realtime subscription
+
+/**
+ * Subscribes to realtime changes in the 'reports' table.
+ */
+function subscribeToReports() {
+  if (reportsSubscription) {
+    supabase.removeChannel(reportsSubscription);
+  }
+
+  reportsSubscription = supabase
+    .channel('public:reports')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, (payload) => {
+      console.log('Change received!', payload);
+      // TODO: Implement logic to update UI based on realtime changes
+      // For now, we'll just log the change. In a real app, you'd update the displayed reports.
+      // You might want to refetch reports or update specific report elements.
+      // Example: if (payload.eventType === 'INSERT') { addReportToUI(payload.new); }
+      // Example: if (payload.eventType === 'UPDATE') { updateReportInUI(payload.new); }
+      // Example: if (payload.eventType === 'DELETE') { removeReportFromUI(payload.old.id); }
+    })
+    .subscribe();
+}
 
 /**
  * Handles sidebar button clicks to switch between tabs.
@@ -34,8 +59,9 @@ export function handleTabClick(tabName) {
     case 'Map View':
       document.getElementById('mapview-content').classList.remove('hidden');
       initMap();
-      // TODO: Replace with Supabase call
-      // loadReportsOnMap(getReports());
+      // Load reports from Supabase (initial load)
+      // You might want to fetch reports here and then subscribe for updates
+      // For now, the subscription is handled globally on DOMContentLoaded
       break;
     case 'Profile':
       document.getElementById('profile-content').classList.remove('hidden');
@@ -103,3 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial view
   handleTabClick('Overview');
 });
+
+// Start realtime subscription when the dashboard loads
+subscribeToReports();

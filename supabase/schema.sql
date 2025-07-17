@@ -1,9 +1,17 @@
 -- Phase 1: Database Schema
 
--- 1. Create a table for user roles
+-- 1. Create ENUM types for report status and incident types
+CREATE TYPE report_status AS ENUM ('pending_verification', 'verified', 'rejected', 'archived');
+CREATE TYPE incident_type AS ENUM (
+    'Theft', 'Assault', 'Vandalism', 'Harassment', 'Robbery',
+    'Burglary', 'Fire', 'Medical Emergency', 'Suspicious Activity',
+    'Environmental Hazard', 'Road Accident', 'Other'
+);
+
+-- 2. Create a table for user roles
 CREATE TYPE user_role AS ENUM ('regular', 'admin', 'authority');
 
--- 2. Create a table for users
+-- 3. Create a table for users
 -- This table will store public user data.
 CREATE TABLE public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -13,17 +21,17 @@ CREATE TABLE public.users (
     onboarding_completed BOOLEAN DEFAULT false
 );
 
--- 3. Create a table for reports
+-- 4. Create a table for reports
 CREATE TABLE public.reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.users(id),
     anonymous_user_id TEXT, -- For anonymous reports
     location JSONB,
-    incident_type TEXT,
+    incident_type incident_type, -- Use ENUM type
     severity TEXT,
     description TEXT,
-    image_url TEXT,
-    status TEXT DEFAULT 'pending_verification',
+    image_path TEXT, -- Changed from image_url to image_path
+    status report_status DEFAULT 'pending_verification', -- Use ENUM type
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ,
     verified_by UUID REFERENCES public.users(id),
@@ -83,7 +91,15 @@ CREATE POLICY "Authorities can update report status" ON public.reports
         (SELECT role FROM public.users WHERE id = auth.uid()) = 'authority'
     ) WITH CHECK (
         -- Authorities can only update specific fields
-        (SELECT jsonb_object_keys(to_jsonb(t))) <@ ARRAY['status', 'verified_by', 'verified_at']::text[]
+        OLD.id = NEW.id AND
+        OLD.user_id = NEW.user_id AND
+        OLD.anonymous_user_id = NEW.anonymous_user_id AND
+        OLD.location = NEW.location AND
+        OLD.incident_type = NEW.incident_type AND
+        OLD.severity = NEW.severity AND
+        OLD.description = NEW.description AND
+        OLD.image_url = NEW.image_url AND
+        OLD.created_at = NEW.created_at
     );
 
 -- Policies for 'rate_limits' table
