@@ -8,7 +8,11 @@
 
 import { Loader } from '@googlemaps/js-api-loader';
 
-const API_KEY = "AIzaSyB-kT4aRY_THYT8Am33VdP21nkwLaR6O8Q";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+if (!API_KEY) {
+  throw new Error('Missing Google Maps API Key. Please check your .env.local file.');
+}
 
 const loader = new Loader({
     apiKey: API_KEY,
