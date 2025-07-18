@@ -1,20 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { firebaseConfig } from '../src/config/firebase.js';
 
-// Initialize Supabase client (credentials will be injected by the build process)
-const supabase = createClient(self.SUPABASE_URL, self.SUPABASE_ANON_KEY);
+// Initialize Firebase in the service worker
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const CACHE_NAME = 'safepin-cache-v1';
+// Cache name for offline assets
+const CACHE_NAME = 'safepin-offline-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/login.html',
-  '/src/styles/main.css',
-  '/src/main.js',
-  '/src/assets/icons/favicon.ico',
-  '/src/assets/images/safepin-logo.png'
+  '/report.html',
+  '/styles.css',
+  '/main.js',
+  '/assets/icons/icon-192x192.png',
+  '/assets/icons/icon-512x512.png'
 ];
 
-// Install event: open a cache and add assets to it
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -67,9 +71,15 @@ async function syncReports() {
   for (const report of reports) {
     try {
       // Attempt to submit the report
-      const { error } = await supabase.from('reports').insert(report.data);
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(report.data)
+      });
 
-      if (!error) {
+      if (response.ok) {
         // Remove successfully submitted report from queue
         await removeReport(db, report.id);
       } else {

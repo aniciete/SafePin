@@ -12,7 +12,14 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'src', 'index.html'),
         login: resolve(__dirname, 'src', 'login.html'),
-        
+        adminProject: resolve(
+          __dirname,
+          'src',
+          'admin-page',
+          'project',
+          'index.html'
+        ),
+        authority: resolve(__dirname, 'src', 'authority-page', 'index.html'),
         about: resolve(__dirname, 'src', 'landing-page', 'about-us.html'),
         report: resolve(__dirname, 'src', 'landing-page', 'report.html'),
         verification: resolve(
