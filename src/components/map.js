@@ -8,7 +8,7 @@
 
 import { Loader } from '@googlemaps/js-api-loader';
 
-const API_KEY = "AIzaSyDTwxz4f0JQbwRRCgP8z85xYS52sH_wb_s";
+const API_KEY = "AIzaSyB-kT4aRY_THYT8Am33VdP21nkwLaR6O8Q";
 
 const loader = new Loader({
     apiKey: API_KEY,
@@ -35,7 +35,7 @@ export class MapController {
         await loader.load();
         this.map = new google.maps.Map(this.mapElement, {
             ...mapOptions,
-            mapId: '806380e33fb5c6cabe7df0e4'
+            mapId: '806380e33fb5c6cbb5720fde'
         });
         return this.map;
     }

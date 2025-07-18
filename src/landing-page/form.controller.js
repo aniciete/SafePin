@@ -1,19 +1,18 @@
-/**
- * @fileoverview Form controller for report submission
- * Handles form validation, image optimization, and submission
- */
-
-import { submitReport } from '../services/report.service.js';
+import { uploadImage, submitReport } from '../services/supabaseService.js';
 
 /**
  * Form Controller class
  */
 export class FormController {
-    constructor() {
+    constructor(incidentMap) {
         this.form = document.getElementById('report-form');
         this.imageInput = document.getElementById('image-upload');
         this.imagePreview = document.getElementById('image-preview');
         this.submitButton = document.getElementById('submit-report');
+        this.loadingSpinner = this.submitButton.querySelector('.loading-spinner');
+        this.messageContainer = document.getElementById('form-messages');
+        this.charCount = document.querySelector('.character-count');
+        this.incidentMap = incidentMap; // Store map instance
         this.setupEventListeners();
     }
 
@@ -24,6 +23,15 @@ export class FormController {
     setupEventListeners() {
         this.form.addEventListener('submit', this.handleSubmit.bind(this));
         this.imageInput.addEventListener('change', this.handleImageUpload.bind(this));
+        const description = document.getElementById('description');
+        if(description) {
+            description.addEventListener('input', this.updateCharCount.bind(this));
+        }
+    }
+
+    updateCharCount(event) {
+        const count = event.target.value.length;
+        this.charCount.textContent = `${count}/500`;
     }
 
     /**
@@ -33,63 +41,57 @@ export class FormController {
      */
     async handleSubmit(event) {
         event.preventDefault();
-        
-        // Reset previous errors
         this.clearErrors();
+        this.setLoading(true);
 
         try {
-            // Validate form
             const errors = this.validateForm();
             if (Object.keys(errors).length > 0) {
                 this.displayErrors(errors);
+                this.showMessage('Please correct the errors before submitting.', 'error');
+                this.setLoading(false); // Stop loading on validation error
                 return;
             }
 
-            // Disable submit button
-            this.submitButton.disabled = true;
-            this.submitButton.textContent = 'Submitting...';
-
-            // Get form data
             const formData = new FormData(this.form);
-            let location;
-            try {
-                location = JSON.parse(formData.get('location'));
-            } catch (error) {
-                this.displayErrors({ location: 'Please select a valid location on the map.' });
-                return;
-            }
+            const imageFile = this.imageInput.files[0];
 
+            // 1. Upload image to Supabase Storage
+            const imageUrl = await uploadImage(imageFile);
+
+            // 2. Insert report data into Supabase database
             const reportData = {
-                incidentType: formData.get('incidentType'),
+                latitude: parseFloat(formData.get('latitude')),
+                longitude: parseFloat(formData.get('longitude')),
+                incident_type: formData.get('incidentType'),
                 severity: formData.get('severity'),
                 description: formData.get('description'),
-                location,
+                image_url: imageUrl,
                 timestamp: new Date().toISOString(),
-                userId: `anon_${Date.now()}`
             };
 
-            console.log('Submitting report:', reportData);
+            await submitReport(reportData);
 
-            // Submit report
-            const imageFile = this.imageInput.files[0];
-            const result = await submitReport(reportData, imageFile);
-
-            // Show success message
-            if (result.status === 'online') {
-                this.showSuccessMessage('Report submitted successfully!');
-            } else {
-                this.showSuccessMessage('You are offline. Your report has been saved and will be submitted when you reconnect.');
-            }
-            this.showSuccessMessage();
-            this.form.reset();
+            this.showMessage('Report submitted successfully!', 'success');
+            this.resetForm();
 
         } catch (error) {
             console.error('Error submitting report:', error);
-            this.showErrorMessage('Failed to submit report. Please try again.');
+            this.showMessage(error.message, 'error');
         } finally {
-            // Re-enable submit button
-            this.submitButton.disabled = false;
-            this.submitButton.textContent = 'Submit Report';
+            this.setLoading(false);
+        }
+    }
+
+    resetForm() {
+        this.form.reset();
+        this.imagePreview.src = '';
+        this.imagePreview.classList.add('hidden');
+        this.imageInput.value = '';
+        this.charCount.textContent = '0/500';
+        this.clearErrors();
+        if (this.incidentMap) {
+            this.incidentMap.reset();
         }
     }
 
@@ -102,34 +104,19 @@ export class FormController {
         const errors = {};
         const formData = new FormData(this.form);
 
-        // Check incident type
-        if (!formData.get('incidentType')) {
-            errors.incidentType = 'Please select an incident type';
-        }
-
-        // Check severity
-        if (!formData.get('severity')) {
-            errors.severity = 'Please select severity level';
-        }
-
-        // Check location
-        const location = formData.get('location');
-        if (!location) {
-            errors.location = 'Please select a location on the map';
-        }
-
-        // Check description length
+        if (!formData.get('incidentType')) errors.incidentType = 'Please select an incident type.';
+        if (!formData.get('severity')) errors.severity = 'Please select a severity level.';
+        if (!formData.get('latitude') || !formData.get('longitude')) errors.location = 'Please select a location on the map.';
+        
         const description = formData.get('description');
-        if (description && description.length > 500) {
-            errors.description = 'Description must be less than 500 characters';
-        }
+        if (description && description.length > 500) errors.description = 'Description must be 500 characters or less.';
 
-        // Check image
         const image = this.imageInput.files[0];
         if (!image) {
-            errors.image = 'Please upload an image';
-        } else if (image.size > 5 * 1024 * 1024) {
-            errors.image = 'Image size must be less than 5MB';
+            errors.image = 'Please upload an image.';
+        } else {
+            if (!image.type.startsWith('image/')) errors.image = 'Invalid file type. Please upload an image.';
+            if (image.size > 5 * 1024 * 1024) errors.image = 'Image size cannot exceed 5MB.';
         }
 
         return errors;
@@ -141,19 +128,17 @@ export class FormController {
      * @private
      */
     displayErrors(errors) {
-        Object.entries(errors).forEach(([field, message]) => {
-            const element = document.getElementById(`${field}-error`);
-            if (element) {
-                element.textContent = message;
-                element.style.display = 'block';
-                
-                // Add error class to form group
-                const formGroup = document.querySelector(`[data-field="${field}"]`);
+        for (const [field, message] of Object.entries(errors)) {
+            const errorElement = document.getElementById(`${field}-error`);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                const formGroup = errorElement.closest('.form-group');
                 if (formGroup) {
                     formGroup.classList.add('has-error');
                 }
             }
-        });
+        }
     }
 
     /**
@@ -161,51 +146,26 @@ export class FormController {
      * @private
      */
     clearErrors() {
-        // Clear error messages
-        const errorElements = document.querySelectorAll('[id$="-error"]');
-        errorElements.forEach(element => {
-            element.textContent = '';
-            element.style.display = 'none';
+        const errorElements = this.form.querySelectorAll('.validation-feedback');
+        errorElements.forEach(el => {
+            el.textContent = '';
+            el.style.display = 'none';
         });
-
-        // Remove error classes
-        const formGroups = document.querySelectorAll('.form-group');
-        formGroups.forEach(group => {
-            group.classList.remove('has-error');
-        });
+        const formGroups = this.form.querySelectorAll('.form-group');
+        formGroups.forEach(group => group.classList.remove('has-error'));
+        this.messageContainer.innerHTML = '';
+        this.messageContainer.className = 'message-container';
     }
 
     /**
-     * Show success message
-     * @private
-     */
-    showSuccessMessage() {
-        const message = document.createElement('div');
-        message.className = 'alert alert-success';
-        message.textContent = 'Report submitted successfully!';
-        this.form.insertBefore(message, this.form.firstChild);
-
-        // Remove message after 5 seconds
-        setTimeout(() => {
-            message.remove();
-        }, 5000);
-    }
-
-    /**
-     * Show error message
+     * Show success/error message
      * @param {string} text
+     * @param {'success'|'error'} type
      * @private
      */
-    showErrorMessage(text) {
-        const message = document.createElement('div');
-        message.className = 'alert alert-error';
-        message.textContent = text;
-        this.form.insertBefore(message, this.form.firstChild);
-
-        // Remove message after 5 seconds
-        setTimeout(() => {
-            message.remove();
-        }, 5000);
+    showMessage(text, type) {
+        this.messageContainer.textContent = text;
+        this.messageContainer.className = `message-container ${type}-message`;
     }
 
     /**
@@ -213,55 +173,47 @@ export class FormController {
      * @param {Event} event
      * @private
      */
-    async handleImageUpload(event) {
+    handleImageUpload(event) {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            this.imagePreview.classList.add('hidden');
+            return;
+        }
 
-        try {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                throw new Error('Please upload an image file');
-            }
+        const errors = {};
+        if (!file.type.startsWith('image/')) errors.image = 'Invalid file type. Please upload an image.';
+        if (file.size > 5 * 1024 * 1024) errors.image = 'Image size cannot exceed 5MB.';
 
-            // Validate file size
-            if (file.size > 5 * 1024 * 1024) {
-                throw new Error('Image size must be less than 5MB');
-            }
+        if (Object.keys(errors).length > 0) {
+            this.displayErrors(errors);
+            this.imageInput.value = '';
+            this.imagePreview.classList.add('hidden');
+            return;
+        }
 
-            // Show image preview
-            await this.showImagePreview(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.imagePreview.src = e.target.result;
+            this.imagePreview.alt = `Preview of ${file.name}`;
+            this.imagePreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
 
-        } catch (error) {
-            console.error('Error handling image upload:', error);
-            this.showErrorMessage(error.message);
-            this.imageInput.value = ''; // Clear the input
+    /**
+     * Set loading state
+     * @param {boolean} isLoading
+     * @private
+     */
+    setLoading(isLoading) {
+        this.submitButton.disabled = isLoading;
+        const btnText = this.submitButton.querySelector('.btn-text');
+        if (isLoading) {
+            this.loadingSpinner.classList.remove('hidden');
+            if(btnText) btnText.textContent = 'Submitting...';
+        } else {
+            this.loadingSpinner.classList.add('hidden');
+            if(btnText) btnText.textContent = 'Submit Report';
         }
     }
-
-    /**
-     * Show image preview
-     * @param {File} file
-     * @private
-     */
-    async showImagePreview(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (this.imagePreview) {
-                    this.imagePreview.src = e.target.result;
-                    this.imagePreview.alt = `Preview of ${file.name}`;
-                    this.imagePreview.classList.remove('hidden');
-                }
-                resolve();
-            };
-            reader.onerror = () => reject(new Error('Failed to read image file'));
-            reader.readAsDataURL(file);
-        });
-    }
-
-    /**
-     * Submit report to backend
-     * @param {Object} reportData
-     * @private
-     */
 }

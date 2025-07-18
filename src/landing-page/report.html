@@ -22,6 +22,7 @@
     </section>
 
     <div class="container">
+        <div id="form-messages" class="message-container"></div>
         <form id="report-form" class="report-form">
             <div class="form-group" data-field="incidentType">
                 <label for="incidentType">Incident Type <span class="required">*</span></label>
@@ -32,6 +33,7 @@
                     <option value="assault">Assault</option>
                     <option value="vandalism">Vandalism</option>
                     <option value="suspicious">Suspicious Activity</option>
+                    <option value="other">Other</option>
                 </select>
                 <div id="incidentType-error" class="validation-feedback"></div>
             </div>
@@ -43,6 +45,7 @@
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
+                    <option value="critical">Critical</option>
                 </select>
                 <div id="severity-error" class="validation-feedback"></div>
             </div>
@@ -59,8 +62,10 @@
                         Use Current Location
                     </button>
                 </div>
-                <input type="hidden" id="location" name="location" aria-describedby="location-error">
-                <div id="location-error" class="validation-feedback"></div>
+                <input type="hidden" id="latitude" name="latitude" aria-describedby="latitude-error">
+                <div id="latitude-error" class="validation-feedback"></div>
+                <input type="hidden" id="longitude" name="longitude" aria-describedby="longitude-error">
+                <div id="longitude-error" class="validation-feedback"></div>
             </div>
 
             <div class="form-group" data-field="description">
@@ -87,7 +92,10 @@
                 <div id="image-error" class="validation-feedback"></div>
             </div>
 
-            <button type="submit" id="submit-report" class="btn btn-primary">Submit Report</button>
+            <button type="submit" id="submit-report" class="btn btn-primary">
+                <span class="btn-text">Submit Report</span>
+                <span class="loading-spinner hidden"></span>
+            </button>
         </form>
     </div>
 
