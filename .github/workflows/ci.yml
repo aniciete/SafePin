@@ -38,9 +38,7 @@ jobs:
     - name: Build project
       run: npm run build
 
-    - name: Run E2E tests
-      uses: cypress-io/github-action@v5
-      with:
-        start: npm run serve
-        wait-on: 'http://localhost:4173' # Default port for vite preview
-        browser: chrome
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      run: npx playwright test

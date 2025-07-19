@@ -27,7 +27,7 @@ export function getStandardPath(path) {
 export const PATHS = {
     // Public paths
     LANDING: '/',
-    REPORT: '/landing-page/report.html',
+    REPORT: '/report',
     VERIFICATION: '/landing-page/verification.html',
     ABOUT: '/landing-page/about-us.html',
     FEATURES: '/landing-page/features.html',

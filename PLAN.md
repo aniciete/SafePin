@@ -2,14 +2,14 @@
 
 ## Objective
 
-The primary objective is to enhance the `report.html` page and its associated JavaScript files within the SafePin crime reporting web application. This improvement focuses on three core functionalities: robust incident submission, seamless Google Maps integration for location selection, and reliable data/image submission to a Supabase backend. This project is a student demo, so authentication verification for authorities is not required.
+The primary objective is to utilize the modern React-based reporting page for robust incident submission, seamless Google Maps integration for location selection, and reliable data/image submission to a Supabase backend. This project is a student demo, so authentication verification for authorities is not required.
 
 ## Current State Analysis
 
 Based on the initial review of the provided files:
 
-*   **`src/landing-page/report.html`**: Contains the basic structure for the incident reporting form, including fields for incident type, severity, location (with a map area), description, and image upload. It imports `Header.js` and `Footer.js` as modules and links `report.js` as a module.
-*   **`src/landing-page/report.js`**: Handles the initialization of the header, footer, and map. It includes basic map functionality (center, marker, click listener, dragend listener, current location button) and updates a hidden `location` field. It also imports `FormController` but its usage for submission is not fully clear from this file alone. It contains placeholder functions for `clearValidationMessages`, `clearImageUpload`, `showModal`, `resetForm`, and `showErrorModal`.
+*   **`src/pages/report/ReportPage.jsx`**: The main entry point for the reporting feature, which is a React component.
+*   **`src/components/report/ReportForm.jsx`**: This React component contains the incident reporting form, including fields for incident type, severity, location (with a map area), description, and image upload.
 *   **`src/config/supabase.js`**: Initializes the Supabase client with hardcoded `supabaseUrl` and `supabaseAnonKey`.
 *   **`src/components/map.js`**: Manages Google Maps initialization and marker functionality. It currently hardcodes the Google Maps API key.
 *   **`supabase/schema.sql`**: Defines the database schema, including the `reports` table with columns like `latitude`, `longitude` (within a `location` JSONB field), `incident_type`, `severity`, `description`, `image_path`, and `created_at` (which defaults to `now()`).
@@ -70,43 +70,6 @@ Based on the follow-up questions, the following decisions have been made:
         // ... rest of the MapController class
         ```
 
-### Phase 2: HTML Form Refinement
-
-**Goal:** Enhance the `report.html` form to include necessary hidden fields for location data and elements for user feedback.
-
-**Steps:**
-
-1.  **Add Hidden Input Fields for Latitude and Longitude**:
-    *   Inside the `form-group` with `data-field="location"` in `src/landing-page/report.html`, add two new hidden input fields for `latitude` and `longitude`. These will be directly populated by map interactions.
-    *   **Example:**
-        ```html
-        <!-- src/landing-page/report.html -->
-        <div class="form-group" data-field="location">
-            <label for="location">Location <span class="required">*</span></label>
-            <div class="map-area">
-                <div class="map-address-bar">
-                    <span id="address-display">Select a location on the map</span>
-                </div>
-                <div id="map" role="application" aria-label="Interactive map to select incident location"></div>
-                <button type="button" id="current-location-btn" class="current-location-btn" aria-label="Use current location">
-                    <img src="../assets/Current Location Image.svg" alt="Current Location" class="location-icon">
-                    Use Current Location
-                </button>
-            </div>
-            <!-- New hidden fields for lat/lng -->
-            <input type="hidden" id="latitude" name="latitude" aria-describedby="latitude-error">
-            <input type="hidden" id="longitude" name="longitude" aria-describedby="longitude-error">
-            <div id="location-error" class="validation-feedback"></div>
-        </div>
-        ```
-2.  **Ensure Elements for Loading/Success/Failure Messages**:
-    *   Add a dedicated area in `report.html` to display submission status messages (loading, success, error). This could be a `div` that is dynamically updated.
-    *   **Example:**
-        ```html
-        <!-- src/landing-page/report.html (after the form, before footer) -->
-        <div id="submission-feedback" class="submission-feedback" aria-live="polite"></div>
-        ```
-    *   Modify the submit button to include a loading state (e.g., `disabled` attribute, text change).
 
 ### Phase 3: Google Maps Integration Logic
 
@@ -114,7 +77,7 @@ Based on the follow-up questions, the following decisions have been made:
 
 **Steps:**
 
-1.  **Modify `src/landing-page/report.js` to handle map interactions**:
+1.  **The `ReportForm.jsx` component handles map interactions**:
     *   **Implement map click listener**: The existing `map.addListener('click', ...)` will be updated to move the marker and call `updateLocationField` with the new `latLng`.
     *   **Implement marker dragend listener**: The existing `marker.addListener('dragend', ...)` will be updated to call `updateLocationField` with the marker's new position.
     *   **Ensure current location button correctly updates map center and marker position**: The `handleCurrentLocation` function already does this, but ensure it also calls `updateLocationField` to populate the new hidden fields.
@@ -122,7 +85,7 @@ Based on the follow-up questions, the following decisions have been made:
         *   This function will now target the new `latitude` and `longitude` hidden input fields instead of a single `location` field.
         *   **Example:**
             ```javascript
-            // src/landing-page/report.js
+            // Example from ReportForm.jsx
             function updateLocationField(position) {
                 const latitudeField = document.getElementById('latitude');
                 const longitudeField = document.getElementById('longitude');
@@ -152,7 +115,7 @@ Based on the follow-up questions, the following decisions have been made:
 
 **Steps:**
 
-1.  **Implement image file input change listener in `src/landing-page/report.js`**:
+1.  **Implement image file input change listener in `ReportForm.jsx`**:
     *   Get a reference to the `image-upload` input and `image-preview` img elements.
     *   Add an `eventListener` for the `change` event on the `image-upload` input.
     *   Inside the listener:
@@ -168,10 +131,10 @@ Based on the follow-up questions, the following decisions have been made:
 
 **Steps:**
 
-1.  **Integrate Supabase client in `src/landing-page/report.js`**:
+1.  **Integrate Supabase client in `ReportForm.jsx`**:
     *   Ensure `supabase` is imported from `src/config/supabase.js`.
     *   **Example:** `import { supabase } from '../config/supabase.js';`
-2.  **Implement form submission handler in `src/landing-page/report.js`**:
+2.  **Implement form submission handler in `ReportForm.jsx`**:
     *   Get a reference to the `report-form` and add an `eventListener` for the `submit` event.
     *   Prevent default form submission (`event.preventDefault()`).
     *   **Show loading indicator**: Disable the submit button and change its text (e.g., "Submitting..."). Display the general submission feedback message.
@@ -229,22 +192,19 @@ Based on the follow-up questions, the following decisions have been made:
 
 **Steps:**
 
-1.  **Remove `FormController` import and related instantiation**:
-    *   Delete `import { FormController } from './form.controller.js';` from `src/landing-page/report.js`.
-    *   Remove `new FormController();` instantiation.
-2.  **Ensure all new logic adheres to modular principles**:
+1.  **Ensure all new logic adheres to modular principles**:
     *   Keep functions focused on single responsibilities.
-    *   If `src/landing-page/report.js` becomes too large, consider extracting specific functionalities (e.g., image handling, Supabase interactions) into new, dedicated utility modules (e.g., `src/utils/imageHandler.js`, `src/services/incidentService.js`).
+    *   If `ReportForm.jsx` becomes too large, consider extracting specific functionalities (e.g., image handling, Supabase interactions) into new, dedicated utility modules (e.g., `src/utils/imageHandler.js`, `src/services/incidentService.js`).
 
 ## Workflow Diagram
 
 ```mermaid
 graph TD
-    A[User opens report.html] --> B{Initialize Page};
-    B --> C[Load Header/Footer];
-    B --> D[Initialize Google Map];
+    A[User opens /report route] --> B{Render ReportPage};
+    B --> C[Render ReportForm component];
+    C --> D[Initialize Google Map];
     D --> E[Map Click/Drag Marker];
-    E --> F[Update Lat/Lng Fields];
+    E --> F[Update Lat/Lng State];
     F --> G[User Fills Form];
     G --> H[User Selects Image];
     H --> I{Image Validation};
@@ -260,3 +220,8 @@ graph TD
     P -- Failure --> S[Show Error Message];
     N -- Failure --> S;
     S --> T[Log Error];
+- [x] **Task: Fetch and Display Reports in Jurisdiction**
+  - [x] Create a new `useReports.js` file in the `src/hooks` directory.
+  - [x] In `useReports.js`, create a custom hook that fetches all reports from the `reports` table in Supabase. The hook should handle loading and error states.
+  - [x] In `src/components/dashboard/ReportsInJurisdiction.jsx`, use the `useReports` hook to fetch the reports.
+  - [x] Display the fetched reports in a simple list format. For each report, display the `incidentType` and `severity`.

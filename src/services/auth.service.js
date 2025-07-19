@@ -32,7 +32,7 @@ export const signUpWithEmail = async (email, password, role) => {
 
         // Sanitize role
         role = sanitizeText(role);
-        if (!['user', 'authority', 'admin'].includes(role)) {
+        if (!['regular', 'authority', 'admin'].includes(role)) {
             throw new ValidationError('Invalid role specified');
         }
 
@@ -42,8 +42,7 @@ export const signUpWithEmail = async (email, password, role) => {
             password,
             options: {
                 data: {
-                    role: role,
-                    onboarding_completed: false
+                    role: role
                 }
             }
         });

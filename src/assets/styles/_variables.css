@@ -1,0 +1,31 @@
+:root {
+  /* Color Palette */
+  --color-background: #f5f6f8;
+  --color-text: #000000;
+  --color-primary: #4caf50;
+  --color-success: #4CAF50;
+  --color-error: #f44336;
+  --color-warning: #ff9800;
+  --color-info: #2196F3;
+  --color-white: #ffffff;
+  --color-modal-background: #fefefe;
+  --color-modal-border: #888;
+  --color-close-button: #aaa;
+  --color-close-button-hover: #000000;
+  --color-section-background: #f9fafb;
+  --color-track-background: #f9f9f9;
+
+  /* Typography */
+  --font-family-main: 'Inter', sans-serif;
+  --font-size-large: 28px;
+  --font-size-medium: 1.5rem;
+  --font-weight-bold: bold;
+  --font-weight-semi-bold: 600;
+
+  /* Spacing */
+  --spacing-small: 1rem;
+  --spacing-medium: 1.5rem;
+  --spacing-large: 2rem;
+  --spacing-xl: 4rem;
+  --spacing-modal-padding: 20px;
+}

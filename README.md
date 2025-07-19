@@ -2,36 +2,20 @@
 
 A secure web application for anonymous crime reporting and community safety monitoring in Metro Manila.
 
-## Project Structure
+## Technology Stack
 
-```
-SafePin/
-├── src/                    # Frontend source code
-│   ├── config/            # Configuration files
-│   │   └── firebase.js    # Firebase initialization
-│   ├── services/          # Service layer
-│   │   └── auth.service.js # Authentication service
-│   ├── components/        # Reusable UI components
-│   ├── utils/             # Utility functions
-│   └── pages/             # Page components
-├── functions/             # Backend (Firebase Functions)
-│   ├── src/              # Backend source code
-│   └── test/             # Backend tests
-└── public/               # Static assets
-```
+- **Frontend:** React, Vite
+- **Backend:** Supabase
+- **Testing:** Playwright
 
 ## Environment Setup
 
 1. Create a `.env` file in the root directory with the following variables:
 
 ```env
-# Firebase Configuration
-FIREBASE_API_KEY=your_api_key_here
-FIREBASE_AUTH_DOMAIN=your_auth_domain_here
-FIREBASE_PROJECT_ID=your_project_id_here
-FIREBASE_STORAGE_BUCKET=your_storage_bucket_here
-FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
-FIREBASE_APP_ID=your_app_id_here
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 # Security Settings
 SESSION_SECRET=your_session_secret_here
@@ -45,7 +29,6 @@ NODE_ENV=development
 2. Install dependencies:
 ```bash
 npm install
-cd functions && npm install
 ```
 
 3. Start the development server:
@@ -151,48 +134,14 @@ SafePin is committed to providing an accessible experience for all users. Our ac
 3. Write/update tests
 4. Submit a pull request
 
-### Accessibility Checklist for Contributors
-
-When contributing to SafePin, ensure your changes meet these accessibility requirements:
-
-1. **Semantic HTML**
-   - Use appropriate HTML elements
-   - Maintain proper heading hierarchy
-   - Include ARIA attributes when needed
-
-2. **Keyboard Support**
-   - All interactive elements are focusable
-   - Logical tab order
-   - Keyboard shortcuts where appropriate
-   - Focus management in modals/popups
-
-3. **Screen Readers**
-   - Meaningful alt text for images
-   - Descriptive link text
-   - Form labels and instructions
-   - Status updates and notifications
-
-4. **Visual Design**
-   - Sufficient color contrast (WCAG AA)
-   - Text resizing support
-   - Visible focus indicators
-   - Flexible layouts
-
-5. **Motion and Animation**
-   - Respect reduced motion preferences
-   - No flashing content
-   - Pausable animations
-   - Optional transitions
-
 ## Testing
 
 ```bash
 # Run unit and integration tests
 npm run test
 
-# Run E2E tests
-npm run cypress:open  # Interactive mode
-npm run cypress:run   # Headless mode
+# Run E2E tests with Playwright
+npm run test:e2e
 
 # Run accessibility tests
 npm run test:a11y

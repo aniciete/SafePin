@@ -53,7 +53,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO public.users (id, email, role)
-    VALUES (new.id, new.email, 'regular'); -- Default role is 'regular'
+    VALUES (new.id, new.email, (new.raw_user_meta_data->>'role')::user_role);
     RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

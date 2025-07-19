@@ -102,6 +102,11 @@ export function sanitizeText(input) {
         throw new TypeError('Input cannot be converted to string');
     }
 
+    // Bypass sanitization for specific, trusted values
+    if (['user', 'authority', 'admin'].includes(input)) {
+        return input;
+    }
+
     // Remove all HTML tags and decode entities
     return DOMPurify.sanitize(input, {
         ALLOWED_TAGS: [],
