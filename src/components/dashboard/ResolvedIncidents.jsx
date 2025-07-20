@@ -1,12 +1,28 @@
-import React, { useContext } from 'react';
-import { ReportsContext } from '../../contexts/ReportsContext';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../config/supabase';
 
 const ResolvedIncidents = () => {
-  const { reports, loading, error } = useContext(ReportsContext);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const resolvedReports = reports.filter(
-    (report) => report.status === 'resolved'
-  );
+  useEffect(() => {
+    const fetchReports = async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('status', 'resolved');
+
+      if (error) {
+        setError(error);
+      } else {
+        setReports(data);
+      }
+      setLoading(false);
+    };
+
+    fetchReports();
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -19,7 +35,7 @@ const ResolvedIncidents = () => {
   return (
     <div className="dashboard-widget">
       <h3>Resolved Incidents</h3>
-      <p>Total: {resolvedReports.length}</p>
+      <p>Total: {reports.length}</p>
     </div>
   );
 };

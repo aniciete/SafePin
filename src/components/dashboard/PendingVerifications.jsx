@@ -1,12 +1,28 @@
-import React, { useContext } from 'react';
-import { ReportsContext } from '../../contexts/ReportsContext';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../config/supabase';
 
 const PendingVerifications = () => {
-  const { reports, loading, error } = useContext(ReportsContext);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const pendingReports = reports.filter(
-    (report) => report.status === 'pending_verification'
-  );
+  useEffect(() => {
+    const fetchReports = async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('status', 'pending_verification');
+
+      if (error) {
+        setError(error);
+      } else {
+        setReports(data);
+      }
+      setLoading(false);
+    };
+
+    fetchReports();
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -20,7 +36,7 @@ const PendingVerifications = () => {
     <div className="dashboard-widget">
       <h3>Pending Verifications</h3>
       <ul>
-        {pendingReports.map((report) => (
+        {reports.map((report) => (
           <li key={report.id}>
             {report.incidentType} -{' '}
             {new Date(report.created_at).toLocaleDateString()}

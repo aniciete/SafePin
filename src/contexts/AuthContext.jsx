@@ -60,8 +60,25 @@ export const AuthProvider = ({ children }) => {
     user,
     profile,
     loading,
-    login: (email, password) => supabase.auth.signInWithPassword({ email, password }),
+    login: async (email, password) => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (data.user) {
+        await fetchUserProfile(data.user);
+      }
+      return { data, error };
+    },
+    loginWithGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google' }),
     logout: () => supabase.auth.signOut(),
+    signUp: (email, password, role = 'regular') => supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: role
+        },
+        email_confirm: false
+      }
+    }),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

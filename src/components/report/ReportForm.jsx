@@ -4,7 +4,7 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useNotification } from '../common/notification/useNotification';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import { ImageOptimizer } from '../../utils/imageOptimizer';
-import { sanitizeText } from '../../utils/security';
+import { validateText } from '../../utils/validation';
 import MapView from '../map/MapView';
 
 const ReportForm = () => {
@@ -33,7 +33,7 @@ const ReportForm = () => {
       const reportData = {
         incident_type: data.incidentType,
         severity: data.severity,
-        description: sanitizeText(data.description),
+        description: validateText(data.description).value,
         location: { lat: data.latitude, lng: data.longitude },
         image_path: imagePath,
         tracking_code: newTrackingCode,

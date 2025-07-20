@@ -1,8 +1,32 @@
-import React, { useContext } from 'react';
-import { ReportsContext } from '../../contexts/ReportsContext';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../config/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ReportsInJurisdiction = () => {
-  const { reports, loading, error } = useContext(ReportsContext);
+  const { profile } = useAuth();
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchReports = async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('jurisdiction', profile.jurisdiction);
+
+      if (error) {
+        setError(error);
+      } else {
+        setReports(data);
+      }
+      setLoading(false);
+    };
+
+    fetchReports();
+  }, [profile]);
 
   if (loading) {
     return <div>Loading...</div>;
