@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSupabase } from '../../contexts/SupabaseContext';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useNotification } from '../common/notification/useNotification';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import { ImageOptimizer } from '../../utils/imageOptimizer';
@@ -9,16 +9,26 @@ import MapView from '../map/MapView';
 
 const ReportForm = () => {
   const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm();
-  const { supabase } = useSupabase();
   const { addNotification } = useNotification();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [loading, setLoading] = useState(false);
+  const [trackingCode, setTrackingCode] = useState(null);
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setTrackingCode(null);
+
+    if (!executeRecaptcha) {
+      addNotification({ message: 'reCAPTCHA not ready. Please try again.', type: 'error' });
+      setLoading(false);
+      return;
+    }
 
     try {
+      const token = await executeRecaptcha('reportSubmission');
+      const newTrackingCode = `SP-${Date.now()}`;
       const optimizedImage = await ImageOptimizer.optimizeImage(data.image[0]);
-      const imagePath = await uploadReportImage(optimizedImage);
+      const imagePath = await uploadReportImage(optimizedImage, newTrackingCode);
       
       const reportData = {
         incident_type: data.incidentType,
@@ -26,9 +36,11 @@ const ReportForm = () => {
         description: sanitizeText(data.description),
         location: { lat: data.latitude, lng: data.longitude },
         image_path: imagePath,
+        tracking_code: newTrackingCode,
       };
 
-      await createReport(reportData);
+      await createReport(reportData, token);
+      setTrackingCode(newTrackingCode);
       addNotification({ message: 'Report submitted successfully!', type: 'success' });
       reset();
     } catch (error) {
@@ -44,9 +56,17 @@ const ReportForm = () => {
   }, [setValue]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label htmlFor="incidentType">Incident Type</label>
+    <>
+      {trackingCode && (
+        <div>
+          <h3>Report Submitted!</h3>
+          <p>Your tracking code is: <strong>{trackingCode}</strong></p>
+          <p>Please save this code to check the status of your report later.</p>
+        </div>
+      )}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div>
+          <label htmlFor="incidentType">Incident Type</label>
         <select id="incidentType" {...register('incidentType', { required: true })}>
           <option value="">Select incident type</option>
           <option value="Theft">Theft</option>
@@ -95,6 +115,7 @@ const ReportForm = () => {
         {loading ? 'Submitting...' : 'Submit Report'}
       </button>
     </form>
+    </>
   );
 };
 

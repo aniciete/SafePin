@@ -2,7 +2,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 const AuthGuard = ({ children, role }) => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -12,7 +12,7 @@ const AuthGuard = ({ children, role }) => {
     return <Navigate to="/login" />;
   }
 
-  if (role && user.user_metadata.role !== role) {
+  if (role && profile?.role !== role) {
     return <Navigate to="/" />;
   }
 

@@ -3,28 +3,35 @@ import { PATHS } from '../../utils/pathUtils';
 import { useAuth } from '../../contexts/AuthContext';
 
 const HomePage = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout, loading } = useAuth();
 
   return (
     <div>
       <h1>Welcome to SafePin</h1>
       <nav>
-        {user ? (
+        {loading ? (
+          <p>Loading...</p>
+        ) : user ? (
+          // User is logged in
           <>
-            {(user.role === 'authority' || user.role === 'admin') && (
-              <Link to={PATHS.AUTHORITY_DASHBOARD}>Dashboard</Link>
-            )}
             <button onClick={logout}>Logout</button>
+            <br />
+            {profile?.role === 'authority' || profile?.role === 'admin' ? (
+              <Link to={PATHS.AUTHORITY_DASHBOARD}>Dashboard</Link>
+            ) : (
+              <Link to={PATHS.REPORT}>Report an Incident</Link>
+            )}
           </>
         ) : (
+          // User is not logged in (guest)
           <>
             <Link to={PATHS.LOGIN}>Login</Link>
             <br />
-            <Link to={PATHS.SIGNUP}>Sign Up</Link>
+            <Link to="/track">Track a Report</Link>
+            <br />
+            <Link to={PATHS.REPORT} style={{ marginTop: '1rem', display: 'inline-block', padding: '10px 20px', backgroundColor: '#28a745', color: 'white', textDecoration: 'none', borderRadius: '5px' }}>Report an Incident</Link>
           </>
         )}
-        <br />
-        <Link to={PATHS.REPORT} style={{ marginTop: '1rem', display: 'inline-block', padding: '10px 20px', backgroundColor: '#28a745', color: 'white', textDecoration: 'none', borderRadius: '5px' }}>Report an Incident</Link>
       </nav>
     </div>
   );

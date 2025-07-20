@@ -34,12 +34,13 @@ The primary goal of this phase is to shift the application from a user-centric m
 
 ### 1.4. Implement Spam Prevention
 
-*   **Action:** Integrate Google reCAPTCHA v3 into the report submission form.
-*   **Rationale:** This is a critical security measure to prevent spam and bot abuse, as specified in the user role definitions.
+*   **Action:** Integrate Google reCAPTCHA v3, including both frontend and backend verification.
+*   **Rationale:** This is a critical security measure to prevent spam and bot abuse. The backend verification is essential to prevent attackers from bypassing the frontend check.
 *   **Affected Components:**
-    *   `src/pages/report/ReportPage.jsx`: Will be wrapped in a reCAPTCHA provider.
-    *   `src/components/report/ReportForm.jsx`: The `onSubmit` handler will be modified to generate a reCAPTCHA token and send it with the report data.
-    *   **Environment:** We will need to add the reCAPTCHA site key and secret key to the project's environment variables.
+*   `src/pages/report/ReportPage.jsx`: Will be wrapped in a reCAPTCHA provider.
+*   `src/components/report/ReportForm.jsx`: The `onSubmit` handler will generate a reCAPTCHA token.
+*   **New Supabase Edge Function:** A new function will be created to receive the report data and the reCAPTCHA token, verify the token with Google's API, and only then insert the report into the database.
+*   **Environment:** The reCAPTCHA site key (public) and secret key (private, for the Edge Function) will be added to the project's environment variables.
 
 ### 1.5. Build Report Tracking System
 
@@ -58,7 +59,14 @@ The primary goal of this phase is to shift the application from a user-centric m
 
 This phase focuses on building the authenticated backend for Authority users to manage reports within their designated area.
 
-### 2.1. Secure Authenticated Routes
+### 2.1. Foundational AuthContext Refactor
+
+*   **Action:** The `AuthContext` will be refactored to fetch the user's profile (including their `role`) from the `users` table upon login and merge it with the authentication data.
+*   **Rationale:** This is a functional prerequisite for all role-based UI and data security. It ensures the application has a reliable, up-to-date source of truth for the user's role.
+*   **Affected Components:**
+    *   `src/contexts/AuthContext.jsx`: The core logic will be overhauled to handle profile fetching.
+
+### 2.2. Secure Authenticated Routes
 
 *   **Action:** The `AuthGuard` component will be updated to protect all dashboard routes.
 *   **Rationale:** This ensures that only authenticated users with the correct role ('authority' or 'admin') can access the management dashboards.
@@ -66,28 +74,67 @@ This phase focuses on building the authenticated backend for Authority users to 
     *   `src/App.jsx`: The dashboard routes will be wrapped in the `AuthGuard`.
     *   `src/components/auth/AuthGuard.jsx`: The logic will be verified to ensure it correctly checks for 'authority' or 'admin' roles.
 
-### 2.2. Update Database Schema for Jurisdiction
+### 2.3. Update Database Schema for Jurisdiction
 
 *   **Action:** A new `jurisdiction` column will be added to the `users` table, and a corresponding `jurisdiction` column will be added to the `reports` table.
 *   **Rationale:** This creates the necessary link between an authority user and the reports they are responsible for.
-*   **Database:** A migration will be created to add these columns.
+*   **Database:** A migration will be created to add these columns. It will also handle the deletion of 'regular' users by first setting the `user_id` on their existing reports to `NULL` to preserve the data.
 
-### 2.3. Enforce Jurisdiction with RLS
+### 2.4. Enforce Jurisdiction with RLS
 
-*   **Action:** New Row-Level Security (RLS) policies will be written for the `reports` table.
-*   **Rationale:** This is a critical security measure that ensures an authority user can ONLY see reports that match their assigned jurisdiction.
-*   **Database:** The RLS policies will be updated to compare the `jurisdiction` of the logged-in user with the `jurisdiction` of the report.
+*   **Action:** New Row-Level Security (RLS) policies will be written for both the `reports` table and `storage`.
+*   **Rationale:** This is a critical security measure that ensures an authority user can ONLY see reports and access corresponding images that match their assigned jurisdiction.
+*   **Database:** The RLS policies for `reports` will be updated to compare the `jurisdiction` of the logged-in user with the `jurisdiction` of the report.
+*   **Storage:** The Storage RLS policies will be completely rewritten to grant access based on this new jurisdiction-based logic, rather than the old `auth.uid()` model.
 
-### 2.4. Filter Dashboard Data
+### 2.5. Filter Dashboard Data
 
 *   **Action:** The Authority Dashboard will be updated to display only the reports that are visible to the logged-in user.
 *   **Rationale:** The UI must respect the RLS policies and provide a clean, jurisdiction-specific view of the data.
 *   **Affected Components:**
     *   `src/pages/dashboard/authority/AuthorityDashboardPage.jsx`: The data fetching logic will be simplified, as the RLS policies will handle the filtering automatically.
 
+*   **Data Source:** The `jurisdiction` will be based on the Philippine Standard Geographic Code (PSGC). The `src/utils/jurisdictions.json` file will be used to populate the dropdowns in the admin panel.
+*   **Data Type:** The `jurisdiction` column in both the `users` and `reports` tables will be a `TEXT` field to store the PSGC code.
+*   **Assignment:** Jurisdictions will be assigned to reports **manually by an Admin** via a dropdown in the admin dashboard.
+
+---
+
+## Phase 3: Build Admin Functionality
+
+This final phase focuses on creating the tools for Admins to manage the platform, including users and reports.
+
+### 3.1. Create Admin Dashboard UI
+
+*   **Action:** A new set of components will be created to form the basic structure of the admin dashboard.
+*   **Rationale:** This provides the foundation for all admin-level functionality.
+*   **Affected Components:**
+    *   A new route will be created at `/admin`.
+    *   New components will be created in `src/pages/dashboard/admin/` for user management, report moderation, and analytics.
+
+### 3.2. Implement User Management
+
+*   **Action:** A user management interface will be built.
+*   **Rationale:** This allows Admins to create and manage the Authority users who will be responsible for handling reports.
+*   **Features:**
+    *   View a list of all users.
+    *   Create new users (specifically, Authority users).
+    *   Assign a `jurisdiction` to an Authority user from a dropdown populated by the PSGC data.
+    *   Change a user's role.
+
+### 3.3. Implement Report Moderation
+
+*   **Action:** A report moderation interface will be built.
+*   **Rationale:** This gives Admins the ability to oversee all incoming reports and manage the workflow.
+*   **Features:**
+    *   View a list of all reports, regardless of jurisdiction.
+    *   Assign a `jurisdiction` to a new, unassigned report.
+    *   Re-assign a report to a different jurisdiction.
+    *   Delete reports that are spam or inappropriate.
+
 ---
 
 ## Questions for Discussion
 
-1.  **Jurisdiction Data Type:** What is the expected data type for the `jurisdiction` field? Is it a simple text field (e.g., "District 1"), a numeric ID, or something else?
-2.  **Assigning Jurisdiction to Reports:** How should the jurisdiction be assigned to a new, anonymous report? Should it be based on the report's geolocation (e.g., which district the coordinates fall into), or will it be assigned manually by an Admin later?
+1.  **Admin Creation:** We have previously decided that you will create the first Admin user manually. Is this still the plan?
+2.  **Final Review:** Does this completed plan cover all the requirements of the new, anonymous-first system? Are there any missing pieces we should address before starting implementation?

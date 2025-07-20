@@ -9,8 +9,8 @@ import AuthGuard from './components/auth/AuthGuard';
 
 const HomePage = lazy(() => import('./pages/landing/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-const SignUpPage = lazy(() => import('./pages/auth/SignUpPage'));
 const ReportPage = lazy(() => import('./pages/report/ReportPage'));
+const TrackReportPage = lazy(() => import('./pages/report/TrackReportPage'));
 const AuthorityDashboardPage = lazy(() => import('./pages/dashboard/authority/AuthorityDashboardPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboard/admin/AdminDashboardPage'));
 
@@ -24,8 +24,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/report" element={<AuthGuard><ReportPage /></AuthGuard>} />
+              <Route path="/report" element={<ReportPage />} />
+              <Route path="/track" element={<TrackReportPage />} />
               <Route path="/dashboard/authority" element={<AuthGuard role="authority"><AuthorityDashboardPage /></AuthGuard>} />
               <Route path="/dashboard/admin" element={<AuthGuard role="admin"><AdminDashboardPage /></AuthGuard>} />
             </Routes>
