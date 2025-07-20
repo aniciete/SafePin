@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { mapLoader } from '../../services/mapLoader';
+import mapLoader from '../../services/mapLoader';
 
 const MapView = ({ onLocationSelect }) => {
   const mapRef = useRef(null);

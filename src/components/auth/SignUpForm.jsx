@@ -10,12 +10,15 @@ const SignUpForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await signUpWithEmail(email, password, role);
-      addNotification({ message: 'Sign-up successful! Please check your email to verify your account.', type: 'success' });
+    const { data, error } = await signUpWithEmail(email, password, role);
+
+    if (error) {
+      addNotification({ message: error, type: 'error' });
+    } else if (data.user) {
+      addNotification({ message: 'Sign-up successful! You can now log in.', type: 'success' });
       // Handle successful sign-up, e.g., redirect to a different page
-    } catch (error) {
-      addNotification({ message: error.message, type: 'error' });
+    } else {
+      addNotification({ message: 'An unknown error occurred during sign-up.', type: 'error' });
     }
   };
 

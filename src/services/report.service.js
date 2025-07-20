@@ -10,12 +10,12 @@ export const uploadReportImage = async (file) => {
     throw new Error('No image file provided.');
   }
 
-  const fileExt = file.name.split('.').pop();
+  const fileExt = file.type.split('/')[1];
   const fileName = `${Date.now()}.${fileExt}`;
   const filePath = `reports/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('report-images')
+    .from('reports')
     .upload(filePath, file);
 
   if (uploadError) {

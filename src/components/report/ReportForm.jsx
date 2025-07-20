@@ -21,11 +21,12 @@ const ReportForm = () => {
       const imagePath = await uploadReportImage(optimizedImage);
       
       const reportData = {
-        ...data,
+        incident_type: data.incidentType,
+        severity: data.severity,
         description: sanitizeText(data.description),
+        location: { lat: data.latitude, lng: data.longitude },
         image_path: imagePath,
       };
-      delete reportData.image;
 
       await createReport(reportData);
       addNotification({ message: 'Report submitted successfully!', type: 'success' });
@@ -48,12 +49,18 @@ const ReportForm = () => {
         <label htmlFor="incidentType">Incident Type</label>
         <select id="incidentType" {...register('incidentType', { required: true })}>
           <option value="">Select incident type</option>
-          <option value="theft">Theft</option>
-          <option value="harassment">Harassment</option>
-          <option value="assault">Assault</option>
-          <option value="vandalism">Vandalism</option>
-          <option value="suspicious">Suspicious Activity</option>
-          <option value="other">Other</option>
+          <option value="Theft">Theft</option>
+          <option value="Assault">Assault</option>
+          <option value="Vandalism">Vandalism</option>
+          <option value="Harassment">Harassment</option>
+          <option value="Robbery">Robbery</option>
+          <option value="Burglary">Burglary</option>
+          <option value="Fire">Fire</option>
+          <option value="Medical Emergency">Medical Emergency</option>
+          <option value="Suspicious Activity">Suspicious Activity</option>
+          <option value="Environmental Hazard">Environmental Hazard</option>
+          <option value="Road Accident">Road Accident</option>
+          <option value="Other">Other</option>
         </select>
         {errors.incidentType && <p>This field is required</p>}
       </div>

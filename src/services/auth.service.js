@@ -2,7 +2,6 @@ import { supabase } from '../config/supabase.js';
 import { validateEmail, validatePassword } from '../utils/validation.js';
 import { ValidationError, AuthError } from '../utils/errorHandler.js';
 import { sanitizeText } from '../utils/security.js';
-import { showAuthFeedback } from '../utils/ui.js';
 
 /**
  * Sign up with email and password
@@ -43,7 +42,8 @@ export const signUpWithEmail = async (email, password, role) => {
             options: {
                 data: {
                     role: role
-                }
+                },
+                email_confirm: false
             }
         });
 
@@ -51,11 +51,12 @@ export const signUpWithEmail = async (email, password, role) => {
             throw new AuthError(error.message);
         }
 
-        showAuthFeedback('Account created successfully! Please verify your email.', 'success');
-
-        return { user: data.user, error: null };
+        return { data, error: null };
     } catch (error) {
-        if (error instanceof ValidationError || error instanceof AuthError) {
+        if (error instanceof AuthError) {
+            throw error;
+        }
+        if (error instanceof ValidationError) {
             return { user: null, error: error.message };
         }
         return { user: null, error: 'An error occurred during sign up' };
@@ -98,15 +99,12 @@ export const signInWithEmail = async (email, password) => {
         }
         
         if (userData.role === 'authority' && !userData.onboarding_completed) {
-            showAuthFeedback('Please complete the onboarding process.', 'info');
-            return { 
-                user: data.user, 
+            return {
+                user: data.user,
                 error: null,
-                requiresOnboarding: true 
+                requiresOnboarding: true
             };
         }
-        
-        showAuthFeedback(`Welcome back, ${data.user.email}!`, 'success');
         return { user: data.user, error: null };
     } catch (error) {
         if (error instanceof ValidationError || error instanceof AuthError) {
