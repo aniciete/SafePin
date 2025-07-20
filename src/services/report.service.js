@@ -15,7 +15,7 @@ export const uploadReportImage = async (file) => {
   const filePath = `reports/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('reports')
+    .from('report-images')
     .upload(filePath, file);
 
   if (uploadError) {

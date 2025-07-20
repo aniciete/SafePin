@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useReports } from '../../hooks/useReports';
 
 const ResolvedIncidents = () => {
-  const { reports, loading, error, fetchResolvedReports } = useReports();
+  const { reports, loading, error } = useReports();
 
-  useEffect(() => {
-    fetchResolvedReports();
-  }, [fetchResolvedReports]);
+  const resolvedReports = reports.filter(
+    (report) => report.status === 'resolved'
+  );
 
   if (loading) {
     return <div>Loading...</div>;
@@ -19,7 +19,7 @@ const ResolvedIncidents = () => {
   return (
     <div className="dashboard-widget">
       <h3>Resolved Incidents</h3>
-      <p>Total: {reports.length}</p>
+      <p>Total: {resolvedReports.length}</p>
     </div>
   );
 };

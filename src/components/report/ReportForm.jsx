@@ -1,20 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import { useNotification } from '../common/notification/useNotification';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import MapView from '../map/MapView';
 
 const ReportForm = () => {
   const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm();
   const { supabase } = useSupabase();
-  const [error, setError] = useState(null);
+  const { addNotification } = useNotification();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setError(null);
-    setSuccess(false);
 
     try {
       const imagePath = await uploadReportImage(data.image[0]);
@@ -26,10 +24,10 @@ const ReportForm = () => {
       delete reportData.image;
 
       await createReport(reportData);
-      setSuccess(true);
+      addNotification({ message: 'Report submitted successfully!', type: 'success' });
       reset();
     } catch (error) {
-      setError(error.message);
+      addNotification({ message: error.message, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -42,8 +40,6 @@ const ReportForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {error && <p className="text-red-500">{error}</p>}
-      {success && <p className="text-green-500">Report submitted successfully!</p>}
       <div>
         <label htmlFor="incidentType">Incident Type</label>
         <select id="incidentType" {...register('incidentType', { required: true })}>

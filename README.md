@@ -16,14 +16,7 @@ A secure web application for anonymous crime reporting and community safety moni
 # Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_url_here
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-# Security Settings
-SESSION_SECRET=your_session_secret_here
-RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
-RATE_LIMIT_MAX_REQUESTS=100
-
-# Environment
-NODE_ENV=development
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 ```
 
 2. Install dependencies:

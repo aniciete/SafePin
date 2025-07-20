@@ -1,17 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useReports } from '../../hooks/useReports';
 
 const PendingVerifications = () => {
-  const {
-    reports,
-    loading,
-    error,
-    fetchPendingVerificationReports,
-  } = useReports();
+  const { reports, loading, error } = useReports();
 
-  useEffect(() => {
-    fetchPendingVerificationReports();
-  }, [fetchPendingVerificationReports]);
+  const pendingReports = reports.filter(
+    (report) => report.status === 'pending_verification'
+  );
 
   if (loading) {
     return <div>Loading...</div>;
@@ -25,9 +20,10 @@ const PendingVerifications = () => {
     <div className="dashboard-widget">
       <h3>Pending Verifications</h3>
       <ul>
-        {reports.map((report) => (
+        {pendingReports.map((report) => (
           <li key={report.id}>
-            {report.incidentType} - {new Date(report.created_at).toLocaleDateString()}
+            {report.incidentType} -{' '}
+            {new Date(report.created_at).toLocaleDateString()}
           </li>
         ))}
       </ul>
