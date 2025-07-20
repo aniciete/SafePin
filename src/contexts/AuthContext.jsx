@@ -42,13 +42,9 @@ export const AuthProvider = ({ children }) => {
   }, [supabase]);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      await fetchUserProfile(session?.user ?? null);
-    };
-
-    getSession();
-
+    // onAuthStateChange fires immediately with the current session,
+    // so we don't need a separate getSession() call.
+    // This single listener handles both the initial state and any subsequent changes.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         await fetchUserProfile(session?.user ?? null);
@@ -71,4 +67,10 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
