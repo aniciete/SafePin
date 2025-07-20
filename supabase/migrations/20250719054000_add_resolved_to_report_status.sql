@@ -1,1 +1,0 @@
-ALTER TYPE report_status ADD VALUE 'resolved';

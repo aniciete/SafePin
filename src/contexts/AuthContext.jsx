@@ -10,51 +10,45 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = useCallback(async (authUser) => {
-    if (!authUser) {
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    const fetchUserProfile = useCallback(async (authUser) => {
+      setLoading(true); // Start loading
+      if (!authUser) {
+        setUser(null);
+        setProfile(null);
+        setLoading(false); // Stop loading if no user
+        return;
+      }
 
-    setUser(authUser);
+      setUser(authUser);
 
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .maybeSingle();
 
-      if (error) {
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
         console.error('Error fetching profile:', error);
         setProfile(null);
-      } else {
-        setProfile(data);
+      } finally {
+        setLoading(false); // Stop loading after fetch is complete
       }
-    } catch (e) {
-      console.error('Exception fetching profile:', e);
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
+    }, [supabase]);
 
-  useEffect(() => {
-    // onAuthStateChange fires immediately with the current session,
-    // so we don't need a separate getSession() call.
-    // This single listener handles both the initial state and any subsequent changes.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        await fetchUserProfile(session?.user ?? null);
-      }
-    );
+    useEffect(() => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          fetchUserProfile(session?.user ?? null);
+        }
+      );
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [fetchUserProfile]);
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, [fetchUserProfile]);
 
   const value = {
     user,

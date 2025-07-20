@@ -1,29 +1,23 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { supabase } from '../../config/supabase';
 import { useNotification } from '../common/notification/useNotification';
 import jurisdictions from '../../utils/jurisdictions.json';
 
 const CreateUserForm = ({ onUserCreated }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('authority');
-  const [jurisdiction, setJurisdiction] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const { addNotification } = useNotification();
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setLoading(true);
-
     try {
-      const { data: { user }, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role,
-            jurisdiction,
-          },
+      const { data: functionData, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: data.email,
+          password: data.password,
+          role: data.role,
+          jurisdiction: data.jurisdiction,
         },
       });
 
@@ -31,11 +25,15 @@ const CreateUserForm = ({ onUserCreated }) => {
         throw error;
       }
 
+      if (functionData.error) {
+        throw new Error(functionData.error);
+      }
+
       addNotification({ message: 'User created successfully!', type: 'success' });
-      onUserCreated(user);
-      setEmail('');
-      setPassword('');
-      setJurisdiction('');
+      reset();
+      if (onUserCreated) {
+        onUserCreated();
+      }
     } catch (error) {
       addNotification({ message: `Error creating user: ${error.message}`, type: 'error' });
     } finally {
@@ -44,50 +42,30 @@ const CreateUserForm = ({ onUserCreated }) => {
   };
 
   return (
-    <form onSubmit={handleCreateUser}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <h3>Create New User</h3>
-      <div>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="role">Role</label>
-        <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="authority">Authority</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="jurisdiction">Jurisdiction</label>
-        <select
-          id="jurisdiction"
-          value={jurisdiction}
-          onChange={(e) => setJurisdiction(e.target.value)}
-          required
-        >
-          <option value="">Select a jurisdiction</option>
-          {jurisdictions.map((j) => (
-            <option key={j.psgc_code} value={j.psgc_code}>
-              {j.barangay}, {j.city}
-            </option>
-          ))}
-        </select>
-      </div>
+      <input type="email" placeholder="Email" {...register('email', { required: true })} />
+      {errors.email && <p>Email is required</p>}
+
+      <input type="password" placeholder="Password" {...register('password', { required: true, minLength: 6 })} />
+      {errors.password && <p>Password must be at least 6 characters</p>}
+
+      <select {...register('role', { required: true })}>
+        <option value="authority">Authority</option>
+        {/* Add other roles here if needed */}
+      </select>
+      {errors.role && <p>Role is required</p>}
+
+      <select {...register('jurisdiction', { required: true })}>
+        <option value="">Select Jurisdiction</option>
+        {jurisdictions.map((j) => (
+          <option key={j.psgc_code} value={j.psgc_code}>
+            {j.barangay}, {j.city}
+          </option>
+        ))}
+      </select>
+      {errors.jurisdiction && <p>Jurisdiction is required</p>}
+
       <button type="submit" disabled={loading}>
         {loading ? 'Creating...' : 'Create User'}
       </button>

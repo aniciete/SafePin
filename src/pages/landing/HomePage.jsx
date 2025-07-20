@@ -16,7 +16,9 @@ const HomePage = () => {
           <>
             <button onClick={logout}>Logout</button>
             <br />
-            {profile?.role === 'authority' || profile?.role === 'admin' ? (
+            {profile?.role === 'admin' ? (
+              <Link to={PATHS.ADMIN_DASHBOARD}>Dashboard</Link>
+            ) : profile?.role === 'authority' ? (
               <Link to={PATHS.AUTHORITY_DASHBOARD}>Dashboard</Link>
             ) : (
               <Link to={PATHS.REPORT}>Report an Incident</Link>

@@ -28,8 +28,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/track" element={<TrackReportPage />} />
-        <Route path="/dashboard/authority" element={<AuthGuard role="authority"><AuthorityDashboardPage /></AuthGuard>} />
-        <Route path="/dashboard/admin" element={<AuthGuard role="admin"><AdminDashboardPage /></AuthGuard>} />
+        <Route path="/dashboard/authority/*" element={<AuthGuard role="authority"><AuthorityDashboardPage /></AuthGuard>} />
+        <Route path="/dashboard/admin/*" element={<AuthGuard role="admin"><AdminDashboardPage /></AuthGuard>} />
       </Routes>
     </Suspense>
   );

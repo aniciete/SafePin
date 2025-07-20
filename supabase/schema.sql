@@ -1,7 +1,7 @@
 -- Phase 1: Database Schema
 
 -- 1. Create ENUM types for report status and incident types
-CREATE TYPE report_status AS ENUM ('pending_verification', 'verified', 'rejected', 'archived');
+CREATE TYPE report_status AS ENUM ('pending_verification', 'verified', 'rejected', 'archived', 'resolved');
 CREATE TYPE incident_type AS ENUM (
     'Theft', 'Assault', 'Vandalism', 'Harassment', 'Robbery',
     'Burglary', 'Fire', 'Medical Emergency', 'Suspicious Activity',
