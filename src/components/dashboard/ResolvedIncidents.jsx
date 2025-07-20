@@ -1,8 +1,8 @@
-import React from 'react';
-import { useReports } from '../../hooks/useReports';
+import React, { useContext } from 'react';
+import { ReportsContext } from '../../contexts/ReportsContext';
 
 const ResolvedIncidents = () => {
-  const { reports, loading, error } = useReports();
+  const { reports, loading, error } = useContext(ReportsContext);
 
   const resolvedReports = reports.filter(
     (report) => report.status === 'resolved'

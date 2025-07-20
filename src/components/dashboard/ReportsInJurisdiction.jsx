@@ -1,8 +1,8 @@
-import React from 'react';
-import { useReports } from '../../hooks/useReports';
+import React, { useContext } from 'react';
+import { ReportsContext } from '../../contexts/ReportsContext';
 
 const ReportsInJurisdiction = () => {
-  const { reports, loading, error } = useReports();
+  const { reports, loading, error } = useContext(ReportsContext);
 
   if (loading) {
     return <div>Loading...</div>;

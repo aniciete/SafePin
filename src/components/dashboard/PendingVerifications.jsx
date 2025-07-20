@@ -1,8 +1,8 @@
-import React from 'react';
-import { useReports } from '../../hooks/useReports';
+import React, { useContext } from 'react';
+import { ReportsContext } from '../../contexts/ReportsContext';
 
 const PendingVerifications = () => {
-  const { reports, loading, error } = useReports();
+  const { reports, loading, error } = useContext(ReportsContext);
 
   const pendingReports = reports.filter(
     (report) => report.status === 'pending_verification'

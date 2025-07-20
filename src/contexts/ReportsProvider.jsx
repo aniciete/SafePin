@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReportsContext } from './ReportsContext';
 import { getPaginatedReports } from '../services/report.service';
 
@@ -40,6 +40,10 @@ const ReportsProvider = ({ children }) => {
     setFilters(newFilters);
     fetchReports(1, newFilters);
   }, [fetchReports]);
+
+  useEffect(() => {
+    fetchReports(1, filters);
+  }, [fetchReports, filters]);
 
   const contextValue = useMemo(() => ({
     reports,

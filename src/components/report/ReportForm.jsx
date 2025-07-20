@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useNotification } from '../common/notification/useNotification';
 import { uploadReportImage, createReport } from '../../services/report.service';
+import { ImageOptimizer } from '../../utils/imageOptimizer';
+import { sanitizeText } from '../../utils/security';
 import MapView from '../map/MapView';
 
 const ReportForm = () => {
@@ -15,10 +17,12 @@ const ReportForm = () => {
     setLoading(true);
 
     try {
-      const imagePath = await uploadReportImage(data.image[0]);
+      const optimizedImage = await ImageOptimizer.optimizeImage(data.image[0]);
+      const imagePath = await uploadReportImage(optimizedImage);
       
       const reportData = {
         ...data,
+        description: sanitizeText(data.description),
         image_path: imagePath,
       };
       delete reportData.image;

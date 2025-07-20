@@ -42,32 +42,8 @@ This webhook will trigger the `delete-report-image` function whenever a report i
 9.  Leave the **Headers** empty.
 10. Click **Create webhook**.
 
-## 3. Create the Sanitization Function in Postgres
+## 3. A Note on Data Sanitization
 
-This Postgres function will automatically sanitize the report data before it is inserted into the database. Run the following SQL in your Supabase SQL Editor.
+The application relies on Supabase's built-in parameterized queries to prevent SQL injection. All data insertion and updates should be handled through the Supabase client library, which automatically and safely handles parameterization.
 
-```sql
--- A simple function to remove potentially harmful characters
-CREATE OR REPLACE FUNCTION public.sanitize(input_text TEXT)
-RETURNS TEXT AS $$
-BEGIN
-    -- Replace with a more robust sanitization library if needed
-    RETURN regexp_replace(input_text, '[<>&"''/]', '', 'g');
-END;
-$$ LANGUAGE plpgsql;
-
--- A trigger function to sanitize report data before insertion
-CREATE OR REPLACE FUNCTION public.sanitize_report_data()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.incident_type := public.sanitize(NEW.incident_type);
-    NEW.severity := public.sanitize(NEW.severity);
-    NEW.description := public.sanitize(NEW.description);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- The trigger that calls the function before a new report is inserted
-CREATE TRIGGER on_report_insert_sanitize
-    BEFORE INSERT ON public.reports
-    FOR EACH ROW EXECUTE PROCEDURE public.sanitize_report_data();
+**Do not** use manual string concatenation to build queries, and **do not** create custom sanitization functions in Postgres, as these are prone to error and can be easily bypassed. The client library is the secure and recommended way to interact with the database.

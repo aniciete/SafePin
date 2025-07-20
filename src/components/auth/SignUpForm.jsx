@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { signUpWithEmail } from '../../services/auth.service';
+import { useNotification } from '../common/notification/useNotification';
 
 const SignUpForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('regular');
+  const { addNotification } = useNotification();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await signUpWithEmail(email, password, role);
+      addNotification({ message: 'Sign-up successful! Please check your email to verify your account.', type: 'success' });
       // Handle successful sign-up, e.g., redirect to a different page
     } catch (error) {
-      // Handle sign-up error
-      console.error('Error signing up:', error);
+      addNotification({ message: error.message, type: 'error' });
     }
   };
 

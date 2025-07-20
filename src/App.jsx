@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
 import { NotificationProvider } from './components/common/notification/NotificationProvider';
-import NotificationContainer from './components/common/notification/NotificationContainer';
+import { NotificationContainer } from './components/common/notification/NotificationContainer';
 import AuthGuard from './components/auth/AuthGuard';
 
 const HomePage = lazy(() => import('./pages/landing/HomePage'));
@@ -31,8 +31,9 @@ const App = () => (
             </Routes>
           </Suspense>
         </Router>
-      </AuthProvider>
-    </SupabaseProvider>
+      </NotificationProvider>
+    </AuthProvider>
+  </SupabaseProvider>
 );
 
 export default App;
