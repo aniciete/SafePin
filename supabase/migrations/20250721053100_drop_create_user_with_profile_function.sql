@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS create_user_with_profile(TEXT, TEXT, TEXT, TEXT);

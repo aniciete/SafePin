@@ -11,8 +11,8 @@ DECLARE
   encrypted_password TEXT;
 BEGIN
   -- Create the user in auth.users
-  INSERT INTO auth.users (email, encrypted_password, raw_user_meta_data)
-  VALUES (email, crypt(password, gen_salt('bf')), jsonb_build_object('role', role))
+  INSERT INTO auth.users (email, encrypted_password, email_confirmed_at, raw_user_meta_data)
+  VALUES (email, crypt(password, gen_salt('bf')), now(), jsonb_build_object('role', role))
   RETURNING id INTO new_user_id;
 
   -- Create the user profile in public.users

@@ -1,5 +1,5 @@
 -- Helper function to get the jurisdiction of the currently authenticated user
-CREATE OR REPLACE FUNCTION auth.get_user_jurisdiction()
+CREATE OR REPLACE FUNCTION public.get_user_jurisdiction()
 RETURNS TEXT AS $$
 DECLARE
   user_jurisdiction TEXT;
@@ -23,11 +23,11 @@ CREATE POLICY "Allow admins full access" ON public.reports
 
 -- 2. Authorities can view reports in their own jurisdiction.
 CREATE POLICY "Allow authorities to view reports in their jurisdiction" ON public.reports
-  FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'authority' AND jurisdiction = auth.get_user_jurisdiction());
+  FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'authority' AND jurisdiction = public.get_user_jurisdiction());
 
 -- 3. Authorities can update reports in their own jurisdiction.
 CREATE POLICY "Allow authorities to update reports in their jurisdiction" ON public.reports
-  FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'authority' AND jurisdiction = auth.get_user_jurisdiction());
+  FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'authority' AND jurisdiction = public.get_user_jurisdiction());
 
 -- 4. Allow anonymous users to create reports.
 CREATE POLICY "Allow anonymous report creation" ON public.reports
@@ -43,7 +43,7 @@ CREATE POLICY "Allow authorities to view images in their jurisdiction" ON storag
   FOR SELECT USING (
     bucket_id = 'reports' AND
     (SELECT role FROM public.users WHERE id = auth.uid()) = 'authority' AND
-    (SELECT jurisdiction FROM public.reports WHERE tracking_code = name) = auth.get_user_jurisdiction()
+    (SELECT jurisdiction FROM public.reports WHERE tracking_code = name) = public.get_user_jurisdiction()
   );
 
 -- 3. Allow anonymous users to upload images.

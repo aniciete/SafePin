@@ -25,11 +25,28 @@ Deno.serve(async (req) => {
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
+      email_confirm: true,
       user_metadata: { role, jurisdiction },
     });
 
     if (createError) {
       throw createError;
+    }
+
+    // Manually insert into public.users since the trigger might not run in this context
+    const { error: profileError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: user.id,
+        role: role,
+        jurisdiction: jurisdiction,
+      });
+
+    if (profileError) {
+      // If profile creation fails, you might want to delete the auth user
+      // to avoid orphaned users. This is a design decision.
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
+      throw profileError;
     }
 
     return new Response(JSON.stringify({ user }), {

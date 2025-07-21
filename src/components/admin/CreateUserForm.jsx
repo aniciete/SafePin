@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { supabase } from '../../config/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import { useNotification } from '../common/notification/useNotification';
 import jurisdictions from '../../utils/jurisdictions.json';
 
 const CreateUserForm = ({ onUserCreated }) => {
+  const { supabase } = useSupabase();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const { addNotification } = useNotification();
   const [loading, setLoading] = useState(false);
