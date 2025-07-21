@@ -72,7 +72,8 @@ node_modules/
 # Environment variables
 .env
 .env.*
+LOOKenv
+LOOKenv.local
 
-
-# Environment variables
-.env
+# Local Netlify folder
+.netlify

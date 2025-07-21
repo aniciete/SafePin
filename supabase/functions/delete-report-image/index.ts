@@ -1,7 +1,7 @@
 // @ts-nocheck
 /// &lt;reference types="https://deno.land/x/deno/cli/types/dts/index.dts" /&gt;
 import { serve } from 'std/http/server.ts';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Initialize the Supabase client with the service role key
 const supabaseAdmin = createClient(
