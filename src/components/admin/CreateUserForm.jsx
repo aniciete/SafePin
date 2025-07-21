@@ -35,6 +35,7 @@ const CreateUserForm = ({ onUserCreated }) => {
       if (onUserCreated) {
         onUserCreated();
       }
+      await supabase.auth.refreshSession();
     } catch (error) {
       addNotification({ message: `Error creating user: ${error.message}`, type: 'error' });
     } finally {

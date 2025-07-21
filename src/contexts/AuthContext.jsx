@@ -56,6 +56,13 @@ export const AuthProvider = ({ children }) => {
     loading,
     login: async (email, password) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        return { data, error };
+      }
+      console.log('User:', data.user);
+      if (data.user && !data.user.email_confirmed_at) {
+        return { data, error: { message: 'Email not confirmed' } };
+      }
       if (data.user) {
         await fetchUserProfile(data.user);
       }

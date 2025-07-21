@@ -11,11 +11,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Remove existing policies on the reports table that are no longer valid
-DROP POLICY IF EXISTS "Anyone can create a report" ON public.reports;
-DROP POLICY IF EXISTS "Authenticated users can view reports" ON public.reports;
-DROP POLICY IF EXISTS "Authorities can update report status" ON public.reports;
-
 -- RLS policies for the 'reports' table
 -- 1. Admins can do anything.
 CREATE POLICY "Allow admins full access" ON public.reports
