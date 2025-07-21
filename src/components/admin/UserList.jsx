@@ -93,22 +93,22 @@ const UserList = ({ users, loading, fetchUsers }) => {
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">User Management</h2>
       <CreateUserForm onUserCreated={handleUserCreated} />
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jurisdiction</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Email</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Role</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Jurisdiction</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Created At</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200">
             {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+              <tr key={user.id} className="hover:bg-gray-50">
+                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{user.email}</td>
+                <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                   {editingUser === user.id ? (
                     <Select onValueChange={setEditedRole} defaultValue={editedRole}>
                       <SelectTrigger>
@@ -123,7 +123,7 @@ const UserList = ({ users, loading, fetchUsers }) => {
                     user.role
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                   {editingUser === user.id ? (
                     <Select onValueChange={setEditedJurisdiction} defaultValue={editedJurisdiction}>
                       <SelectTrigger>
@@ -141,8 +141,8 @@ const UserList = ({ users, loading, fetchUsers }) => {
                     user.jurisdiction || 'N/A'
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{new Date(user.created_at).toLocaleDateString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{new Date(user.created_at).toLocaleDateString()}</td>
+                <td className="whitespace-nowrap px-4 py-2 space-x-2">
                   {editingUser === user.id ? (
                     <>
                       <Button onClick={() => handleSave(user.id)} variant="success">Save</Button>

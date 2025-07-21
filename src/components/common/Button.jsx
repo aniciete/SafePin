@@ -3,11 +3,11 @@ import { Slot } from '@radix-ui/react-slot';
 import PropTypes from 'prop-types';
 
 const buttonVariants = {
-  primary: 'bg-primary text-white hover:bg-primary-dark',
-  secondary: 'bg-secondary text-white hover:bg-secondary-dark',
-  warning: 'bg-warning text-white hover:bg-warning-dark',
-  success: 'bg-success text-white hover:bg-success-dark',
-  tertiary: 'bg-transparent text-text-primary hover:bg-gray-200',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
+  warning: 'bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-500',
+  success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
+  tertiary: 'bg-transparent text-gray-700 hover:bg-gray-200 focus:ring-gray-500',
 };
 
 const Button = React.forwardRef(

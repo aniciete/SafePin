@@ -4,6 +4,7 @@ import { useToast } from '../../hooks/use-toast';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Label } from '../../components/common/Label';
+import Card from '../../components/common/Card';
 
 const TrackReportPage = () => {
   const [trackingCode, setTrackingCode] = useState('');
@@ -40,33 +41,35 @@ const TrackReportPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Track Your Report</h1>
-      <form onSubmit={handleTrackReport} className="flex items-end space-x-2">
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="trackingCode">Tracking Code</Label>
-          <Input
-            type="text"
-            id="trackingCode"
-            placeholder="Enter your tracking code"
-            value={trackingCode}
-            onChange={(e) => setTrackingCode(e.target.value)}
-            required
-          />
-        </div>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Searching...' : 'Track Report'}
-        </Button>
-      </form>
+    <main className="flex items-center justify-center min-h-screen bg-gray-100">
+      <Card>
+        <h1 className="text-2xl font-bold text-center mb-8">Track Your Report</h1>
+        <form onSubmit={handleTrackReport} className="space-y-4">
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="trackingCode">Tracking Code</Label>
+            <Input
+              type="text"
+              id="trackingCode"
+              placeholder="Enter your tracking code"
+              value={trackingCode}
+              onChange={(e) => setTrackingCode(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Searching...' : 'Track Report'}
+          </Button>
+        </form>
 
-      {report && (
-        <div className="mt-4 p-4 border rounded-md">
-          <h2 className="text-xl font-bold">Report Status</h2>
-          <p><strong>Status:</strong> {report.status}</p>
-          <p><strong>Submitted At:</strong> {new Date(report.created_at).toLocaleString()}</p>
-        </div>
-      )}
-    </div>
+        {report && (
+          <div className="mt-8 p-4 border rounded-md bg-gray-50">
+            <h2 className="text-xl font-bold text-center mb-4">Report Status</h2>
+            <p className="text-center"><strong>Status:</strong> {report.status}</p>
+            <p className="text-center"><strong>Submitted At:</strong> {new Date(report.created_at).toLocaleString()}</p>
+          </div>
+        )}
+      </Card>
+    </main>
   );
 };
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import UserList from '../../../components/admin/UserList';
 import ReportModeration from '../../../components/admin/ReportModeration';
 import { supabase } from '../../../config/supabase';
+import DashboardLayout from '../../../components/layout/DashboardLayout';
 
 const AdminDashboardPage = () => {
   const [users, setUsers] = useState([]);
@@ -26,22 +27,12 @@ const AdminDashboardPage = () => {
   }, []);
 
   return (
-    <div style={{ display: 'flex' }}>
-      <aside style={{ width: '200px', padding: '1rem', borderRight: '1px solid #ccc' }}>
-        <nav>
-          <ul>
-            <li><Link to="/dashboard/admin/users">User Management</Link></li>
-            <li><Link to="/dashboard/admin/reports">Report Moderation</Link></li>
-          </ul>
-        </nav>
-      </aside>
-      <main style={{ flexGrow: 1, padding: '1rem' }}>
-        <Routes>
-          <Route path="users" element={<UserList users={users} loading={loading} fetchUsers={fetchUsers} />} />
-          <Route path="reports" element={<ReportModeration />} />
-        </Routes>
-      </main>
-    </div>
+    <DashboardLayout>
+      <Routes>
+        <Route path="users" element={<UserList users={users} loading={loading} fetchUsers={fetchUsers} />} />
+        <Route path="reports" element={<ReportModeration />} />
+      </Routes>
+    </DashboardLayout>
   );
 };
 

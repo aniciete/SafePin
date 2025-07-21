@@ -93,21 +93,21 @@ const ReportModeration = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Report Moderation</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jurisdiction</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Incident Type</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Jurisdiction</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Status</th>
+              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200">
             {reports.map((report) => (
-              <tr key={report.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{report.incident_type}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+              <tr key={report.id} className="hover:bg-gray-50">
+                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{report.incident_type}</td>
+                <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                   <Select
                     onValueChange={(value) => handleJurisdictionChange(report.id, value)}
                     defaultValue={report.jurisdiction || ''}
@@ -124,8 +124,8 @@ const ReportModeration = () => {
                     </SelectContent>
                   </Select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{report.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{report.status}</td>
+                <td className="whitespace-nowrap px-4 py-2">
                   <Modal>
                     <ModalTrigger asChild>
                       <Button variant="warning">Delete</Button>
