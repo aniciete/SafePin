@@ -31,21 +31,25 @@ Deno.serve(async (req) => {
     })
 
     if (createError) {
-      // Log the specific error for better debugging on the server-side.
-      console.error('Error creating user in auth.users:', createError)
-      // Throw the error to be caught by the catch block.
-      throw createError
+      console.error('Error creating user in auth.users:', createError.message);
+      return new Response(JSON.stringify({ error: createError.message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
 
-    return new Response(JSON.stringify({ user }), {
+    // The trigger will handle profile creation.
+    // We can return the user object, but it's often better to refetch user data on the client
+    // to ensure the profile information is included.
+    return new Response(JSON.stringify({ message: 'User created successfully. Profile being created by trigger.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
-    // Return a more structured error message to the client.
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Unhandled error in create-user function:', error);
+    return new Response(JSON.stringify({ error: 'An unexpected error occurred.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+      status: 500,
+    });
   }
 })

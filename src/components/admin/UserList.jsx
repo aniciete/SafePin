@@ -1,41 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../config/supabase';
 import { useNotification } from '../common/notification/useNotification';
 import CreateUserForm from './CreateUserForm';
 import jurisdictions from '../../utils/jurisdictions.json';
 
-const UserList = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+const UserList = ({ users, loading, fetchUsers }) => {
   const [editingUser, setEditingUser] = useState(null);
   const [editedRole, setEditedRole] = useState('');
   const [editedJurisdiction, setEditedJurisdiction] = useState('');
   const { addNotification } = useNotification();
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*');
-
-      if (error) {
-        throw error;
-      }
-      setUsers(data);
-    } catch (error) {
-      addNotification({ message: `Error fetching users: ${error.message}`, type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const handleUserCreated = () => {
     fetchUsers();
+  };
+
+  const handleDelete = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const { error } = await supabase.from('users').delete().eq('id', userId);
+        if (error) throw error;
+        addNotification({ message: 'User deleted successfully!', type: 'success' });
+        fetchUsers();
+      } catch (error) {
+        addNotification({ message: `Error deleting user: ${error.message}`, type: 'error' });
+      }
+    }
   };
 
   const handleEdit = (user) => {
@@ -121,7 +110,10 @@ const UserList = () => {
                     <button onClick={handleCancel}>Cancel</button>
                   </>
                 ) : (
-                  <button onClick={() => handleEdit(user)}>Edit</button>
+                  <>
+                    <button onClick={() => handleEdit(user)}>Edit</button>
+                    <button onClick={() => handleDelete(user.id)}>Delete</button>
+                  </>
                 )}
               </td>
             </tr>
