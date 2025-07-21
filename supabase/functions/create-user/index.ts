@@ -21,32 +21,20 @@ Deno.serve(async (req) => {
       Deno.env.get('SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Create the user in auth.users
+    // Create the user in auth.users. The `on_auth_user_created` trigger in the
+    // database will automatically create a corresponding profile in public.users.
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { role, jurisdiction },
-    });
+    })
 
     if (createError) {
-      throw createError;
-    }
-
-    // Manually insert into public.users since the trigger might not run in this context
-    const { error: profileError } = await supabaseAdmin
-      .from('users')
-      .insert({
-        id: user.id,
-        role: role,
-        jurisdiction: jurisdiction,
-      });
-
-    if (profileError) {
-      // If profile creation fails, you might want to delete the auth user
-      // to avoid orphaned users. This is a design decision.
-      await supabaseAdmin.auth.admin.deleteUser(user.id);
-      throw profileError;
+      // Log the specific error for better debugging on the server-side.
+      console.error('Error creating user in auth.users:', createError)
+      // Throw the error to be caught by the catch block.
+      throw createError
     }
 
     return new Response(JSON.stringify({ user }), {
@@ -54,7 +42,8 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error }), {
+    // Return a more structured error message to the client.
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
