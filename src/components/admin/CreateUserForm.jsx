@@ -1,13 +1,23 @@
-import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm, useWatch, Controller } from 'react-hook-form';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import { useNotification } from '../common/notification/useNotification';
+import { useToast } from '../../hooks/use-toast';
 import jurisdictions from '../../utils/jurisdictions.json';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Label } from '../common/Label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../common/Select';
 
 const CreateUserForm = ({ onUserCreated }) => {
   const { supabase } = useSupabase();
   const { register, handleSubmit, formState: { errors }, reset, control } = useForm();
-  const { addNotification } = useNotification();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const selectedRole = useWatch({
@@ -36,51 +46,91 @@ const CreateUserForm = ({ onUserCreated }) => {
         throw new Error(functionData.error);
       }
 
-      addNotification({ message: 'User created successfully!', type: 'success' });
+      toast({
+        title: 'Success',
+        description: 'User created successfully!',
+      });
       reset();
       if (onUserCreated) {
         onUserCreated();
       }
       await supabase.auth.refreshSession();
     } catch (error) {
-      addNotification({ message: `Error creating user: ${error.message}`, type: 'error' });
+      toast({
+        title: 'Error creating user',
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <h3>Create New User</h3>
-      <input type="email" placeholder="Email" {...register('email', { required: true })} />
-      {errors.email && <p>Email is required</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <h3 className="text-lg font-medium">Create New User</h3>
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input type="email" id="email" placeholder="Email" {...register('email', { required: true })} />
+        {errors.email && <p className="text-sm text-red-500">Email is required</p>}
+      </div>
 
-      <input type="password" placeholder="Password" {...register('password', { required: true, minLength: 8 })} />
-      {errors.password && <p>Password must be at least 8 characters</p>}
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input type="password" id="password" placeholder="Password" {...register('password', { required: true, minLength: 8 })} />
+        {errors.password && <p className="text-sm text-red-500">Password must be at least 8 characters</p>}
+      </div>
 
-      <select {...register('role', { required: true })}>
-        <option value="authority">Authority</option>
-        <option value="admin">Admin</option>
-      </select>
-      {errors.role && <p>Role is required</p>}
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="role">Role</Label>
+        <Controller
+          name="role"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="authority">Authority</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.role && <p className="text-sm text-red-500">Role is required</p>}
+      </div>
 
       {selectedRole === 'authority' && (
-        <>
-          <select {...register('jurisdiction', { required: selectedRole === 'authority' })}>
-            <option value="">Select Jurisdiction</option>
-            {jurisdictions.map((j) => (
-              <option key={j.psgc_code} value={j.psgc_code}>
-                {j.barangay}, {j.city}
-              </option>
-            ))}
-          </select>
-          {errors.jurisdiction && <p>Jurisdiction is required</p>}
-        </>
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="jurisdiction">Jurisdiction</Label>
+          <Controller
+            name="jurisdiction"
+            control={control}
+            rules={{ required: selectedRole === 'authority' }}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Jurisdiction" />
+                </SelectTrigger>
+                <SelectContent>
+                  {jurisdictions.map((j) => (
+                    <SelectItem key={j.psgc_code} value={j.psgc_code}>
+                      {j.barangay}, {j.city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.jurisdiction && <p className="text-sm text-red-500">Jurisdiction is required</p>}
+        </div>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading} className="w-full">
         {loading ? 'Creating...' : 'Create User'}
-      </button>
+      </Button>
     </form>
   );
 };

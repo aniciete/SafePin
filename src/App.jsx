@@ -3,9 +3,8 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
-import { NotificationProvider } from './components/common/notification/NotificationProvider';
-import { NotificationContainer } from './components/common/notification/NotificationContainer';
 import AuthGuard from './components/auth/AuthGuard';
+import { Toaster } from './components/common/Toaster';
 
 const HomePage = lazy(() => import('./pages/landing/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -38,12 +37,12 @@ const AppRoutes = () => {
 const App = () => (
   <SupabaseProvider>
     <AuthProvider>
-      <NotificationProvider>
-        <Router>
-          <NotificationContainer />
+      <Router>
+        <main>
           <AppRoutes />
-        </Router>
-      </NotificationProvider>
+        </main>
+        <Toaster />
+      </Router>
     </AuthProvider>
   </SupabaseProvider>
 );

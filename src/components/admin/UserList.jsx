@@ -1,29 +1,51 @@
 import { useState } from 'react';
 import { supabase } from '../../config/supabase';
-import { useNotification } from '../common/notification/useNotification';
+import { useToast } from '../../hooks/use-toast';
 import CreateUserForm from './CreateUserForm';
 import jurisdictions from '../../utils/jurisdictions.json';
+import { Button } from '../common/Button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../common/Select';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalTitle,
+  ModalDescription,
+  ModalTrigger,
+} from '../common/Modal';
 
 const UserList = ({ users, loading, fetchUsers }) => {
   const [editingUser, setEditingUser] = useState(null);
   const [editedRole, setEditedRole] = useState('');
   const [editedJurisdiction, setEditedJurisdiction] = useState('');
-  const { addNotification } = useNotification();
+  const { toast } = useToast();
 
   const handleUserCreated = () => {
     fetchUsers();
   };
 
   const handleDelete = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        const { error } = await supabase.from('users').delete().eq('id', userId);
-        if (error) throw error;
-        addNotification({ message: 'User deleted successfully!', type: 'success' });
-        fetchUsers();
-      } catch (error) {
-        addNotification({ message: `Error deleting user: ${error.message}`, type: 'error' });
-      }
+    try {
+      const { error } = await supabase.from('users').delete().eq('id', userId);
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: 'User deleted successfully!',
+      });
+      fetchUsers();
+    } catch (error) {
+      toast({
+        title: 'Error deleting user',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -48,11 +70,18 @@ const UserList = ({ users, loading, fetchUsers }) => {
         throw error;
       }
 
-      addNotification({ message: 'User updated successfully!', type: 'success' });
+      toast({
+        title: 'Success',
+        description: 'User updated successfully!',
+      });
       setEditingUser(null);
       fetchUsers();
     } catch (error) {
-      addNotification({ message: `Error updating user: ${error.message}`, type: 'error' });
+      toast({
+        title: 'Error updating user',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -61,65 +90,92 @@ const UserList = ({ users, loading, fetchUsers }) => {
   }
 
   return (
-    <div>
-      <h2>User Management</h2>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">User Management</h2>
       <CreateUserForm onUserCreated={handleUserCreated} />
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Jurisdiction</th>
-            <th>Created At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.email}</td>
-              <td>
-                {editingUser === user.id ? (
-                  <select value={editedRole} onChange={(e) => setEditedRole(e.target.value)}>
-                    <option value="authority">Authority</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                ) : (
-                  user.role
-                )}
-              </td>
-              <td>
-                {editingUser === user.id ? (
-                  <select value={editedJurisdiction} onChange={(e) => setEditedJurisdiction(e.target.value)}>
-                    <option value="">Select a jurisdiction</option>
-                    {jurisdictions.map((j) => (
-                      <option key={j.psgc_code} value={j.psgc_code}>
-                        {j.barangay}, {j.city}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  user.jurisdiction || 'N/A'
-                )}
-              </td>
-              <td>{new Date(user.created_at).toLocaleDateString()}</td>
-              <td>
-                {editingUser === user.id ? (
-                  <>
-                    <button onClick={() => handleSave(user.id)}>Save</button>
-                    <button onClick={handleCancel}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleEdit(user)}>Edit</button>
-                    <button onClick={() => handleDelete(user.id)}>Delete</button>
-                  </>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jurisdiction</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingUser === user.id ? (
+                    <Select onValueChange={setEditedRole} defaultValue={editedRole}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="authority">Authority</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    user.role
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingUser === user.id ? (
+                    <Select onValueChange={setEditedJurisdiction} defaultValue={editedJurisdiction}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a jurisdiction" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {jurisdictions.map((j) => (
+                          <SelectItem key={j.psgc_code} value={j.psgc_code}>
+                            {j.barangay}, {j.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    user.jurisdiction || 'N/A'
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">{new Date(user.created_at).toLocaleDateString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                  {editingUser === user.id ? (
+                    <>
+                      <Button onClick={() => handleSave(user.id)} variant="success">Save</Button>
+                      <Button onClick={handleCancel} variant="tertiary">Cancel</Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={() => handleEdit(user)} variant="secondary">Edit</Button>
+                      <Modal>
+                        <ModalTrigger asChild>
+                          <Button variant="warning">Delete</Button>
+                        </ModalTrigger>
+                        <ModalContent>
+                          <ModalHeader>
+                            <ModalTitle>Are you sure?</ModalTitle>
+                            <ModalDescription>
+                              This action cannot be undone. This will permanently delete the user account.
+                            </ModalDescription>
+                          </ModalHeader>
+                          <ModalFooter>
+                            <Button variant="tertiary" onClick={() => document.querySelector('[data-state="open"] button[aria-label="Close"]')?.click()}>Cancel</Button>
+                            <Button variant="warning" onClick={() => handleDelete(user.id)}>Delete</Button>
+                          </ModalFooter>
+                        </ModalContent>
+                      </Modal>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

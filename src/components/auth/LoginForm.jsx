@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../common/notification/useNotification';
+import { useToast } from '../../hooks/use-toast';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Label } from '../common/Label';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { addNotification } = useNotification();
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,25 +22,41 @@ const LoginForm = () => {
       }
       navigate('/');
     } catch (error) {
-      addNotification({ message: error.message, type: 'error' });
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Log In</button>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          type="email"
+          id="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          type="password"
+          id="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full">
+        Log In
+      </Button>
     </form>
   );
 };

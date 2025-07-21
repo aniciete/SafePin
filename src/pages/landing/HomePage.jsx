@@ -7,7 +7,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <h1>Welcome to SafePin</h1>
+      <h1 className="sr-only">SafePin Home</h1>
       <nav>
         {loading ? (
           <p>Loading...</p>
