@@ -17,6 +17,7 @@ CREATE TABLE public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email VARCHAR(255) UNIQUE,
     role user_role DEFAULT 'regular',
+    jurisdiction TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     onboarding_completed BOOLEAN DEFAULT false
 );
@@ -49,19 +50,29 @@ CREATE TABLE public.rate_limits (
 -- Phase 2: Authentication & Security
 
 -- 1. Function to create a new user profile upon sign-up
-CREATE OR REPLACE FUNCTION public.handle_new_user()
+CREATE OR REPLACE FUNCTION public.create_user_profile()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.users (id, email, role)
-    VALUES (new.id, new.email, (new.raw_user_meta_data->>'role')::user_role);
-    RETURN new;
+  -- Check if a profile already exists for the new user to prevent duplicates
+  IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
+    INSERT INTO public.users (id, email, role, jurisdiction)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        (NEW.raw_user_meta_data->>'role')::user_role,
+        NEW.raw_user_meta_data->>'jurisdiction'
+    );
+  END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. Trigger to call the function on new user sign-up
+-- Drop the old trigger if it exists to avoid conflicts
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+    FOR EACH ROW EXECUTE PROCEDURE public.create_user_profile();
 
 -- 3. Row-Level Security (RLS)
 
