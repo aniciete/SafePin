@@ -1,0 +1,55 @@
+# ========== INCLUDED ==========
+# Source code
+src/
+
+# Supabase (includes functions and migrations)
+supabase/
+
+# Tests
+tests/
+src/utils/__tests__/
+
+# Core config and documentation
+package.json
+tailwind.config.js
+postcss.config.js         # NEW: Crucial for CSS build pipeline
+vite.config.js
+.env
+README.md
+DESIGN_SYSTEM.md
+DEPLOYMENT.md
+netlify.toml
+index.html
+eslint.config.js
+.prettierrc               # NEW: For code formatting consistency
+.gitignore                # NEW: Shows repository intent
+playwright.config.js
+temp_create_admin.js
+
+# ========== TRUNCATED / PARTIAL ==========
+# Use truncated JSON for token efficiency
+src/utils/jurisdictions-trunc.json
+
+# ========== EXCLUDED ==========
+# Exclude full jurisdiction data (replaced by truncated version)
+!src/utils/jurisdictions.json
+
+# Heavy build and lock files
+!node_modules/
+!dist/
+!build/
+!package-lock.json        # IMPORTANT: Uncomment this line when debugging dependency issues
+!playwright-report/
+!.git/
+
+# Unnecessary asset files (especially SVGs and PNGs)
+!public/*.svg
+!public/*.png
+!public/*.jpg
+!src/assets/**/*.svg
+!src/assets/**/*.png
+!src/assets/**/*.jpg
+
+# Supabase CLI internal state
+!supabase/.temp/
+!supabase/.branches/

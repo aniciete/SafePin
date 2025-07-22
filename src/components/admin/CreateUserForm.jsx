@@ -73,14 +73,28 @@ const CreateUserForm = ({ onUserCreated }) => {
         <h3 className="text-lg font-medium text-center">Create New User</h3>
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input type="email" id="email" placeholder="Email" {...register('email', { required: true })} />
-          {errors.email && <p className="text-sm text-red-500">Email is required</p>}
+          <Input
+            type="email"
+            id="email"
+            placeholder="Email"
+            {...register('email', { required: 'Email is required' })}
+            aria-invalid={errors.email ? 'true' : 'false'}
+            aria-describedby="email-error"
+          />
+          {errors.email && <p id="email-error" className="text-sm text-red-500">{errors.email.message}</p>}
         </div>
 
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input type="password" id="password" placeholder="Password" {...register('password', { required: true, minLength: 8 })} />
-          {errors.password && <p className="text-sm text-red-500">Password must be at least 8 characters</p>}
+          <Input
+            type="password"
+            id="password"
+            placeholder="Password"
+            {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Password must be at least 8 characters' } })}
+            aria-invalid={errors.password ? 'true' : 'false'}
+            aria-describedby="password-error"
+          />
+          {errors.password && <p id="password-error" className="text-sm text-red-500">{errors.password.message}</p>}
         </div>
 
         <div className="grid w-full items-center gap-1.5">
@@ -88,10 +102,14 @@ const CreateUserForm = ({ onUserCreated }) => {
           <Controller
             name="role"
             control={control}
-            rules={{ required: true }}
+            rules={{ required: 'Role is required' }}
             render={({ field }) => (
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
+                <SelectTrigger
+                  id="role"
+                  aria-invalid={errors.role ? 'true' : 'false'}
+                  aria-describedby="role-error"
+                >
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -101,7 +119,7 @@ const CreateUserForm = ({ onUserCreated }) => {
               </Select>
             )}
           />
-          {errors.role && <p className="text-sm text-red-500">Role is required</p>}
+          {errors.role && <p id="role-error" className="text-sm text-red-500">{errors.role.message}</p>}
         </div>
 
         {selectedRole === 'authority' && (
@@ -110,10 +128,14 @@ const CreateUserForm = ({ onUserCreated }) => {
             <Controller
               name="jurisdiction"
               control={control}
-              rules={{ required: selectedRole === 'authority' }}
+              rules={{ required: selectedRole === 'authority' ? 'Jurisdiction is required for authorities' : false }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
+                  <SelectTrigger
+                    id="jurisdiction"
+                    aria-invalid={errors.jurisdiction ? 'true' : 'false'}
+                    aria-describedby="jurisdiction-error"
+                  >
                     <SelectValue placeholder="Select Jurisdiction" />
                   </SelectTrigger>
                   <SelectContent>
@@ -126,7 +148,7 @@ const CreateUserForm = ({ onUserCreated }) => {
                 </Select>
               )}
             />
-            {errors.jurisdiction && <p className="text-sm text-red-500">Jurisdiction is required</p>}
+            {errors.jurisdiction && <p id="jurisdiction-error" className="text-sm text-red-500">{errors.jurisdiction.message}</p>}
           </div>
         )}
 

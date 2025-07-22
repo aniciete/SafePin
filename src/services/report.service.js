@@ -70,3 +70,23 @@ export const createReport = async (reportData, token) => {
 
   return data[0];
 };
+
+/**
+ * Updates the status of a report.
+ * @param {string} reportId The ID of the report to update.
+ * @param {string} status The new status.
+ * @returns {Promise<object>} The updated report data.
+ */
+export const updateReportStatus = async (reportId, status) => {
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status })
+    .eq('id', reportId)
+    .select();
+
+  if (error) {
+    throw new Error(`Failed to update report status: ${error.message}`);
+  }
+
+  return data[0];
+};

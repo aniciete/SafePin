@@ -9,16 +9,16 @@ const Sidebar = () => {
 
   const getLinkClass = (path) => {
     const isActive = location.pathname.includes(path);
-    return `flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200 ${
-      isActive ? 'bg-gray-300 font-bold' : ''
+    return `flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200 dark:text-neutral-300 dark:hover:bg-neutral-700 ${
+      isActive ? 'bg-gray-300 dark:bg-neutral-600 font-bold' : ''
     }`;
   };
 
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="flex flex-col w-64 h-full px-4 py-8 bg-white border-r">
-      <h2 className="text-3xl font-semibold text-center text-primary">SafePin</h2>
+    <div className="flex flex-col w-64 h-full px-4 py-8 bg-white border-r dark:bg-neutral-800 dark:border-neutral-700">
+      <h2 className="text-3xl font-semibold text-center text-primary dark:text-primary">SafePin</h2>
       <div className="flex flex-col justify-between flex-1 mt-6">
         <nav>
           {isAdmin ? (

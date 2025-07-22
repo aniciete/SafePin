@@ -1,5 +1,8 @@
+import forms from '@tailwindcss/forms';
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,6 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        white: 'var(--color-white)',
         primary: 'var(--color-primary)',
         'primary-dark': 'var(--color-primary-dark)',
         secondary: 'var(--color-secondary)',
@@ -15,10 +19,20 @@ export default {
         success: 'var(--color-success)',
         background: 'var(--color-background)',
         border: 'var(--color-border)',
-        text: {
-          primary: 'var(--color-text-primary)',
-          secondary: 'var(--color-text-secondary)',
-          light: 'var(--color-text-light)',
+        // Corrected "flattened" text colors
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-light': 'var(--color-text-light)',
+        neutral: {
+          100: '#F5F5F5',
+          200: '#E0E0E0',
+          300: '#BDBDBD',
+          400: '#9E9E9E',
+          500: '#828282',
+          600: '#4F4F4F',
+          700: '#333333',
+          800: '#1E1E1E',
+          900: '#121212',
         },
       },
       fontFamily: {
@@ -31,5 +45,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    forms,
+  ],
 }

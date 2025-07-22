@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
+import DashboardWidgetSkeleton from './DashboardWidgetSkeleton';
 
 const PendingVerifications = () => {
   const [reports, setReports] = useState([]);
@@ -25,7 +26,7 @@ const PendingVerifications = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <DashboardWidgetSkeleton />;
   }
 
   if (error) {
@@ -33,16 +34,19 @@ const PendingVerifications = () => {
   }
 
   return (
-    <div className="dashboard-widget">
-      <h3>Pending Verifications</h3>
-      <ul>
-        {reports.map((report) => (
-          <li key={report.id}>
-            {report.incidentType} -{' '}
-            {new Date(report.created_at).toLocaleDateString()}
-          </li>
-        ))}
-      </ul>
+    <div className="p-4 border rounded-lg bg-white dark:bg-neutral-800 dark:border-neutral-700">
+      <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-neutral-100">Pending Verifications</h3>
+      {reports.length > 0 ? (
+        <ul className="space-y-2">
+          {reports.map((report) => (
+            <li key={report.id} className="text-sm text-gray-700 dark:text-neutral-300">
+              <span className="font-medium">{report.incident_type}</span> - <span className="text-xs">{new Date(report.created_at).toLocaleDateString()}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-gray-500 dark:text-neutral-400">No reports pending verification.</p>
+      )}
     </div>
   );
 };

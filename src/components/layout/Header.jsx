@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../utils/pathUtils';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { SunIcon, MoonIcon } from '@radix-ui/react-icons';
+import { Button } from '../common/Button';
 
 const Header = () => {
   const { user, profile, logout, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
-  const navLinkClasses = "text-gray-600 hover:text-green-600 px-4 py-2 rounded-md text-sm font-medium transition-colors";
-  const primaryButtonClasses = "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105";
-  const secondaryButtonClasses = "text-gray-600 hover:text-green-600 font-bold py-2 px-4 rounded-lg";
-  const logoutButtonClasses = "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg ml-4";
-
+  const navLinkClasses = "text-text-secondary hover:text-primary px-4 py-2 rounded-md text-sm font-medium transition-colors";
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <Link to={PATHS.HOME} className="flex items-center">
           <img src="/SafePin Logo Green.svg" alt="SafePin Logo" className="h-10 mr-3" />
-          <span className="text-3xl font-bold text-green-700">SafePin</span>
+          <span className="text-3xl font-bold text-primary-dark">SafePin</span>
         </Link>
         <nav className="flex items-center">
           {loading ? (
@@ -29,18 +29,29 @@ const Header = () => {
               ) : profile?.role === 'authority' ? (
                 <Link to={PATHS.AUTHORITY_DASHBOARD} className={navLinkClasses}>Dashboard</Link>
               ) : (
-                <Link to={PATHS.REPORT} className={primaryButtonClasses}>Report an Incident</Link>
+                <Button asChild variant="primary">
+                  <Link to={PATHS.REPORT}>Report an Incident</Link>
+                </Button>
               )}
-              <button onClick={logout} className={logoutButtonClasses}>Logout</button>
+              <Button onClick={logout} variant="danger" className="ml-4">Logout</Button>
             </>
           ) : (
             // User is not logged in (guest)
             <>
-              <Link to="/track" className={secondaryButtonClasses}>Track a Report</Link>
-              <Link to={PATHS.LOGIN} className={secondaryButtonClasses}>Login</Link>
-              <Link to={PATHS.REPORT} className={`${primaryButtonClasses} ml-4`}>Report an Incident</Link>
+              <Button asChild variant="secondary">
+                <Link to="/track">Track a Report</Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link to={PATHS.LOGIN}>Login</Link>
+              </Button>
+              <Button asChild variant="primary" className="ml-4">
+                <Link to={PATHS.REPORT}>Report an Incident</Link>
+              </Button>
             </>
           )}
+          <Button variant="tertiary" onClick={toggleTheme} className="ml-4">
+            {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
+          </Button>
         </nav>
       </div>
     </header>

@@ -5,6 +5,7 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Label } from '../../components/common/Label';
 import Card from '../../components/common/Card';
+import StatusTimeline from '../../components/report/StatusTimeline';
 
 const TrackReportPage = () => {
   const [trackingCode, setTrackingCode] = useState('');
@@ -41,12 +42,12 @@ const TrackReportPage = () => {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100">
+    <main className="flex items-center justify-center">
       <Card>
-        <h1 className="text-2xl font-bold text-center mb-8">Track Your Report</h1>
+        <h1 className="text-2xl font-bold text-center mb-8 dark:text-white">Track Your Report</h1>
         <form onSubmit={handleTrackReport} className="space-y-4">
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="trackingCode">Tracking Code</Label>
+            <Label htmlFor="trackingCode" className="dark:text-white">Tracking Code</Label>
             <Input
               type="text"
               id="trackingCode"
@@ -62,10 +63,12 @@ const TrackReportPage = () => {
         </form>
 
         {report && (
-          <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            <h2 className="text-xl font-bold text-center mb-4">Report Status</h2>
-            <p className="text-center"><strong>Status:</strong> {report.status}</p>
-            <p className="text-center"><strong>Submitted At:</strong> {new Date(report.created_at).toLocaleString()}</p>
+          <div className="mt-8 p-6 border rounded-lg bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700">
+            <h2 className="text-xl font-bold text-center mb-6 dark:text-white">Report Progress</h2>
+            <StatusTimeline status={report.status} />
+            <p className="text-center text-sm text-gray-500 dark:text-neutral-400 mt-6">
+              Submitted At: {new Date(report.created_at).toLocaleString()}
+            </p>
           </div>
         )}
       </Card>

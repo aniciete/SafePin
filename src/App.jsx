@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import AuthGuard from './components/auth/AuthGuard';
 import { Toaster } from './components/common/Toaster';
 import MainLayout from './components/layout/MainLayout';
