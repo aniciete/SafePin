@@ -1,18 +1,29 @@
 import React from 'react';
-import Skeleton from '../common/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UserListItemSkeleton = () => {
+  // Renders a table row (tr) with table cells (td) to be a valid child of <tbody>
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
-      <div className="flex items-center">
-        <Skeleton className="h-10 w-10 rounded-full" />
-        <div className="ml-4">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-48 mt-1" />
+    <tr>
+      <td className="p-4">
+        <Skeleton className="h-5 w-48" />
+      </td>
+      <td className="p-4">
+        <Skeleton className="h-5 w-24" />
+      </td>
+      <td className="p-4">
+        <Skeleton className="h-5 w-32" />
+      </td>
+      <td className="p-4">
+        <Skeleton className="h-5 w-24" />
+      </td>
+      <td className="p-4">
+        <div className="flex space-x-2">
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-16" />
         </div>
-      </div>
-      <Skeleton className="h-8 w-20" />
-    </div>
+      </td>
+    </tr>
   );
 };
 

@@ -9,7 +9,7 @@ import KeyFeaturesSection from '../../components/landing/KeyFeaturesSection';
 
 const HomePage = () => {
   return (
-    <div className="bg-gray-50 dark:bg-neutral-900">
+    <div>
       <HeroSection />
 
       <TrustSignalsSection />

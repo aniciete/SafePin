@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import jurisdictions from '../../utils/jurisdictions.json';
-import { Button } from '../common/Button';
-import { Input } from '../common/Input';
-import { Label } from '../common/Label';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../common/Select';
-import Card from '../common/Card';
+} from '@/components/ui/select';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 const CreateUserForm = ({ onUserCreated }) => {
   const { supabase } = useSupabase();
@@ -69,9 +69,12 @@ const CreateUserForm = ({ onUserCreated }) => {
 
   return (
     <Card>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <h3 className="text-lg font-medium text-center">Create New User</h3>
-        <div className="grid w-full items-center gap-1.5">
+      <CardHeader>
+        <CardTitle className="text-lg font-medium text-center">Create New User</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
             type="email"
@@ -152,10 +155,11 @@ const CreateUserForm = ({ onUserCreated }) => {
           </div>
         )}
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? 'Creating...' : 'Create User'}
-        </Button>
-      </form>
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Creating...' : 'Create User'}
+          </Button>
+        </form>
+      </CardContent>
     </Card>
   );
 };

@@ -29,7 +29,7 @@ const StatusTimeline = ({ status }) => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <ol className="relative border-l border-gray-200 dark:border-neutral-700">
+      <ol className="relative border-l border-gray-200 border-neutral-700">
         {steps.map((stepInfo, index) => {
           const stepNumber = index + 1;
           const isCompleted = currentStep >= stepNumber;
@@ -37,7 +37,7 @@ const StatusTimeline = ({ status }) => {
 
           return (
             <li key={stepInfo.title} className="mb-10 ml-6">
-              <span className={`absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-8 ring-white dark:ring-neutral-900 ${isCompleted ? 'bg-primary' : 'bg-gray-300'}`}>
+              <span className={`absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-8 ring-white ring-neutral-900 ${isCompleted ? 'bg-primary' : 'bg-gray-300'}`}>
                 {isCompleted ? (
                   <CheckCircleIcon className="w-5 h-5 text-white" />
                 ) : (

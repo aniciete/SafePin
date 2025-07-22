@@ -1,7 +1,7 @@
 import React from 'react';
-import { Input } from '../common/Input';
-import { Select } from '../common/Select';
-import { Button } from '../common/Button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 const ReportFilters = ({ onFilterChange }) => {
   const handleFilter = (e) => {
@@ -12,7 +12,7 @@ const ReportFilters = ({ onFilterChange }) => {
   };
 
   return (
-    <form onSubmit={handleFilter} className="p-4 bg-white rounded-lg shadow-md">
+    <form onSubmit={handleFilter} className="p-4 bg-surface rounded-lg shadow-md">
       <h3 className="text-lg font-semibold mb-4">Filters</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>

@@ -21,10 +21,10 @@ const authorities = [
 
 const TrustedBySection = () => {
   return (
-    <section className="bg-white dark:bg-neutral-900 py-12 sm:py-16 lg:py-20">
+    <section className="bg-background py-12 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Trusted by Local Authorities & Organizations
           </h2>
         </div>

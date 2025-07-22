@@ -1,28 +1,33 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../common/Button';
+import { Button } from '@/components/ui/button';
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth(); // Changed from user to profile for role access
   const location = useLocation();
 
-  const getLinkClass = (path) => {
-    const isActive = location.pathname.includes(path);
-    return `flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200 dark:text-neutral-300 dark:hover:bg-neutral-700 ${
-      isActive ? 'bg-gray-300 dark:bg-neutral-600 font-bold' : ''
+  // Updated getLinkClass to handle nested routes more accurately
+  const getLinkClass = (path, isEnd = false) => {
+    const isActive = isEnd ? location.pathname === path : location.pathname.startsWith(path);
+    return `flex items-center px-4 py-2 text-muted-foreground rounded-md hover:bg-accent ${
+      isActive ? 'bg-accent font-bold' : ''
     }`;
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = profile?.role === 'admin';
+  const isAuthority = profile?.role === 'authority';
 
   return (
-    <div className="flex flex-col w-64 h-full px-4 py-8 bg-white border-r dark:bg-neutral-800 dark:border-neutral-700">
-      <h2 className="text-3xl font-semibold text-center text-primary dark:text-primary">SafePin</h2>
+    <div className="flex flex-col w-64 h-full px-4 py-8 bg-card border-r">
+      <h2 className="text-3xl font-semibold text-center text-primary">SafePin</h2>
       <div className="flex flex-col justify-between flex-1 mt-6">
         <nav>
-          {isAdmin ? (
+          {isAdmin && (
             <>
+              <NavLink to="/dashboard/admin" className={getLinkClass('/dashboard/admin', true)}>
+                Overview
+              </NavLink>
               <NavLink to="/dashboard/admin/users" className={getLinkClass('/dashboard/admin/users')}>
                 User Management
               </NavLink>
@@ -30,23 +35,21 @@ const Sidebar = () => {
                 Report Moderation
               </NavLink>
             </>
-          ) : (
+          )}
+          {isAuthority && (
             <>
-              <NavLink to="/dashboard/authority" end className={getLinkClass('/dashboard/authority')}>
-                Overview
+              <NavLink to="/dashboard/authority" end className={getLinkClass('/dashboard/authority', true)}>
+                Overview & Map
               </NavLink>
-              <NavLink to="/dashboard/authority/reports" className={getLinkClass('/dashboard/authority/reports')}>
-                Reports
-              </NavLink>
-              <NavLink to="/dashboard/authority/map" className={getLinkClass('/dashboard/authority/map')}>
-                Map View
+              <NavLink to="/dashboard/authority/analytics" className={getLinkClass('/dashboard/authority/analytics')}>
+                Analytics
               </NavLink>
             </>
           )}
         </nav>
 
         <div className="mt-auto">
-          <Button onClick={logout} variant="danger" className="w-full">
+          <Button onClick={logout} variant="destructive" className="w-full">
             Logout
           </Button>
         </div>

@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
-import Card from '../common/Card';
+import React from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import MapView from '../map/MapView';
-import { Button } from '../common/Button';
 
 const Analytics = ({ reports }) => {
-  const [showHeatmap, setShowHeatmap] = useState(false);
-
   const incidentTrends = reports.reduce((acc, report) => {
     const date = new Date(report.created_at).toLocaleDateString();
     acc[date] = (acc[date] || 0) + 1;
@@ -32,43 +29,51 @@ const Analytics = ({ reports }) => {
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Incident Trends Over Time</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          <CardHeader>
+            <CardTitle>Incident Trends Over Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="count" stroke="var(--color-primary)" activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Most Common Incident Types</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={typeData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+          <CardHeader>
+            <CardTitle>Most Common Incident Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={typeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="count" fill="var(--color-secondary)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
       </div>
       <div className="mt-6">
         <Card>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Incident Hotspots</h3>
-            <Button onClick={() => setShowHeatmap(!showHeatmap)}>
-              {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
-            </Button>
-          </div>
-          <div className="h-96">
-            <MapView reports={reports} showHeatmap={showHeatmap} />
-          </div>
+          <CardHeader>
+            <CardTitle>Incident Hotspots</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-96">
+              {/* Removed the showHeatmap prop and toggle button */}
+              <MapView reports={reports} />
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

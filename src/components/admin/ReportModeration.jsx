@@ -1,27 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../config/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext'; // Using context for consistency
 import ReportListItemSkeleton from '../report/ReportListItemSkeleton';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import jurisdictions from '../../utils/jurisdictions.json';
-import { Button } from '../common/Button';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../common/Select';
+} from '@/components/ui/select';
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalTitle,
-  ModalDescription,
-  ModalTrigger,
-} from '../common/Modal';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogClose, // Import DialogClose
+} from '@/components/ui/dialog';
 
 const ReportModeration = () => {
+  const { supabase } = useSupabase(); // Use context
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -32,7 +34,7 @@ const ReportModeration = () => {
   const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase.from('reports').select('*');
+      let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
       if (view === 'flagged') {
         query = query.eq('is_flagged', true);
       } else {
@@ -50,7 +52,7 @@ const ReportModeration = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast, view]);
+  }, [supabase, toast, view]);
 
   useEffect(() => {
     fetchReports();
@@ -117,31 +119,21 @@ const ReportModeration = () => {
       });
     }
   };
+  
+  // A helper to get the display name for a jurisdiction code
+  const getJurisdictionName = (code) => {
+    if (!code) return 'Unassigned';
+    const match = jurisdictions.find(j => j.psgc_code === code);
+    return match ? `${match.barangay}, ${match.city}` : code;
+  };
+
 
   if (loading) {
     return (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Report Moderation</h2>
-        <div className="overflow-x-auto rounded-lg border-border">
-          <table className="min-w-full divide-y-2 divide-border bg-white text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Incident Type</th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Jurisdiction</th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Status</th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index}>
-                  <td colSpan="4">
-                    <ReportListItemSkeleton />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto rounded-lg border">
+          {[...Array(5)].map((_, index) => <ReportListItemSkeleton key={index} />)}
         </div>
       </div>
     );
@@ -150,40 +142,43 @@ const ReportModeration = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Report Moderation</h2>
-      <div className="flex space-x-4 border-b border-border">
+      <div className="flex space-x-4 border-b">
         <button
-          className={`py-2 px-4 text-text-secondary ${view === 'main' ? 'border-b-2 border-blue-500 text-blue-600' : 'hover:bg-gray-100'}`}
+          className={`py-2 px-4 text-sm font-medium ${view === 'main' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}
           onClick={() => setView('main')}
         >
           Main Queue
         </button>
         <button
-          className={`py-2 px-4 text-text-secondary ${view === 'flagged' ? 'border-b-2 border-blue-500 text-blue-600' : 'hover:bg-gray-100'}`}
+          className={`py-2 px-4 text-sm font-medium ${view === 'flagged' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}
           onClick={() => setView('flagged')}
         >
           Flagged Reports
         </button>
       </div>
-      <div className="overflow-x-auto rounded-lg border-border">
-        <table className="min-w-full divide-y-2 divide-border bg-white text-sm">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="min-w-full divide-y">
+          <thead className="bg-muted/50">
             <tr>
-              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Incident Type</th>
-              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Jurisdiction</th>
-              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Status</th>
-              <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-text-primary">Actions</th>
+              <th className="px-4 py-2 text-left text-sm font-semibold">Incident Type</th>
+              <th className="px-4 py-2 text-left text-sm font-semibold">Jurisdiction</th>
+              <th className="px-4 py-2 text-left text-sm font-semibold">Status</th>
+              <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y">
             {reports.map((report) => (
-              <tr key={report.id} className="hover:bg-gray-50" onClick={() => handleViewReport(report)}>
-                <td className="whitespace-nowrap px-4 py-2 font-medium text-text-primary">{report.incident_type}</td>
-                <td className="whitespace-nowrap px-4 py-2 text-text-secondary">
+              <tr key={report.id} className="hover:bg-muted/50">
+                <td className="px-4 py-2 whitespace-nowrap" onClick={() => handleViewReport(report)}>
+                  <div className="font-medium">{report.incident_type}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(report.created_at).toLocaleString()}</div>
+                </td>
+                <td className="px-4 py-2 whitespace-nowrap">
                   <Select
                     onValueChange={(value) => handleJurisdictionChange(report.id, value)}
                     defaultValue={report.jurisdiction || ''}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-[220px]">
                       <SelectValue placeholder="Assign Jurisdiction" />
                     </SelectTrigger>
                     <SelectContent>
@@ -195,28 +190,30 @@ const ReportModeration = () => {
                     </SelectContent>
                   </Select>
                 </td>
-                <td className="whitespace-nowrap px-4 py-2 text-gray-700 dark:text-neutral-300">{report.status}</td>
-                <td className="whitespace-nowrap px-4 py-2 space-x-2">
-                  <Button onClick={() => handleFlag(report.id, !report.is_flagged)}>
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-muted-foreground">{report.status}</td>
+                <td className="px-4 py-2 whitespace-nowrap space-x-2">
+                  <Button onClick={() => handleFlag(report.id, !report.is_flagged)} variant="outline" size="sm">
                     {report.is_flagged ? 'Unflag' : 'Flag'}
                   </Button>
-                  <Modal>
-                    <ModalTrigger asChild>
-                      <Button variant="warning">Delete</Button>
-                    </ModalTrigger>
-                    <ModalContent>
-                      <ModalHeader>
-                        <ModalTitle>Are you sure?</ModalTitle>
-                        <ModalDescription>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" size="sm">Delete</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                        <DialogDescription>
                           This action cannot be undone. This will permanently delete the report.
-                        </ModalDescription>
-                      </ModalHeader>
-                      <ModalFooter>
-                        <Button variant="tertiary" onClick={() => document.querySelector('[data-state="open"] button[aria-label="Close"]')?.click()}>Cancel</Button>
-                        <Button variant="warning" onClick={() => handleDelete(report.id)}>Delete</Button>
-                      </ModalFooter>
-                    </ModalContent>
-                  </Modal>
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button variant="destructive" onClick={() => handleDelete(report.id)}>Delete</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </td>
               </tr>
             ))}
@@ -224,28 +221,31 @@ const ReportModeration = () => {
         </table>
       </div>
       {selectedReport && (
-        <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle>Report Details</ModalTitle>
-              <ModalDescription>
-                Full details of the report.
-              </ModalDescription>
-            </ModalHeader>
-            <div className="p-4">
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Report Details</DialogTitle>
+              <DialogDescription>
+                Full details for report ID: {selectedReport.tracking_code}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 space-y-2 text-sm">
               <p><strong>Incident Type:</strong> {selectedReport.incident_type}</p>
-              <p><strong>Description:</strong> {selectedReport.description}</p>
-              <p><strong>Location:</strong> {selectedReport.location}</p>
+              <p><strong>Description:</strong> {selectedReport.description || 'No description provided.'}</p>
+              {/* THIS IS THE FIX: Format the location object into a string */}
+              <p><strong>Location:</strong> {selectedReport.location ? `Lat: ${selectedReport.location.lat}, Lng: ${selectedReport.location.lng}` : 'Not provided'}</p>
               <p><strong>Status:</strong> {selectedReport.status}</p>
-              {selectedReport.image_url && (
-                <img src={selectedReport.image_url} alt="Report" className="mt-4 w-full h-auto" />
+              <p><strong>Jurisdiction:</strong> {getJurisdictionName(selectedReport.jurisdiction)}</p>
+              {/* Note: image_path is just the path, not a full URL. Displaying it directly might not work without generating a signed URL. */}
+              {selectedReport.image_path && (
+                 <p><strong>Image Path:</strong> {selectedReport.image_path}</p>
               )}
             </div>
-            <ModalFooter>
-              <Button variant="tertiary" onClick={() => setIsModalOpen(false)}>Close</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

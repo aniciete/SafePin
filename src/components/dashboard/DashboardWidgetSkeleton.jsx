@@ -1,5 +1,5 @@
 import React from 'react';
-import Skeleton from '../common/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DashboardWidgetSkeleton = () => {
   return (

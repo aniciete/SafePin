@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '../../hooks/use-toast';
-import { Button } from '../common/Button';
-import { Input } from '../common/Input';
-import { Label } from '../common/Label';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');

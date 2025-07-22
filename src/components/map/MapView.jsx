@@ -5,29 +5,31 @@ import MapViewSkeleton from './MapViewSkeleton';
 const getPinColor = (severity) => {
   switch (severity) {
     case 'Critical':
-      return '#FF0000'; // Red
+      return 'var(--color-neutral-900)';
     case 'High':
-      return '#FFA500'; // Orange
+      return 'var(--color-neutral-700)';
     case 'Medium':
-      return '#FFFF00'; // Yellow
+      return 'var(--color-neutral-500)';
     case 'Low':
-      return '#0000FF'; // Blue
+      return 'var(--color-neutral-300)';
     default:
-      return '#808080'; // Gray
+      return 'var(--color-neutral-400)';
   }
 };
 
-const MapView = ({ reports, onMarkerClick, showHeatmap = false }) => {
+const MapView = ({ reports, onMarkerClick, showHeatmap = false, onLocationSelect }) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const [loading, setLoading] = useState(true);
   const markersRef = useRef([]);
   const heatmapRef = useRef(null);
+  const userPinRef = useRef(null); // Ref to store the user-placed pin
 
   useEffect(() => {
     mapLoader.load().then(async (google) => {
       const { Map } = await google.maps.importLibrary("maps");
       const { HeatmapLayer } = await google.maps.importLibrary("visualization");
+      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
       
       const newMap = new Map(mapRef.current, {
         center: { lat: 12.8797, lng: 121.774 },
@@ -43,6 +45,29 @@ const MapView = ({ reports, onMarkerClick, showHeatmap = false }) => {
         map: newMap,
         radius: 20,
       });
+
+      // Add a click listener to the map for placing a pin
+      if (onLocationSelect) {
+        newMap.addListener('click', (e) => {
+          const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+
+          // If a pin already exists, remove it from the map
+          if (userPinRef.current) {
+            userPinRef.current.setMap(null);
+          }
+
+          // Create a new marker for the selected location
+          const newPin = new AdvancedMarkerElement({
+            position: location,
+            map: newMap,
+            title: 'Selected Location',
+          });
+          
+          // Store the new pin in the ref and call the parent's handler
+          userPinRef.current = newPin;
+          onLocationSelect(location);
+        });
+      }
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -63,12 +88,12 @@ const MapView = ({ reports, onMarkerClick, showHeatmap = false }) => {
       console.error("Failed to load Google Maps API", e);
       setLoading(false);
     });
-  }, []);
+  }, [onLocationSelect]);
 
   useEffect(() => {
     if (!map || !reports) return;
 
-    // Clear existing markers
+    // Clear existing report markers
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
@@ -91,7 +116,7 @@ const MapView = ({ reports, onMarkerClick, showHeatmap = false }) => {
           });
 
           marker.addListener('click', () => {
-            onMarkerClick(report);
+            if(onMarkerClick) onMarkerClick(report);
           });
           markersRef.current.push(marker);
         }
@@ -100,13 +125,13 @@ const MapView = ({ reports, onMarkerClick, showHeatmap = false }) => {
 
     if (!showHeatmap) {
       addMarkers();
-      heatmapRef.current.setData([]);
+      if(heatmapRef.current) heatmapRef.current.setData([]);
     } else {
-      const heatmapData = reports.map(report => ({
-        location: new google.maps.LatLng(report.latitude, report.longitude),
+      const heatmapData = reports.filter(r => r.latitude && r.longitude).map(report => ({
+        location: new window.google.maps.LatLng(report.latitude, report.longitude),
         weight: 1,
       }));
-      heatmapRef.current.setData(heatmapData);
+      if(heatmapRef.current) heatmapRef.current.setData(heatmapData);
     }
 
   }, [map, reports, onMarkerClick, showHeatmap]);

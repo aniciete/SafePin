@@ -1,28 +1,29 @@
-@import "tailwindcss";
+/* src/assets/styles/main.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  /* Light Mode Defaults */
-  --color-background: #f9f9f9;
-  --color-white: #ffffff;
-  --color-text-primary: #000000;
-  --color-text-secondary: #555555;
-  --color-text-light: #828282;
-  --color-border: #e0e0e0;
-  --color-primary: #4caf50;
-  --color-primary-dark: #388e3c;
-  --color-secondary: #58a6ff;
-  --color-success: #4ade80;
-  --color-error: #f87171;
-  --color-warning: #fbbf24;
-  --color-info: #60a5fa;
+  --background: 210 20% 98%;
+  --foreground: 210 17% 15%;
+  --card: 210 20% 100%;
+  --card-foreground: 210 17% 15%;
+  --popover: 210 20% 100%;
+  --popover-foreground: 210 17% 15%;
+  --primary: 122 39% 49%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 89% 53%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 210 11% 71%;
+  --muted-foreground: 210 12% 44%;
+  --accent: 210 89% 53%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 4 90% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 14% 89%;
+  --input: 210 14% 89%;
+  --ring: 122 39% 49%;
+  --radius: 8px;
 }
 
-html.dark {
-  /* Dark Mode Overrides */
-  --color-background: #121212;
-  --color-white: #1E1E1E;
-  --color-text-primary: #F5F5F5;
-  --color-text-secondary: #BDBDBD;
-  --color-text-light: #828282;
-  --color-border: #333333;
-}
+/* The @layer base block is now gone. */

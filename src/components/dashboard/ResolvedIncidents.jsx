@@ -34,10 +34,10 @@ const ResolvedIncidents = () => {
   }
 
   return (
-    <div className="p-4 border rounded-lg bg-white dark:bg-neutral-800 dark:border-neutral-700">
-      <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-neutral-100">Resolved Incidents</h3>
-      <p className="text-3xl font-bold text-gray-900 dark:text-neutral-100">{reports.length}</p>
-      <p className="text-sm text-gray-500 dark:text-neutral-400">Total incidents resolved</p>
+    <div className="p-4 border rounded-lg bg-surface bg-neutral-800 border-neutral-700">
+      <h3 className="font-semibold text-lg mb-2 text-gray-900 text-neutral-100">Resolved Incidents</h3>
+      <p className="text-3xl font-bold text-gray-900 text-neutral-100">{reports.length}</p>
+      <p className="text-sm text-gray-500 text-neutral-400">Total incidents resolved</p>
     </div>
   );
 };

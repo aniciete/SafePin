@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
-import Card from '../common/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import GlobalSystemOverviewSkeleton from './GlobalSystemOverviewSkeleton';
 
 const GlobalSystemOverview = () => {
@@ -41,28 +41,40 @@ const GlobalSystemOverview = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">User Stats</h3>
-        <ul className="text-sm text-gray-700 dark:text-neutral-300">
-          {userStats.map((stat) => (
-            <li key={stat.role}><span className="font-medium">{stat.role}</span>: {stat.count}</li>
-          ))}
-        </ul>
+        <CardHeader>
+          <CardTitle>User Stats</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="text-sm text-gray-700 text-neutral-300">
+            {userStats.map((stat) => (
+              <li key={stat.role}><span className="font-medium">{stat.role}</span>: {stat.count}</li>
+            ))}
+          </ul>
+        </CardContent>
       </Card>
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Report Stats</h3>
-        <ul className="text-sm text-gray-700 dark:text-neutral-300">
-          {reportStats.map((stat) => (
-            <li key={stat.status}><span className="font-medium">{stat.status}</span>: {stat.count}</li>
-          ))}
-        </ul>
+        <CardHeader>
+          <CardTitle>Report Stats</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="text-sm text-gray-700 text-neutral-300">
+            {reportStats.map((stat) => (
+              <li key={stat.status}><span className="font-medium">{stat.status}</span>: {stat.count}</li>
+            ))}
+          </ul>
+        </CardContent>
       </Card>
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Top 5 Jurisdictions (Pending Reports)</h3>
-        <ul className="text-sm text-gray-700 dark:text-neutral-300">
-          {topJurisdictions.map((jurisdiction) => (
-            <li key={jurisdiction.jurisdiction}><span className="font-medium">{jurisdiction.jurisdiction_name}</span>: {jurisdiction.pending_reports_count}</li>
-          ))}
-        </ul>
+        <CardHeader>
+          <CardTitle>Top 5 Jurisdictions (Pending Reports)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="text-sm text-gray-700 text-neutral-300">
+            {topJurisdictions.map((jurisdiction) => (
+              <li key={jurisdiction.jurisdiction}><span className="font-medium">{jurisdiction.jurisdiction_name}</span>: {jurisdiction.pending_reports_count}</li>
+            ))}
+          </ul>
+        </CardContent>
       </Card>
     </div>
   );

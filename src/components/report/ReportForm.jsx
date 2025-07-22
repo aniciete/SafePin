@@ -1,22 +1,22 @@
 import { useCallback, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import { ImageOptimizer } from '../../utils/imageOptimizer';
 import { validateText } from '../../utils/validation';
 import MapView from '../map/MapView';
-import { Button } from '../common/Button';
-import { Input } from '../common/Input';
-import { Label } from '../common/Label';
-import { Textarea } from '../common/Textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../common/Select';
+} from '@/components/ui/select';
 
 const ReportForm = () => {
   const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger } = useForm({

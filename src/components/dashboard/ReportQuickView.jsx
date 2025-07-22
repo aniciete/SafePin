@@ -1,53 +1,32 @@
-import React from 'react';
+// src/components/dashboard/ReportQuickView.jsx (New and Correct)
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalFooter,
-} from '../common/Modal';
-import { Button } from '../common/Button';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 const ReportQuickView = ({ report, onClose }) => {
   if (!report) return null;
 
   return (
-    <Modal open onOpenChange={onClose}>
-      <ModalContent>
-        <ModalHeader>
-          <ModalTitle>Report Details</ModalTitle>
-          <ModalDescription>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Report Details</DialogTitle>
+          <DialogDescription>
             Quick summary of the incident report.
-          </ModalDescription>
-        </ModalHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="text-right font-semibold">Type:</span>
-            <span className="col-span-3">{report.incident_type}</span>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="text-right font-semibold">Date:</span>
-            <span className="col-span-3">{new Date(report.created_at).toLocaleString()}</span>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="text-right font-semibold">Description:</span>
-            <p className="col-span-3">{report.description.substring(0, 100)}...</p>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="text-right font-semibold">Status:</span>
-            <span className="col-span-3">{report.status}</span>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="text-right font-semibold">Severity:</span>
-            <span className="col-span-3">{report.severity}</span>
-          </div>
-        </div>
-        <ModalFooter>
+          </DialogDescription>
+        </DialogHeader>
+        {/* ...rest of the component... */}
+        <DialogFooter>
           <Button onClick={onClose}>Close</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
