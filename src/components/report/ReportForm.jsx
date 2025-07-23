@@ -1,25 +1,19 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useToast } from '@/hooks/use-toast';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import { ImageOptimizer } from '../../utils/imageOptimizer';
 import { validateText } from '../../utils/validation';
-import MapView from '../map/MapView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AddressSearchInput from './AddressSearchInput';
 
 const ReportForm = () => {
-  const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger, watch } = useForm({
     mode: 'onChange',
   });
   const { toast } = useToast();
@@ -31,14 +25,14 @@ const ReportForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageInfo, setImageInfo] = useState(null);
 
+  // Watch for location changes to enable/disable the "Next" button
+  const latitude = watch('latitude');
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
-      setImageInfo({
-        name: file.name,
-        size: (file.size / 1024).toFixed(2) + ' KB',
-      });
+      setImageInfo({ name: file.name, size: (file.size / 1024).toFixed(2) + ' KB' });
     } else {
       setImagePreview(null);
       setImageInfo(null);
@@ -47,12 +41,12 @@ const ReportForm = () => {
 
   const nextStep = async () => {
     let fieldsToValidate = [];
-    if (currentStep === 1) {
-      fieldsToValidate = ['incidentType', 'severity'];
-    } else if (currentStep === 2) {
-      fieldsToValidate = ['latitude', 'longitude'];
+    switch (currentStep) {
+      case 1: fieldsToValidate = ['incidentType', 'severity']; break;
+      case 2: fieldsToValidate = ['latitude', 'longitude']; break;
+      default: break;
     }
-    
+
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       setCurrentStep(currentStep + 1);
@@ -68,11 +62,7 @@ const ReportForm = () => {
     setTrackingCode(null);
 
     if (!executeRecaptcha) {
-      toast({
-        title: 'Error',
-        description: 'reCAPTCHA not ready. Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'reCAPTCHA not ready.', variant: 'destructive' });
       setLoading(false);
       return;
     }
@@ -80,7 +70,6 @@ const ReportForm = () => {
     try {
       setLoadingMessage('Verifying reCAPTCHA...');
       const token = await executeRecaptcha('reportSubmission');
-      
       const newTrackingCode = `SP-${Date.now()}`;
       let imagePath = null;
 
@@ -90,7 +79,7 @@ const ReportForm = () => {
         setLoadingMessage('Uploading image...');
         imagePath = await uploadReportImage(optimizedImage, newTrackingCode);
       }
-      
+
       setLoadingMessage('Submitting report...');
       const reportData = {
         incident_type: data.incidentType,
@@ -99,34 +88,29 @@ const ReportForm = () => {
         location: { lat: data.latitude, lng: data.longitude },
         image_path: imagePath,
         tracking_code: newTrackingCode,
+        jurisdiction: data.jurisdiction,
       };
 
       await createReport(reportData, token);
       setTrackingCode(newTrackingCode);
-      toast({
-        title: 'Success',
-        description: 'Report submitted successfully!',
-      });
+      toast({ title: 'Success', description: 'Report submitted successfully!' });
       reset();
       setCurrentStep(1);
       setImagePreview(null);
       setImageInfo(null);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
       setLoadingMessage('Submitting...');
     }
   };
 
-  const handleLocationSelect = useCallback((location) => {
+  const handleLocationChange = (location) => {
     setValue('latitude', location.lat, { shouldValidate: true });
     setValue('longitude', location.lng, { shouldValidate: true });
-  }, [setValue]);
+    setValue('jurisdiction', location.jurisdiction, { shouldValidate: true });
+  };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(trackingCode).then(() => {
@@ -166,17 +150,10 @@ const ReportForm = () => {
             <h3 className="text-xl font-semibold text-center">Step 1: What Happened?</h3>
             <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
               <Label htmlFor="incidentType">Incident Type</Label>
-              <Controller
-                name="incidentType"
-                control={control}
-                rules={{ required: 'Incident type is required.' }}
+              <Controller name="incidentType" control={control} rules={{ required: 'Incident type is required.' }}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger
-                      id="incidentType"
-                      aria-invalid={errors.incidentType ? 'true' : 'false'}
-                      aria-describedby="incidentType-error"
-                    >
+                    <SelectTrigger id="incidentType" aria-invalid={errors.incidentType ? 'true' : 'false'}>
                       <SelectValue placeholder="Select incident type" />
                     </SelectTrigger>
                     <SelectContent side="bottom" sideOffset={4}>
@@ -196,21 +173,14 @@ const ReportForm = () => {
                   </Select>
                 )}
               />
-              {errors.incidentType && <p id="incidentType-error" className="text-sm text-red-500">{errors.incidentType.message}</p>}
+              {errors.incidentType && <p className="text-sm text-red-500">{errors.incidentType.message}</p>}
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
               <Label htmlFor="severity">Severity Level</Label>
-              <Controller
-                name="severity"
-                control={control}
-                rules={{ required: 'Severity level is required.' }}
+              <Controller name="severity" control={control} rules={{ required: 'Severity level is required.' }}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger
-                      id="severity"
-                      aria-invalid={errors.severity ? 'true' : 'false'}
-                      aria-describedby="severity-error"
-                    >
+                    <SelectTrigger id="severity" aria-invalid={errors.severity ? 'true' : 'false'}>
                       <SelectValue placeholder="Select severity level" />
                     </SelectTrigger>
                     <SelectContent side="bottom" sideOffset={4}>
@@ -222,30 +192,20 @@ const ReportForm = () => {
                   </Select>
                 )}
               />
-              {errors.severity && <p id="severity-error" className="text-sm text-red-500">{errors.severity.message}</p>}
+              {errors.severity && <p className="text-sm text-red-500">{errors.severity.message}</p>}
             </div>
           </div>
         )}
-
         {currentStep === 2 && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen?</h3>
-            <div className="grid w-full items-center gap-1.5">
-              <Label>Pin the location on the map</Label>
-              <div
-                className="h-80 w-full rounded-lg overflow-hidden shadow-md"
-                role="application"
-                aria-describedby="location-error"
-              >
-                <MapView onLocationSelect={handleLocationSelect} />
-              </div>
-              <input type="hidden" {...register('latitude', { required: 'Please select a location.' })} />
-              <input type="hidden" {...register('longitude', { required: 'Please select a location.' })} />
-              {errors.latitude && <p id="location-error" className="text-sm text-red-500">{errors.latitude.message}</p>}
-            </div>
+            <AddressSearchInput onLocationChange={handleLocationChange} />
+            <input type="hidden" {...register('latitude', { required: 'A valid location in Metro Manila is required.' })} />
+            <input type="hidden" {...register('longitude', { required: 'A valid location in Metro Manila is required.' })} />
+            <input type="hidden" {...register('jurisdiction')} />
+            {errors.latitude && <p className="text-sm text-red-500 text-center">{errors.latitude.message}</p>}
           </div>
         )}
-
         {currentStep === 3 && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
@@ -255,37 +215,34 @@ const ReportForm = () => {
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="image">Upload Image (Optional)</Label>
-              <Input type="file" id="image" {...register('image')} onChange={handleImageChange} />
+              <Input type="file" id="image" {...register('image')} onChange={handleImageChange} accept="image/*" />
               {imagePreview && (
                 <div className="mt-4 p-2 border rounded-lg">
                   <img src={imagePreview} alt="Image preview" className="max-h-48 rounded-md mx-auto" />
                   <div className="text-xs text-gray-500 mt-2">
                     <p><strong>File:</strong> {imageInfo.name}</p>
                     <p><strong>Size:</strong> {imageInfo.size}</p>
-                    <p className="text-blue-500">This image will be optimized for submission.</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
         )}
-
         <div className="flex justify-between mt-8">
-          {currentStep > 1 && (
-            <Button type="button" onClick={prevStep} variant="outline">
-              Back
-            </Button>
-          )}
+          {currentStep > 1 && (<Button type="button" onClick={prevStep} variant="outline">Back</Button>)}
+          
           {currentStep < 3 && (
-            <Button type="button" onClick={nextStep} className="ml-auto">
+            <Button
+              type="button"
+              onClick={nextStep}
+              className="ml-auto"
+              disabled={currentStep === 2 && !latitude}
+            >
               Next
             </Button>
           )}
-          {currentStep === 3 && (
-            <Button type="submit" disabled={loading} className="w-full ml-auto">
-              {loading ? loadingMessage : 'Submit Report'}
-            </Button>
-          )}
+          
+          {currentStep === 3 && (<Button type="submit" disabled={loading} className="w-full ml-auto">{loading ? loadingMessage : 'Submit Report'}</Button>)}
         </div>
       </form>}
     </>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSupabase } from '../../contexts/SupabaseContext'; // Using context for consistency
+import { useSupabase } from '../../contexts/SupabaseContext';
 import ReportListItemSkeleton from '../report/ReportListItemSkeleton';
 import { useToast } from '@/hooks/use-toast';
 import jurisdictions from '../../utils/jurisdictions.json';
@@ -19,16 +19,16 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-  DialogClose, // Import DialogClose
+  DialogClose,
 } from '@/components/ui/dialog';
 
 const ReportModeration = () => {
-  const { supabase } = useSupabase(); // Use context
+  const { supabase } = useSupabase();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [view, setView] = useState('main'); // 'main' or 'flagged'
+  const [view, setView] = useState('main');
   const { toast } = useToast();
 
   const fetchReports = useCallback(async () => {
@@ -70,17 +70,10 @@ const ReportModeration = () => {
         .update({ jurisdiction: newJurisdiction })
         .eq('id', reportId);
       if (error) throw error;
-      toast({
-        title: 'Success',
-        description: 'Jurisdiction updated successfully!',
-      });
+      toast({ title: 'Success', description: 'Jurisdiction updated successfully!' });
       fetchReports();
     } catch (error) {
-      toast({
-        title: 'Error updating jurisdiction',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error updating jurisdiction', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -88,17 +81,10 @@ const ReportModeration = () => {
     try {
       const { error } = await supabase.from('reports').delete().eq('id', reportId);
       if (error) throw error;
-      toast({
-        title: 'Success',
-        description: 'Report deleted successfully!',
-      });
+      toast({ title: 'Success', description: 'Report deleted successfully!' });
       fetchReports();
     } catch (error) {
-      toast({
-        title: 'Error deleting report',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error deleting report', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -106,27 +92,18 @@ const ReportModeration = () => {
     try {
       const { error } = await supabase.from('reports').update({ is_flagged: isFlagged }).eq('id', reportId);
       if (error) throw error;
-      toast({
-        title: 'Success',
-        description: `Report ${isFlagged ? 'flagged' : 'unflagged'} successfully!`,
-      });
+      toast({ title: 'Success', description: `Report ${isFlagged ? 'flagged' : 'unflagged'} successfully!` });
       fetchReports();
     } catch (error) {
-      toast({
-        title: 'Error updating report',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error updating report', description: error.message, variant: 'destructive' });
     }
   };
-  
-  // A helper to get the display name for a jurisdiction code
+
   const getJurisdictionName = (code) => {
     if (!code) return 'Unassigned';
     const match = jurisdictions.find(j => j.psgc_code === code);
     return match ? `${match.barangay}, ${match.city}` : code;
   };
-
 
   if (loading) {
     return (
@@ -169,18 +146,13 @@ const ReportModeration = () => {
           <tbody className="divide-y">
             {reports.map((report) => (
               <tr key={report.id} className="hover:bg-muted/50">
-                <td className="px-4 py-2 whitespace-nowrap" onClick={() => handleViewReport(report)}>
+                <td className="px-4 py-2 whitespace-nowrap cursor-pointer" onClick={() => handleViewReport(report)}>
                   <div className="font-medium">{report.incident_type}</div>
                   <div className="text-xs text-muted-foreground">{new Date(report.created_at).toLocaleString()}</div>
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap">
-                  <Select
-                    onValueChange={(value) => handleJurisdictionChange(report.id, value)}
-                    defaultValue={report.jurisdiction || ''}
-                  >
-                    <SelectTrigger className="w-[220px]">
-                      <SelectValue placeholder="Assign Jurisdiction" />
-                    </SelectTrigger>
+                  <Select onValueChange={(value) => handleJurisdictionChange(report.id, value)} defaultValue={report.jurisdiction || ''}>
+                    <SelectTrigger className="w-[220px]"><SelectValue placeholder="Assign Jurisdiction" /></SelectTrigger>
                     <SelectContent>
                       {jurisdictions.map((j) => (
                         <SelectItem key={j.psgc_code} value={j.psgc_code}>
@@ -196,20 +168,14 @@ const ReportModeration = () => {
                     {report.is_flagged ? 'Unflag' : 'Flag'}
                   </Button>
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive" size="sm">Delete</Button>
-                    </DialogTrigger>
+                    <DialogTrigger asChild><Button variant="destructive" size="sm">Delete</Button></DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Are you sure?</DialogTitle>
-                        <DialogDescription>
-                          This action cannot be undone. This will permanently delete the report.
-                        </DialogDescription>
+                        <DialogDescription>This action cannot be undone. This will permanently delete the report.</DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </DialogClose>
+                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
                         <Button variant="destructive" onClick={() => handleDelete(report.id)}>Delete</Button>
                       </DialogFooter>
                     </DialogContent>
@@ -225,21 +191,15 @@ const ReportModeration = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Report Details</DialogTitle>
-              <DialogDescription>
-                Full details for report ID: {selectedReport.tracking_code}
-              </DialogDescription>
+              <DialogDescription>Full details for report ID: {selectedReport.tracking_code}</DialogDescription>
             </DialogHeader>
             <div className="p-4 space-y-2 text-sm">
               <p><strong>Incident Type:</strong> {selectedReport.incident_type}</p>
               <p><strong>Description:</strong> {selectedReport.description || 'No description provided.'}</p>
-              {/* THIS IS THE FIX: Format the location object into a string */}
               <p><strong>Location:</strong> {selectedReport.location ? `Lat: ${selectedReport.location.lat}, Lng: ${selectedReport.location.lng}` : 'Not provided'}</p>
               <p><strong>Status:</strong> {selectedReport.status}</p>
               <p><strong>Jurisdiction:</strong> {getJurisdictionName(selectedReport.jurisdiction)}</p>
-              {/* Note: image_path is just the path, not a full URL. Displaying it directly might not work without generating a signed URL. */}
-              {selectedReport.image_path && (
-                 <p><strong>Image Path:</strong> {selectedReport.image_path}</p>
-              )}
+              {selectedReport.image_path && <p><strong>Image Path:</strong> {selectedReport.image_path}</p>}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>

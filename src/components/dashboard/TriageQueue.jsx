@@ -1,10 +1,12 @@
+// src/components/dashboard/TriageQueue.jsx (Corrected)
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { updateReportStatus } from '../../services/report.service';
 import { useToast } from '@/hooks/use-toast';
+import ReportListItemSkeleton from '../report/ReportListItemSkeleton'; // Import skeleton
 
-const TriageQueue = ({ reports, onReportUpdate }) => {
+const TriageQueue = ({ reports, onReportUpdate, loading }) => { // Accept loading prop
   const { toast } = useToast();
 
   const handleUpdateStatus = async (reportId, newStatus) => {
@@ -14,7 +16,7 @@ const TriageQueue = ({ reports, onReportUpdate }) => {
         title: 'Success',
         description: `Report status updated to ${newStatus}.`,
       });
-      onReportUpdate(); // Refresh the reports list
+      onReportUpdate();
     } catch (error) {
       console.error(`Failed to update report to ${newStatus}:`, error);
       toast({
@@ -27,7 +29,6 @@ const TriageQueue = ({ reports, onReportUpdate }) => {
 
   const handleRequestMoreInfo = (reportId) => {
     console.log(`Requesting more info for report ${reportId}`);
-    // Placeholder for future implementation
   };
 
   return (
@@ -37,7 +38,9 @@ const TriageQueue = ({ reports, onReportUpdate }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-        {reports && reports.length > 0 ? (
+        {loading ? (
+          [...Array(5)].map((_, i) => <ReportListItemSkeleton key={i} />)
+        ) : reports && reports.length > 0 ? (
           reports.map(report => (
             <div key={report.id} className="p-4 border rounded-lg">
               <h3 className="font-semibold">{report.incident_type}</h3>
@@ -46,7 +49,6 @@ const TriageQueue = ({ reports, onReportUpdate }) => {
               <div className="flex justify-end space-x-2 mt-4">
                 <Button onClick={() => handleUpdateStatus(report.id, 'verified')} size="sm">Verify</Button>
                 <Button onClick={() => handleUpdateStatus(report.id, 'rejected')} size="sm" variant="destructive">Reject</Button>
-                <Button onClick={() => handleRequestMoreInfo(report.id)} size="sm" variant="outline">Request More Info</Button>
               </div>
             </div>
           ))

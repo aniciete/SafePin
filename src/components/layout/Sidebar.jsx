@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -20,7 +20,9 @@ const Sidebar = () => {
 
   return (
     <div className="flex flex-col w-64 h-full px-4 py-8 bg-card border-r">
-      <h2 className="text-3xl font-semibold text-center text-primary">SafePin</h2>
+      <Link to="/">
+        <h2 className="text-3xl font-semibold text-center text-primary">SafePin</h2>
+      </Link>
       <div className="flex flex-col justify-between flex-1 mt-6">
         <nav>
           {isAdmin && (

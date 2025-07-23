@@ -40,7 +40,7 @@ const Analytics = ({ reports }) => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="count" stroke="var(--color-primary)" activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" activeDot={{ r: 8 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -57,7 +57,7 @@ const Analytics = ({ reports }) => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="var(--color-secondary)" />
+                <Bar dataKey="count" fill="hsl(var(--secondary))" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -70,7 +70,6 @@ const Analytics = ({ reports }) => {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              {/* Removed the showHeatmap prop and toggle button */}
               <MapView reports={reports} />
             </div>
           </CardContent>
