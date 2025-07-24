@@ -1,13 +1,13 @@
 import React from 'react';
-import ShieldIcon from '../../assets/Shield Alt Image.svg';
+import { ShieldCheck } from 'lucide-react';
 
 const AboutSection = () => {
   return (
     <section className="bg-background py-20">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0">
-            <img src={ShieldIcon} alt="SafePin Shield" className="mx-auto" />
+          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-center">
+            <ShieldCheck className="w-48 h-48 text-primary" />
           </div>
           <div className="md:w-1/2 md:pl-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">About SafePin</h2>

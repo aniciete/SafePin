@@ -1,10 +1,15 @@
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/**
+ * Skeleton loader for user list items in a table
+ *
+ * @returns {JSX.Element} User list item skeleton
+ */
 const UserListItemSkeleton = () => {
   // Renders a table row (tr) with table cells (td) to be a valid child of <tbody>
   return (
-    <tr>
+    <tr className="animate-pulse">
       <td className="p-4">
         <Skeleton className="h-5 w-48" />
       </td>

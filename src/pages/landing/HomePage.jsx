@@ -2,8 +2,6 @@ import HeroSection from '../../components/landing/HeroSection';
 import HowItWorksSection from '../../components/landing/HowItWorksSection';
 import AboutSection from '../../components/landing/AboutSection';
 import StatisticsSection from '../../components/landing/StatisticsSection';
-import TrustedBySection from '../../components/landing/TrustedBySection';
-import RecentAlertsSection from '../../components/landing/RecentAlertsSection';
 import TrustSignalsSection from '../../components/landing/TrustSignalsSection';
 import KeyFeaturesSection from '../../components/landing/KeyFeaturesSection';
 
@@ -19,10 +17,6 @@ const HomePage = () => {
       <AboutSection />
 
       <StatisticsSection />
-
-      <TrustedBySection />
-
-      <RecentAlertsSection />
 
       <KeyFeaturesSection />
     </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { PATHS } from '../../utils/pathUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,11 +17,21 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await login(email, password);
+      const { profile: loggedInProfile, error } = await login(email, password);
       if (error) {
         throw error;
       }
-      navigate('/');
+      if (loggedInProfile) {
+        if (loggedInProfile.role === 'admin') {
+          navigate(PATHS.ADMIN_DASHBOARD);
+        } else if (loggedInProfile.role === 'authority') {
+          navigate(PATHS.AUTHORITY_DASHBOARD);
+        } else {
+          navigate(PATHS.HOME);
+        }
+      } else {
+        navigate(PATHS.HOME);
+      }
     } catch (error) {
       toast({
         title: 'Error',

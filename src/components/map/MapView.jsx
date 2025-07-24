@@ -1,23 +1,19 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import mapLoader from '../../services/mapLoader';
 import MapViewSkeleton from './MapViewSkeleton';
-
-const getPinColor = (severity) => {
-  switch (severity) {
-    case 'Critical': return 'hsl(var(--destructive))';
-    case 'High': return 'hsl(var(--warning))'; // Assuming you have a warning color
-    case 'Medium': return 'hsl(var(--secondary))';
-    case 'Low': return 'hsl(var(--primary))';
-    default: return 'hsl(var(--muted-foreground))';
-  }
-};
+import MapMarker from './MapMarker';
+import { MarkerClusterer } from '../../utils/marker-clusterer';
 
 const MapView = ({ reports, onMarkerClick, onLocationSelect, markerPosition }) => {
   const mapRef = useRef(null);
   const [googleMap, setGoogleMap] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedReportId, setSelectedReportId] = useState(null);
   const reportMarkersRef = useRef([]);
+  const markerElementsRef = useRef({});
   const userPinRef = useRef(null);
+  const clustererInitializedRef = useRef(false);
 
   const initMap = useCallback(() => {
     mapLoader.load().then(async (google) => {
@@ -38,12 +34,29 @@ const MapView = ({ reports, onMarkerClick, onLocationSelect, markerPosition }) =
           onLocationSelect({ lat: e.latLng.lat(), lng: e.latLng.lng() });
         });
       }
+      
+      // Initialize marker clusterer if we have many reports
+      if (reports && reports.length > 10) {
+        try {
+          await MarkerClusterer.initialize(map);
+          clustererInitializedRef.current = true;
+        } catch (error) {
+          console.error('Failed to initialize marker clusterer:', error);
+        }
+      }
     });
-  }, [markerPosition, onLocationSelect]);
+  }, [markerPosition, onLocationSelect, reports]);
 
   useEffect(() => {
     if (!mapRef.current) return;
     initMap();
+    
+    return () => {
+      // Clean up clusterer on unmount
+      if (clustererInitializedRef.current) {
+        MarkerClusterer.clearMarkers();
+      }
+    };
   }, [initMap]);
 
   // Effect to manage the single user-placed pin
@@ -52,15 +65,42 @@ const MapView = ({ reports, onMarkerClick, onLocationSelect, markerPosition }) =
     if (markerPosition && markerPosition.lat && markerPosition.lng) {
       mapLoader.load().then(async () => {
         const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
+        
+        // Create a container for our custom marker
+        const container = document.createElement('div');
+        container.className = 'user-pin-container';
+        
+        // Render our marker into this container
+        const userMarkerPortal = createPortal(
+          <MapMarker
+            severity="Low"
+            pulse={true}
+            title="Selected Location"
+          />,
+          container
+        );
+        
+        // Store the portal reference to prevent it from being garbage collected
+        container._portalInstance = userMarkerPortal;
+        
         if (userPinRef.current) {
           userPinRef.current.position = markerPosition;
         } else {
           userPinRef.current = new AdvancedMarkerElement({
             position: markerPosition,
             map: googleMap,
+            content: container,
             title: 'Selected Location',
           });
+          
+          // Add drop animation class
+          container.classList.add('animate-marker-drop');
+          // Remove animation class after it completes
+          setTimeout(() => {
+            container.classList.remove('animate-marker-drop');
+          }, 500);
         }
+        
         googleMap.panTo(markerPosition);
       });
     } else {
@@ -71,6 +111,14 @@ const MapView = ({ reports, onMarkerClick, onLocationSelect, markerPosition }) =
     }
   }, [googleMap, markerPosition]);
 
+  // Handle marker click with animation
+  const handleMarkerClick = useCallback((report) => {
+    setSelectedReportId(report.id);
+    if (onMarkerClick) {
+      onMarkerClick(report);
+    }
+  }, [onMarkerClick]);
+
   // Effect to manage the multiple report markers for dashboards
   useEffect(() => {
     if (!googleMap || !reports) return;
@@ -78,31 +126,64 @@ const MapView = ({ reports, onMarkerClick, onLocationSelect, markerPosition }) =
     // Clear existing report markers
     reportMarkersRef.current.forEach(marker => marker.map = null);
     reportMarkersRef.current = [];
+    markerElementsRef.current = {};
+
+    // Clear clusterer if initialized
+    if (clustererInitializedRef.current) {
+      MarkerClusterer.clearMarkers();
+    }
 
     mapLoader.load().then(async () => {
       const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
-      reports.forEach(report => {
+      const markers = [];
+      
+      reports.forEach((report, index) => {
         if (report.location?.lat && report.location?.lng) {
-          const pinElement = document.createElement('div');
-          pinElement.className = 'w-6 h-6 rounded-full shadow-lg';
-          pinElement.style.backgroundColor = getPinColor(report.severity);
-          pinElement.style.border = '2px solid white';
+          // Create a container for our custom marker
+          const container = document.createElement('div');
+          container.className = 'report-marker-container';
+          
+          // Add staggered animation class
+          container.classList.add('marker-stagger-appear', 'animate-marker-drop');
+          // Remove animation class after it completes
+          setTimeout(() => {
+            container.classList.remove('animate-marker-drop');
+          }, 500 + (index * 50)); // Staggered removal
+          
+          // Render our marker into this container
+          const markerPortal = createPortal(
+            <MapMarker
+              isSelected={report.id === selectedReportId}
+              severity={report.severity}
+              title={report.incident_type}
+              onClick={() => handleMarkerClick(report)}
+            />,
+            container
+          );
+          
+          // Store the portal reference to prevent it from being garbage collected
+          container._portalInstance = markerPortal;
           
           const marker = new AdvancedMarkerElement({
             position: report.location,
             map: googleMap,
-            content: pinElement,
+            content: container,
             title: report.incident_type,
           });
           
-          if (onMarkerClick) {
-            marker.addListener('click', () => onMarkerClick(report));
-          }
+          // Store references for later updates
           reportMarkersRef.current.push(marker);
+          markerElementsRef.current[report.id] = container;
+          markers.push(marker);
         }
       });
+      
+      // Add markers to clusterer if initialized and we have enough markers
+      if (clustererInitializedRef.current && markers.length > 10) {
+        MarkerClusterer.addMarkers(markers);
+      }
     });
-  }, [googleMap, reports, onMarkerClick]);
+  }, [googleMap, reports, selectedReportId, handleMarkerClick]);
 
   return (
     <div className="relative h-full w-full">

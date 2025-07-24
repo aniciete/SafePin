@@ -196,6 +196,7 @@ const ReportModeration = () => {
             <div className="p-4 space-y-2 text-sm">
               <p><strong>Incident Type:</strong> {selectedReport.incident_type}</p>
               <p><strong>Description:</strong> {selectedReport.description || 'No description provided.'}</p>
+              {selectedReport.contact_info && <p><strong>Contact Info:</strong> {selectedReport.contact_info}</p>}
               <p><strong>Location:</strong> {selectedReport.location ? `Lat: ${selectedReport.location.lat}, Lng: ${selectedReport.location.lng}` : 'Not provided'}</p>
               <p><strong>Status:</strong> {selectedReport.status}</p>
               <p><strong>Jurisdiction:</strong> {getJurisdictionName(selectedReport.jurisdiction)}</p>

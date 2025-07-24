@@ -1,31 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import SafePinMapLogo from '/SafePin Map Logo.png';
+import { ShieldCheck } from 'lucide-react';
+import { getAllPhilippineAgencies } from '../../constants/philippines';
+
+// Get all Philippine government agencies from constants
+const authorities = getAllPhilippineAgencies();
 
 const HeroSection = () => {
   return (
-    <section className="bg-background text-foreground">
-      <div className="grid max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12">
-        <div className="mr-auto place-self-center lg:col-span-7">
-          <h1 className="max-w-2xl mb-4 text-4xl font-extrabold tracking-tight leading-none md:text-5xl xl:text-6xl">Creating Safer Communities, Together.</h1>
-          <p className="max-w-2xl mb-6 font-light text-muted-foreground lg:mb-8 md:text-lg lg:text-xl">
-            SafePin is a community-driven platform for reporting incidents and promoting safety in your neighborhood. Your reports help create a safer environment for everyone.
-          </p>
-          <Button asChild size="lg">
+    <section className="bg-background text-foreground py-20 sm:py-24 lg:py-32">
+      <div className="container mx-auto px-4 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+          Report an Incident Safely & Anonymously
+        </h1>
+        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+          Your safety is our priority. We're here to help you report incidents with confidence and ease.
+        </p>
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button asChild size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
             <Link to="/report">
-              Report an Incident
-              <svg className="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/track">
-              Check Existing Report Status
+              Report Now
             </Link>
           </Button>
         </div>
-        <div className="hidden lg:mt-0 lg:col-span-5 lg:flex">
-          <img src={SafePinMapLogo} alt="SafePin Map Logo" />
+        <div className="mt-16">
+          <h2 className="text-lg font-semibold text-muted-foreground">
+            Trusted by National Authorities & Organizations
+          </h2>
+          <div className="mt-8 flex flex-wrap justify-center items-center gap-x-8 gap-y-4">
+            {authorities.map((authority) => (
+              <div key={authority.acronym} className="flex-shrink-0" title={authority.description}>
+                <img
+                  className="h-12 w-auto"
+                  src={authority.logo}
+                  alt={`${authority.name} (${authority.acronym})`}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

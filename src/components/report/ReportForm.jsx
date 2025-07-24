@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AddressSearchInput from './AddressSearchInput';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ReportForm = () => {
   const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger, watch } = useForm({
@@ -145,11 +146,19 @@ const ReportForm = () => {
         </div>
       )}
       {!trackingCode && <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {currentStep === 1 && (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-center">Step 1: What Happened?</h3>
-            <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
-              <Label htmlFor="incidentType">Incident Type</Label>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            {currentStep === 1 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-center">Step 1: What Happened?</h3>
+                <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
+                  <Label htmlFor="incidentType">Incident Type</Label>
               <Controller name="incidentType" control={control} rules={{ required: 'Incident type is required.' }}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -195,39 +204,48 @@ const ReportForm = () => {
               {errors.severity && <p className="text-sm text-red-500">{errors.severity.message}</p>}
             </div>
           </div>
-        )}
-        {currentStep === 2 && (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen?</h3>
-            <AddressSearchInput onLocationChange={handleLocationChange} />
+            )}
+            {currentStep === 2 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen?</h3>
+                <AddressSearchInput onLocationChange={handleLocationChange} />
             <input type="hidden" {...register('latitude', { required: 'A valid location in Metro Manila is required.' })} />
             <input type="hidden" {...register('longitude', { required: 'A valid location in Metro Manila is required.' })} />
             <input type="hidden" {...register('jurisdiction')} />
             {errors.latitude && <p className="text-sm text-red-500 text-center">{errors.latitude.message}</p>}
           </div>
-        )}
-        {currentStep === 3 && (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
-            <div className="grid w-full gap-1.5">
+            )}
+            {currentStep === 3 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
+                <div className="grid w-full gap-1.5">
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" {...register('description')} placeholder="Provide a detailed description of the incident." />
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="image">Upload Image (Optional)</Label>
               <Input type="file" id="image" {...register('image')} onChange={handleImageChange} accept="image/*" />
-              {imagePreview && (
-                <div className="mt-4 p-2 border rounded-lg">
-                  <img src={imagePreview} alt="Image preview" className="max-h-48 rounded-md mx-auto" />
-                  <div className="text-xs text-gray-500 mt-2">
-                    <p><strong>File:</strong> {imageInfo.name}</p>
-                    <p><strong>Size:</strong> {imageInfo.size}</p>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {imagePreview && (
+                  <motion.div
+                    className="mt-4 p-2 border rounded-lg"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <img src={imagePreview} alt="Image preview" className="max-h-48 rounded-md mx-auto" />
+                    <div className="text-xs text-gray-500 mt-2">
+                      <p><strong>File:</strong> {imageInfo.name}</p>
+                      <p><strong>Size:</strong> {imageInfo.size}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        )}
+            )}
+          </motion.div>
+        </AnimatePresence>
         <div className="flex justify-between mt-8">
           {currentStep > 1 && (<Button type="button" onClick={prevStep} variant="outline">Back</Button>)}
           

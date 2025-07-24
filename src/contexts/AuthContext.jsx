@@ -10,33 +10,35 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-    const fetchUserProfile = useCallback(async (authUser) => {
-      setLoading(true); // Start loading
-      if (!authUser) {
-        setUser(null);
-        setProfile(null);
-        setLoading(false); // Stop loading if no user
-        return;
-      }
+  const fetchUserProfile = useCallback(async (authUser) => {
+    setLoading(true); // Start loading
+    if (!authUser) {
+      setUser(null);
+      setProfile(null);
+      setLoading(false); // Stop loading if no user
+      return null;
+    }
 
-      setUser(authUser);
+    setUser(authUser);
 
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authUser.id)
-          .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
 
-        if (error) throw error;
-        setProfile(data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setProfile(null);
-      } finally {
-        setLoading(false); // Stop loading after fetch is complete
-      }
-    }, [supabase]);
+      if (error) throw error;
+      setProfile(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setProfile(null);
+      return null;
+    } finally {
+      setLoading(false); // Stop loading after fetch is complete
+    }
+  }, [supabase]);
 
     useEffect(() => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -57,16 +59,16 @@ export const AuthProvider = ({ children }) => {
     login: async (email, password) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        return { data, error };
+        return { profile: null, error };
       }
-      console.log('User:', data.user);
       if (data.user && !data.user.email_confirmed_at) {
-        return { data, error: { message: 'Email not confirmed' } };
+        return { profile: null, error: { message: 'Email not confirmed' } };
       }
       if (data.user) {
-        await fetchUserProfile(data.user);
+        const userProfile = await fetchUserProfile(data.user);
+        return { profile: userProfile, error: null };
       }
-      return { data, error };
+      return { profile: null, error: { message: 'User not found after login.' } };
     },
     loginWithGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google' }),
     logout: () => supabase.auth.signOut(),
