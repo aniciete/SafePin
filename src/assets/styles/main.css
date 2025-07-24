@@ -56,3 +56,49 @@
   left: 0;
   width: 100%;
 }
+
+/* 
+  FINAL CORRECTED FIX: Google Maps Autocomplete Styling
+*/
+
+/* Step 1: Style the component's host element (the "box around it"). */
+gmp-place-autocomplete {
+  color-scheme: light; /* Force the internal elements to use the light theme */
+  background-color: hsl(var(--background)); /* THIS IS THE FIX: Set the background color */
+  border-radius: 0.375rem; /* Match the input's border-radius for a seamless look */
+  display: block; /* Ensure it behaves like a block-level element */
+}
+
+/* Step 2: Style the internal input to match shadcn/ui. */
+gmp-place-autocomplete::part(input) {
+  /* Set background to transparent so the host's background shows through */
+  background-color: transparent; 
+  border: 1px solid hsl(var(--input));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm from shadcn */
+
+  /* Apply shadcn/ui sizing, spacing, and border-radius */
+  height: 2.25rem; /* h-9 */
+  padding: 0.25rem 0.75rem; /* Equivalent to py-1 px-3 */
+  border-radius: 0.375rem; /* rounded-md */
+
+  /* Apply shadcn/ui typography and ensure our theme's text color is used */
+  font-family: inherit;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem; /* text-sm */
+
+  /* Apply shadcn/ui transitions for a smooth focus effect */
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Step 3: Style the focus state to match shadcn/ui. */
+gmp-place-autocomplete::part(input):focus {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+/* Step 4: Style the placeholder for consistency. */
+gmp-place-autocomplete::part(input)::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}

@@ -1,7 +1,7 @@
 // src/App.jsx
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useOutletContext as useReactRouterOutletContext } from 'react-router-dom';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
+// import { TransitionGroup, CSSTransition } from 'react-transition-group'; // <-- Comment out
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
 import AuthGuard from './components/auth/AuthGuard';
@@ -34,45 +34,40 @@ const AppRoutes = () => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  // Note: The `Suspense` fallback is now inside the CSSTransition,
-  // which ensures it's part of the transition animation.
+   // --- START: Replace the TransitionGroup with a simple Suspense block ---
   return (
-    <TransitionGroup component={null}>
-      <CSSTransition key={location.key} classNames="page-fade" timeout={250}>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading Page...</div>}>
-          {/* The `location` prop is crucial for TransitionGroup to detect route changes */}
-          <Routes location={location}>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/report" element={<ReportPage />} />
-              <Route path="/track" element={<TrackReportPage />} />
-              
-              {/* Footer pages */}
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/status" element={<StatusPage />} />
-              <Route path="/unsubscribe" element={<UnsubscribePage />} />
-            </Route>
-            {/* The path must end with /* to allow nested routes */}
-            <Route path="/dashboard/authority/*" element={
-              <AuthGuard role="authority">
-                <AuthorityDashboardPage />
-              </AuthGuard>
-            } />
-            <Route path="/dashboard/admin/*" element={
-              <AuthGuard role="admin">
-                <AdminDashboardPage />
-              </AuthGuard>
-            } />
-          </Routes>
-        </Suspense>
-      </CSSTransition>
-    </TransitionGroup>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading Page...</div>}>
+      <Routes location={location}>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/track" element={<TrackReportPage />} />
+          
+          {/* Footer pages */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
+        </Route>
+        {/* The path must end with /* to allow nested routes */}
+        <Route path="/dashboard/authority/*" element={
+          <AuthGuard role="authority">
+            <AuthorityDashboardPage />
+          </AuthGuard>
+        } />
+        <Route path="/dashboard/admin/*" element={
+          <AuthGuard role="admin">
+            <AdminDashboardPage />
+          </AuthGuard>
+        } />
+      </Routes>
+    </Suspense>
   );
+  // --- END: Replacement ---
 };
 
 const App = () => (
