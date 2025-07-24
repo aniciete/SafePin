@@ -27,10 +27,10 @@ const LoginForm = () => {
         } else if (loggedInProfile.role === 'authority') {
           navigate(PATHS.AUTHORITY_DASHBOARD);
         } else {
-          navigate(PATHS.HOME);
+          navigate(PATHS.LANDING);
         }
       } else {
-        navigate(PATHS.HOME);
+        navigate(PATHS.LANDING);
       }
     } catch (error) {
       toast({

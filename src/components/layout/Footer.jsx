@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/config/supabase';
+import logo from '@/assets/SafePin Map Logo.png';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -50,60 +51,65 @@ const Footer = () => {
   return (
     <footer className="bg-card">
       <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <h3 className="text-lg font-semibold mb-4 text-foreground">SafePin</h3>
+            <img src={logo} alt="SafePin Logo" className="h-10 mb-4" />
+            <p className="text-muted-foreground text-sm">
+              Your partner in community safety.
+            </p>
+          </div>
+
+          <div className="md:col-span-1">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Resources</h3>
             <ul className="space-y-2">
               <li><a href="/about" className="hover:underline text-muted-foreground">About us</a></li>
               <li><a href="/faq" className="hover:underline text-muted-foreground">FAQ</a></li>
               <li><a href="/contact" className="hover:underline text-muted-foreground">Contact us</a></li>
+              <li><a href="/status" className="hover:underline text-muted-foreground">Status</a></li>
+            </ul>
+          </div>
+          
+          <div className="md:col-span-1">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Legal</h3>
+            <ul className="space-y-2">
               <li><a href="/terms" className="hover:underline text-muted-foreground">Terms of Service</a></li>
               <li><a href="/privacy" className="hover:underline text-muted-foreground">Privacy Policy</a></li>
             </ul>
           </div>
 
           <div className="md:col-span-1">
-            <h3 className="text-lg font-semibold mb-4 text-foreground">Support</h3>
-            <ul className="space-y-2">
-              <li><a href="/legal" className="hover:underline text-muted-foreground">Legal</a></li>
-              <li><a href="/status" className="hover:underline text-muted-foreground">Status</a></li>
-            </ul>
-          </div>
-
-          <div className="md:col-span-1">
             <h3 className="text-lg font-semibold mb-4 text-foreground">Stay up to date</h3>
-            <form onSubmit={handleNewsletterSubmit} className="space-y-4">
-              <div className="flex">
+            <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+              <div className="relative">
                 <Input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
+                  className="pr-28"
                 />
                 <Button
                   type="submit"
                   disabled={isSubmitting || !email.trim() || !hasConsented}
+                  className="absolute top-1/2 right-1 -translate-y-1/2 h-auto py-1.5 px-3"
                 >
-                  {isSubmitting ? 'Subscribing...' : 'Submit'}
+                  {isSubmitting ? 'Subscribing...' : 'Subscribe'}
                 </Button>
               </div>
               
-              {/* Simplified Consent */}
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="flex items-start space-x-2">
-                  <input
-                    type="checkbox"
-                    id="consent"
-                    checked={hasConsented}
-                    onChange={(e) => setHasConsented(e.target.checked)}
-                    className="mt-0.5"
-                    disabled={isSubmitting}
-                  />
-                  <label htmlFor="consent" className="leading-tight">
-                    I agree to the <a href="/privacy" className="underline font-medium">Privacy Policy</a> and consent to receive newsletter updates.
-                  </label>
-                </div>
+              <div className="flex items-start space-x-2">
+                <input
+                  type="checkbox"
+                  id="consent"
+                  checked={hasConsented}
+                  onChange={(e) => setHasConsented(e.target.checked)}
+                  className="mt-0.5"
+                  disabled={isSubmitting}
+                />
+                <label htmlFor="consent" className="text-xs text-muted-foreground leading-tight">
+                  I agree to the <a href="/privacy" className="underline font-medium">Privacy Policy</a> and consent to receive newsletter updates.
+                </label>
               </div>
             </form>
           </div>
