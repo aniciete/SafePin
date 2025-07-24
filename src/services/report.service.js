@@ -1,11 +1,12 @@
-import { supabase } from '../config/supabase.js';
+// NO LONGER IMPORTS supabase directly. This is the key security fix.
 
 /**
- * Fetches all reports from the database.
- * RLS is expected to handle filtering by jurisdiction.
+ * Fetches reports from the database using the provided Supabase client.
+ * RLS is expected to handle filtering by jurisdiction based on the user's JWT.
+ * @param {SupabaseClient} supabase The Supabase client instance.
  * @returns {Promise<Array<object>>} A promise that resolves to an array of reports.
  */
-export const getReports = async () => {
+export const getReports = async (supabase) => {
   const { data, error } = await supabase.from('reports').select('*');
 
   if (error) {
@@ -17,12 +18,13 @@ export const getReports = async () => {
 };
 
 /**
- * Uploads an image to Supabase Storage.
+ * Uploads an image to Supabase Storage using the provided client.
+ * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {File} file The image file to upload.
  * @param {string} trackingCode The tracking code to use as the image name.
  * @returns {Promise<string>} The path of the uploaded image.
  */
-export const uploadReportImage = async (file, trackingCode) => {
+export const uploadReportImage = async (supabase, file, trackingCode) => {
   if (!file) {
     throw new Error('No image file provided.');
   }
@@ -32,7 +34,7 @@ export const uploadReportImage = async (file, trackingCode) => {
   const filePath = `reports/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('reports')
+    .from('reports') // This should match your bucket name, assuming it's 'reports'
     .upload(filePath, file);
 
   if (uploadError) {
@@ -43,13 +45,14 @@ export const uploadReportImage = async (file, trackingCode) => {
 };
 
 /**
- * Inserts a new report into the database after verifying reCAPTCHA.
+ * Inserts a new report into the database after verifying reCAPTCHA, using the provided client.
+ * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {object} reportData The report data to insert.
  * @param {string} token The reCAPTCHA token.
  * @returns {Promise<object>} The inserted report data.
  */
-export const createReport = async (reportData, token) => {
-  // First, verify the reCAPTCHA token
+export const createReport = async (supabase, reportData, token) => {
+  // First, verify the reCAPTCHA token by calling the edge function
   const { error: recaptchaError } = await supabase.functions.invoke('verify-recaptcha', {
     body: { token },
   });
@@ -72,12 +75,13 @@ export const createReport = async (reportData, token) => {
 };
 
 /**
- * Updates the status of a report.
+ * Updates the status of a report using the provided client.
+ * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {string} reportId The ID of the report to update.
  * @param {string} status The new status.
  * @returns {Promise<object>} The updated report data.
  */
-export const updateReportStatus = async (reportId, status) => {
+export const updateReportStatus = async (supabase, reportId, status) => {
   const { data, error } = await supabase
     .from('reports')
     .update({ status })

@@ -1,6 +1,8 @@
-// src/contexts/AuthContext.jsx
 import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { useSupabase } from './SupabaseContext';
+
+// Helper function to introduce a short delay
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const AuthContext = createContext();
 
@@ -10,47 +12,55 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = useCallback(async (authUser) => {
-    setLoading(true); // Start loading
+  const fetchUserProfile = useCallback(async (authUser, retries = 3) => {
     if (!authUser) {
-      setUser(null);
       setProfile(null);
-      setLoading(false); // Stop loading if no user
       return null;
     }
-
-    setUser(authUser);
-
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .maybeSingle();
+      for (let i = 0; i < retries; i++) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
 
-      if (error) throw error;
-      setProfile(data);
-      return data;
+        if (error && error.code !== 'PGRST116') { // 'PGRST116' means "not found"
+          throw error;
+        }
+
+        if (data) {
+          setProfile(data);
+          return data;
+        }
+        
+        await sleep(250 * (i + 1));
+      }
+      
+      throw new Error("User profile could not be found. This may indicate an RLS or database trigger issue.");
+
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('[Auth] Error fetching profile:', error.message);
       setProfile(null);
       return null;
-    } finally {
-      setLoading(false); // Stop loading after fetch is complete
     }
   }, [supabase]);
 
-    useEffect(() => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          fetchUserProfile(session?.user ?? null);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          await fetchUserProfile(currentUser);
+        } else {
+          setProfile(null);
         }
-      );
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, [fetchUserProfile]);
+        setLoading(false);
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, [supabase, fetchUserProfile]);
 
   const value = {
     user,
@@ -58,30 +68,14 @@ export const AuthProvider = ({ children }) => {
     loading,
     login: async (email, password) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        return { profile: null, error };
-      }
-      if (data.user && !data.user.email_confirmed_at) {
-        return { profile: null, error: { message: 'Email not confirmed' } };
-      }
+      if (error) return { profile: null, error };
       if (data.user) {
         const userProfile = await fetchUserProfile(data.user);
         return { profile: userProfile, error: null };
       }
-      return { profile: null, error: { message: 'User not found after login.' } };
+      return { profile: null, error: new Error('Login successful but no user object returned.') };
     },
-    loginWithGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google' }),
     logout: () => supabase.auth.signOut(),
-    signUp: (email, password, role = 'regular') => supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          role: role
-        },
-        email_confirm: false
-      }
-    }),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../config/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardWidgetSkeleton from './DashboardWidgetSkeleton';
 import ReportFilters from './ReportFilters';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * @returns {JSX.Element} Reports list
  */
 const ReportsInJurisdiction = () => {
+  const { supabase } = useSupabase();
   const { profile } = useAuth();
   const [reports, setReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
@@ -24,7 +25,7 @@ const ReportsInJurisdiction = () => {
   
   // Fetch reports from Supabase
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !supabase) return;
 
     const fetchReports = async () => {
       const { data, error } = await supabase
@@ -61,9 +62,9 @@ const ReportsInJurisdiction = () => {
     // Set up real-time subscription for updates
     const subscription = supabase
       .channel('reports_channel')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
         table: 'reports',
         filter: `jurisdiction=eq.${profile.jurisdiction}`
       }, payload => {
@@ -74,7 +75,7 @@ const ReportsInJurisdiction = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [profile]);
+  }, [profile, supabase]);
   
   // Clear highlight after animation completes
   useEffect(() => {

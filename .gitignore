@@ -77,3 +77,40 @@ LOOKenv.local
 
 # Local Netlify folder
 .netlify
+Xenv.example
+dist/favicon.ico
+dist/index.html
+dist/SafePin Logo Green.svg
+dist/SafePin Map Logo.png
+dist/assets/AboutPage-CFOhY6w_.js
+dist/assets/AdminDashboardPage-nrjA-ICD.js
+dist/assets/AuthorityDashboardPage-BwHXVN5Z.js
+dist/assets/card-BKeUPfmU.js
+dist/assets/chevron-up-Cc7FWTRd.js
+dist/assets/ContactPage-DgZqkSl7.js
+dist/assets/Department_of_Information_and_Communications_Technology_(DICT)-D61GhEhN.svg
+dist/assets/Department_of_the_Interior_and_Local_Government_(DILG)_Seal_-_Logo-1hEuNL3r.svg
+dist/assets/dialog-CR2MYTkz.js
+dist/assets/FAQPage-BhIR3q-q.js
+dist/assets/HomePage-pacPxzOy.js
+dist/assets/index-DRQhs3uF.js
+dist/assets/index-DYEYKO8w.css
+dist/assets/jurisdictions-Ddmvo3hZ.js
+dist/assets/label-kDE71-x3.js
+dist/assets/LoginPage-qvCM9FUW.js
+dist/assets/MapView-D0Yb3wEN.js
+dist/assets/National_Bureau_of_Investigation_(NBI)-DX3ZrZHA.svg
+dist/assets/PDEA_seal-C8FoN1PX.svg
+dist/assets/Philippine_National_Police_seal-BGJptWcL.svg
+dist/assets/Philippine_Red_Cross_Emblem-BQtktaBA.svg
+dist/assets/PrivacyPage-S6_zYc5l.js
+dist/assets/ReportPage-BIifmv02.js
+dist/assets/SafePin Map Logo-BnVwDhZU.png
+dist/assets/Seal_of_the_Department_of_Social_Welfare_and_Development-qGllJDpo.svg
+dist/assets/select-DUIetlKP.js
+dist/assets/skeleton-BcNKnEGJ.js
+dist/assets/StatusPage-CG6ErPCE.js
+dist/assets/TermsPage-DG48EKlm.js
+dist/assets/textarea-Bqw-TEST.js
+dist/assets/TrackReportPage-DHaXmTPG.js
+dist/assets/UnsubscribePage-BNMfNqZz.js

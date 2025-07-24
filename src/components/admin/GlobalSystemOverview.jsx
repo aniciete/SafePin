@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import GlobalSystemOverviewSkeleton from './GlobalSystemOverviewSkeleton';
 
 const GlobalSystemOverview = () => {
+  const { supabase } = useSupabase();
   const [userStats, setUserStats] = useState([]);
   const [reportStats, setReportStats] = useState([]);
   const [topJurisdictions, setTopJurisdictions] = useState([]);
@@ -11,6 +12,7 @@ const GlobalSystemOverview = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!supabase) return;
       setLoading(true);
       try {
         const { data: userStatsData, error: userStatsError } = await supabase.rpc('get_user_stats');
@@ -32,7 +34,7 @@ const GlobalSystemOverview = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <GlobalSystemOverviewSkeleton />;

@@ -17,10 +17,12 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // This `await` is why the fix in AuthContext works.
       const { profile: loggedInProfile, error } = await login(email, password);
       if (error) {
         throw error;
       }
+      // This logic handles the redirect based on the role from the profile.
       if (loggedInProfile) {
         if (loggedInProfile.role === 'admin') {
           navigate(PATHS.ADMIN_DASHBOARD);

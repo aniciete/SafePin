@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import DashboardWidgetSkeleton from './DashboardWidgetSkeleton';
 
 const ResolvedIncidents = () => {
+  const { supabase } = useSupabase();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchReports = async () => {
+      if (!supabase) return;
       const { data, error } = await supabase
         .from('reports')
         .select('*')
@@ -23,7 +25,7 @@ const ResolvedIncidents = () => {
     };
 
     fetchReports();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <DashboardWidgetSkeleton />;

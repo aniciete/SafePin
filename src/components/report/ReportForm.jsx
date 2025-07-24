@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useToast } from '@/hooks/use-toast';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import { uploadReportImage, createReport } from '../../services/report.service';
 import { ImageOptimizer } from '../../utils/imageOptimizer';
 import { validateText } from '../../utils/validation';
@@ -14,6 +15,7 @@ import AddressSearchInput from './AddressSearchInput';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ReportForm = () => {
+  const { supabase } = useSupabase();
   const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger, watch } = useForm({
     mode: 'onChange',
   });
@@ -59,6 +61,7 @@ const ReportForm = () => {
   };
 
   const onSubmit = async (data) => {
+    if (!supabase) return;
     setLoading(true);
     setTrackingCode(null);
 
@@ -78,7 +81,7 @@ const ReportForm = () => {
         setLoadingMessage('Optimizing image...');
         const optimizedImage = await ImageOptimizer.optimizeImage(data.image[0]);
         setLoadingMessage('Uploading image...');
-        imagePath = await uploadReportImage(optimizedImage, newTrackingCode);
+        imagePath = await uploadReportImage(supabase, optimizedImage, newTrackingCode);
       }
 
       setLoadingMessage('Submitting report...');
@@ -92,7 +95,7 @@ const ReportForm = () => {
         jurisdiction: data.jurisdiction,
       };
 
-      await createReport(reportData, token);
+      await createReport(supabase, reportData, token);
       setTrackingCode(newTrackingCode);
       toast({ title: 'Success', description: 'Report submitted successfully!' });
       reset();

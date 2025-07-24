@@ -10,6 +10,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import ReportQuickView from '../../../components/dashboard/ReportQuickView';
 import ReportFilters from '../../../components/dashboard/ReportFilters';
 import { Card, CardContent } from '@/components/ui/card';
+import MapViewSkeleton from '@/components/map/MapViewSkeleton';
 
 const AuthorityDashboardPage = () => {
   const [reports, setReports] = useState([]);
@@ -17,34 +18,30 @@ const AuthorityDashboardPage = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [filters, setFilters] = useState({});
   const { supabase } = useSupabase();
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
 
   const fetchReports = useCallback(async () => {
-    if (!profile?.jurisdiction) {
-      setLoading(false);
-      return;
-    }
-    
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .eq('jurisdiction', profile.jurisdiction)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReports(data);
+      setReports(data || []);
     } catch (error) {
       console.error("Failed to fetch reports for jurisdiction:", error);
     } finally {
       setLoading(false);
     }
-  }, [supabase, profile]);
+  }, [supabase]);
 
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
+    if (profile) {
+      fetchReports();
+    }
+  }, [profile, fetchReports]);
 
   const handleMarkerClick = (report) => setSelectedReport(report);
   const handleCloseQuickView = () => setSelectedReport(null);
@@ -62,13 +59,26 @@ const AuthorityDashboardPage = () => {
       return true;
     });
   }, [reports, filters]);
+  
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <p>Authenticating...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const outletContext = {
     reports: filteredReports,
+    allReports: reports,
     handleMarkerClick,
     handleReportUpdate,
     handleFilterChange,
     loading,
+    // Pass down the selected ID to child components
+    selectedReportId: selectedReport ? selectedReport.id : null,
   };
 
   return (
@@ -103,7 +113,7 @@ const DashboardNav = () => {
 };
 
 const Overview = () => {
-  const { reports, loading, handleMarkerClick, handleReportUpdate, handleFilterChange } = useOutletContext();
+  const { reports, loading, handleMarkerClick, handleReportUpdate, handleFilterChange, selectedReportId } = useOutletContext();
   const pendingReports = useMemo(() => reports.filter(r => r.status === 'pending_verification'), [reports]);
 
   return (
@@ -113,7 +123,16 @@ const Overview = () => {
         <div className="lg:col-span-2 h-full">
           <Card className="h-full">
             <CardContent className="h-full p-2">
-              <MapView reports={reports} onMarkerClick={handleMarkerClick} />
+              {loading ? (
+                <MapViewSkeleton />
+              ) : (
+                // Pass the selectedReportId down to the MapView
+                <MapView 
+                  reports={reports} 
+                  onMarkerClick={handleMarkerClick}
+                  selectedReportId={selectedReportId} 
+                />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -126,9 +145,9 @@ const Overview = () => {
 };
 
 const AnalyticsRoute = () => {
-  const { reports, loading } = useOutletContext();
+  const { allReports, loading } = useOutletContext();
   if (loading) return <div>Loading Analytics...</div>
-  return <Analytics reports={reports} />;
+  return <Analytics reports={allReports} />;
 };
 
 const AuthorityDashboardWrapper = () => (

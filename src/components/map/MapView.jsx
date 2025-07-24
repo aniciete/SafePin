@@ -4,28 +4,19 @@ import mapLoader from '../../services/mapLoader';
 import MapViewSkeleton from './MapViewSkeleton';
 import MapMarker from './MapMarker';
 
-const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition }) => {
+const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition, selectedReportId }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const userPinRef = useRef(null);
   const userPinRoot = useRef(null);
   const reportMarkersRef = useRef({});
   const reportMarkerRoots = useRef({});
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
 
-  // This ref will hold the latest version of the onLocationSelect callback.
-  // This is the key to breaking the dependency cycle in the main useEffect.
-  const onLocationSelectRef = useRef(onLocationSelect);
   useEffect(() => {
-    onLocationSelectRef.current = onLocationSelect;
-  });
+    if (mapInstanceRef.current) return;
 
-  // This effect initializes the map ONCE and ONLY ONCE.
-  useEffect(() => {
-    if (mapInstanceRef.current) return; // Prevent re-initialization
-
-    let mapClickListener;
-
-    const initializeMap = async () => {
+    mapLoader.load().then(async (google) => {
       const { Map } = await google.maps.importLibrary("maps");
       const map = new Map(mapContainerRef.current, {
         center: { lat: 14.5995, lng: 120.9842 },
@@ -36,33 +27,33 @@ const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition
         gestureHandling: 'cooperative',
       });
       
-      mapInstanceRef.current = map;
-
-      // The click listener now safely calls the function from the ref.
-      mapClickListener = map.addListener('click', (e) => {
-        if (onLocationSelectRef.current) {
+      map.addListener('click', (e) => {
+        if (onLocationSelect) {
           const latLng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-          onLocationSelectRef.current(latLng);
+          onLocationSelect(latLng);
         }
       });
-    };
 
-    initializeMap();
+      mapInstanceRef.current = map;
+      setIsMapInitialized(true);
+    }).catch(e => console.error("API Load Failed:", e));
 
     return () => {
-      if (mapClickListener) mapClickListener.remove();
       if (userPinRoot.current) userPinRoot.current.unmount();
       Object.values(reportMarkerRoots.current).forEach(root => root.unmount());
     };
-  }, []); // <-- The empty dependency array is CRITICAL. It ensures this runs only once.
+  }, [onLocationSelect]);
 
-  // This effect handles the user pin and the panning animation.
   useEffect(() => {
+    if (!isMapInitialized || !markerPosition) {
+      return;
+    }
+    
     const map = mapInstanceRef.current;
-    if (!map || !markerPosition || !markerPosition.lat) return;
 
     const updateUserPin = async () => {
       const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
       if (userPinRef.current) {
         userPinRef.current.position = markerPosition;
       } else {
@@ -75,61 +66,64 @@ const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition
           position: markerPosition,
           map: map,
           content: container,
+          gmpDraggable: true,
+        });
+        userPinRef.current.addListener('dragend', (event) => {
+          const newPosition = event.latLng;
+          if (onLocationSelect && newPosition) {
+            onLocationSelect({ lat: newPosition.lat(), lng: newPosition.lng() });
+          }
         });
       }
-
-      // The most reliable animation: pan first, then zoom after a delay.
-      map.panTo(markerPosition);
-      const zoomTimer = setTimeout(() => {
-        map.setZoom(17);
-      }, 500);
-      
-      return () => clearTimeout(zoomTimer);
+      map.moveCamera({ center: markerPosition, zoom: 17 });
     };
 
     updateUserPin();
-  }, [markerPosition]);
+    
+  }, [isMapInitialized, markerPosition]);
 
-  // This effect handles the dashboard markers.
   useEffect(() => {
+    if (!isMapInitialized) return;
+    
     const map = mapInstanceRef.current;
-    if (!map || !reports.length) return;
-
-    // ... (This logic for dashboard markers is fine and does not need changes)
+    
     const updateReportMarkers = async () => {
-        Object.values(reportMarkersRef.current).forEach(marker => marker.map = null);
-        Object.values(reportMarkerRoots.current).forEach(root => root.unmount());
-        reportMarkersRef.current = {};
-        reportMarkerRoots.current = {};
+      Object.values(reportMarkersRef.current).forEach(marker => marker.map = null);
+      Object.values(reportMarkerRoots.current).forEach(root => root.unmount());
+      reportMarkersRef.current = {};
+      reportMarkerRoots.current = {};
 
-        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-        
-        reports.forEach((report) => {
-            if (report.location?.lat && report.location?.lng) {
-                const container = document.createElement('div');
-                const root = createRoot(container);
-                root.render(
-                    <MapMarker
-                        severity={report.severity}
-                        title={report.incident_type}
-                        onClick={() => onMarkerClick && onMarkerClick(report)}
-                    />
-                );
-                
-                const marker = new AdvancedMarkerElement({
-                    position: report.location,
-                    map: map,
-                    content: container,
-                });
+      if (!reports || reports.length === 0) return;
 
-                reportMarkersRef.current[report.id] = marker;
-                reportMarkerRoots.current[report.id] = root;
-            }
-        });
+      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+      
+      reports.forEach((report) => {
+        if (report.location?.lat && report.location?.lng) {
+          const container = document.createElement('div');
+          const root = createRoot(container);
+          root.render(
+            <MapMarker
+              severity={report.severity}
+              title={report.incident_type}
+              onClick={() => onMarkerClick && onMarkerClick(report)}
+              isSelected={report.id === selectedReportId}
+            />
+          );
+          
+          const marker = new AdvancedMarkerElement({
+            position: report.location,
+            map: map,
+            content: container,
+            zIndex: report.id === selectedReportId ? 99 : 1,
+          });
+
+          reportMarkersRef.current[report.id] = marker;
+          reportMarkerRoots.current[report.id] = root;
+        }
+      });
     };
-
     updateReportMarkers();
-  }, [reports, onMarkerClick]);
+  }, [isMapInitialized, reports, onMarkerClick, selectedReportId]);
 
   return <div ref={mapContainerRef} className="h-full w-full" />;
 };
