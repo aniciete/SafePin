@@ -1,9 +1,5 @@
 /**
  * Uploads an image to Supabase Storage.
- * @param {SupabaseClient} supabase The Supabase client instance.
- * @param {File} file The image file to upload.
- * @param {string} trackingCode The tracking code to use as the image name.
- * @returns {Promise<string>} The path of the uploaded image.
  */
 export const uploadReportImage = async (supabase, file, trackingCode) => {
   if (!file) {
@@ -24,28 +20,17 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
 };
 
 /**
- * Creates a new report by calling the single, secure database function.
- * @param {SupabaseClient} supabase The Supabase client instance.
- * @param {object} reportData The report data to insert.
- * @param {string} token The reCAPTCHA token.
- * @returns {Promise<object>} The result of the function call.
+ * Creates a new report by calling the single, transactional 'submit-report' Edge Function.
  */
 export const createReport = async (supabase, reportData, token) => {
-  // Call the new all-in-one database function with all the required parameters.
-  const { data, error } = await supabase.rpc('create_report_securely', {
-    recaptcha_token: token,
-    incident_type: reportData.incident_type,
-    severity: reportData.severity,
-    description: reportData.description,
-    location: reportData.location,
-    image_path: reportData.image_path,
-    tracking_code: reportData.tracking_code,
-    jurisdiction: reportData.jurisdiction,
-    contact_info: reportData.contact_info,
+  // This function now sends the entire report payload AND the reCAPTCHA token
+  // to our new all-in-one Edge Function.
+  const { data, error } = await supabase.functions.invoke('submit-report', {
+    body: { reportData, token },
   });
 
   if (error) {
-    // The specific error message from the database function (e.g., "reCAPTCHA verification failed") will be passed here.
+    // The error message from the Edge Function (e.g., "reCAPTCHA verification failed") will be passed here.
     throw new Error(error.message);
   }
 
@@ -54,10 +39,6 @@ export const createReport = async (supabase, reportData, token) => {
 
 /**
  * Updates the status of a report.
- * @param {SupabaseClient} supabase The Supabase client instance.
- * @param {string} reportId The ID of the report to update.
- * @param {string} status The new status.
- * @returns {Promise<object>} The updated report data.
  */
 export const updateReportStatus = async (supabase, reportId, status) => {
   const { data, error } = await supabase
