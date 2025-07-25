@@ -7,22 +7,35 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PATHS } from '../../utils/pathUtils';
 
 const ReportPage = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth(); // Import loading state
   const navigate = useNavigate();
 
-  // THIS IS THE FIX: Redirect logged-in authority/admin users.
+  // This useEffect handles redirecting logged-in users away from the report page.
   useEffect(() => {
-    if (user && profile) {
+    // Only run the redirect logic after the initial auth state has been determined.
+    if (!loading && user && profile) {
       if (profile.role === 'admin') {
-        navigate(PATHS.ADMIN_DASHBOARD);
+        navigate(PATHS.ADMIN_DASHBOARD, { replace: true });
       } else if (profile.role === 'authority') {
-        navigate(PATHS.AUTHORITY_DASHBOARD);
+        navigate(PATHS.AUTHORITY_DASHBOARD, { replace: true });
       }
     }
-  }, [user, profile, navigate]);
+  }, [user, profile, loading, navigate]);
 
+  // While the auth state is loading, we can show a simple loader or nothing
+  // to prevent the form from flashing before a potential redirect.
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  // If the user is logged in but the redirect hasn't happened yet, we can also show a loader.
+  if (user) {
+    return <div className="flex items-center justify-center h-screen">Redirecting...</div>;
+  }
+
+  // Only show the report page to anonymous users.
   return (
-    <GoogleReCaptchaProvider reCaptchaKey="6LdbX4orAAAAAIh8ham1lnIR8x6aB-rfV6dQNPpd">
+    <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}>
       <main className="flex items-center justify-center py-12 px-4">
         <Card className="w-full max-w-2xl">
           <CardHeader>

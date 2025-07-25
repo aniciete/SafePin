@@ -21,11 +21,17 @@ const AuthorityDashboardPage = () => {
   const { profile, loading: authLoading } = useAuth();
 
   const fetchReports = useCallback(async () => {
+    if (!profile?.jurisdiction) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
+      // Fetch reports specifically for the logged-in authority's jurisdiction
       const { data, error } = await supabase
         .from('reports')
         .select('*')
+        .eq('jurisdiction', profile.jurisdiction)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -35,13 +41,35 @@ const AuthorityDashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, profile]);
 
   useEffect(() => {
     if (profile) {
       fetchReports();
     }
   }, [profile, fetchReports]);
+
+  // Realtime subscription for new reports in the authority's jurisdiction
+  useEffect(() => {
+    if (!profile?.jurisdiction) return;
+
+    const channel = supabase
+      .channel(`public:reports:jurisdiction=eq.${profile.jurisdiction}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reports', filter: `jurisdiction=eq.${profile.jurisdiction}` },
+        (payload) => {
+          console.log('Realtime change received!', payload);
+          fetchReports(); // Re-fetch all reports on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, profile, fetchReports]);
+
 
   const handleMarkerClick = (report) => setSelectedReport(report);
   const handleCloseQuickView = () => setSelectedReport(null);
@@ -77,7 +105,6 @@ const AuthorityDashboardPage = () => {
     handleReportUpdate,
     handleFilterChange,
     loading,
-    // Pass down the selected ID to child components
     selectedReportId: selectedReport ? selectedReport.id : null,
   };
 
@@ -89,7 +116,11 @@ const AuthorityDashboardPage = () => {
           <Outlet context={outletContext} />
         </div>
       </div>
-      <ReportQuickView report={selectedReport} onClose={handleCloseQuickView} />
+      <ReportQuickView 
+        report={selectedReport} 
+        onClose={handleCloseQuickView}
+        onReportUpdate={handleReportUpdate} 
+      />
     </DashboardLayout>
   );
 };
@@ -105,7 +136,7 @@ const DashboardNav = () => {
   return (
     <div className="flex-shrink-0 border-b-2 border-border mb-4">
       <nav className="flex space-x-4" aria-label="Tabs">
-        <Button asChild variant={getVariant('/dashboard/authority')}><Link to="/dashboard/authority">Overview</Link></Button>
+        <Button asChild variant={getVariant('/dashboard/authority')}><Link to="/dashboard/authority">Overview & Map</Link></Button>
         <Button asChild variant={getVariant('/dashboard/authority/analytics')}><Link to="/dashboard/authority/analytics">Analytics</Link></Button>
       </nav>
     </div>
@@ -126,7 +157,6 @@ const Overview = () => {
               {loading ? (
                 <MapViewSkeleton />
               ) : (
-                // Pass the selectedReportId down to the MapView
                 <MapView 
                   reports={reports} 
                   onMarkerClick={handleMarkerClick}

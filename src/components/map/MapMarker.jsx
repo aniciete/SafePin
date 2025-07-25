@@ -3,49 +3,68 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import SafePinIcon from './SafePinIcon';
 
-const MapMarker = ({ severity = 'Low', pulse = false, onClick, title, isSelected = false }) => {
+const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification', onClick, title, isSelected = false }) => {
+
   const getSeverityColor = () => {
-    switch (severity) {
-      case 'Critical': return 'hsl(4, 90%, 58%)';
-      case 'High': return '#FFC107';
-      case 'Low': return 'hsl(122, 39%, 49%)';
-      case 'Medium':
-      default: return 'hsl(210, 89%, 53%)';
+    switch (String(severity).toLowerCase()) {
+      case 'critical': return 'hsl(var(--destructive))';
+      case 'high': return '#FFC107';
+      case 'medium': return 'hsl(var(--secondary))';
+      case 'low': default: return 'hsl(var(--primary))';
     }
   };
 
   const color = getSeverityColor();
+  const needsAttention = status === 'pending_verification';
+  const isResolved = status === 'resolved';
+
+  const markerVariants = {
+    initial: { y: -30, opacity: 0, scale: 0.8 },
+    animate: { 
+      y: 0, 
+      // Set a base lower opacity for resolved items
+      opacity: isResolved ? 0.75 : 1,
+      scale: isSelected ? 1.3 : 1,
+      zIndex: isSelected ? 10 : 1,
+    },
+    hover: { 
+      scale: 1.1, 
+      zIndex: 5,
+      // Ensure it becomes fully opaque on hover, even if resolved
+      opacity: 1, 
+    }
+  };
 
   return (
     <motion.div
-      animate={{ 
-        y: 0, 
-        opacity: 1,
-        scale: isSelected ? 1.25 : 1 // Grow when selected
-      }}
-      initial={{ y: -50, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-      whileHover={{ scale: 1.1, zIndex: 1 }}
+      variants={markerVariants}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
       className="relative w-10 h-10 cursor-pointer"
       onClick={onClick}
-      title={title}
+      title={`${title} (${status})`} // Add status to the tooltip for clarity
       style={{
         transformOrigin: 'bottom center',
-        filter: 'drop-shadow(0px 3px 3px rgba(0, 0, 0, 0.4))',
+        filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3))',
       }}
     >
-      {pulse && !isSelected && ( // Only pulse if not selected
+      {needsAttention && !isSelected && (
         <div
           className="absolute inset-0 w-full h-full rounded-full animate-ping"
           style={{ backgroundColor: color, opacity: 0.75 }}
         />
       )}
       
-      <div className={cn('relative w-full h-full', (pulse || isSelected) && 'z-10')}>
-        <SafePinIcon color={color} />
+      <div className={cn('relative w-full h-full')}>
+        {/* Pass the isInactive prop to the icon */}
+        <SafePinIcon color={color} isInactive={isResolved} />
       </div>
     </motion.div>
   );
-};
+});
+
+MapMarker.displayName = 'MapMarker';
 
 export default MapMarker;

@@ -90,7 +90,6 @@ ALTER TYPE "public"."report_status" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."user_role" AS ENUM (
-    'regular',
     'admin',
     'authority'
 );
@@ -128,26 +127,6 @@ $$;
 
 
 ALTER FUNCTION "public"."assign_jurisdiction_on_report_insert"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."create_user_profile"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-  INSERT INTO public.users (id, email, role, jurisdiction)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    (NEW.raw_user_meta_data->>'role')::user_role,
-    NEW.raw_user_meta_data->>'jurisdiction'
-  )
-  ON CONFLICT (id) DO NOTHING;
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."create_user_profile"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_jurisdiction_for_location"("lat" double precision, "lng" double precision) RETURNS "text"
@@ -351,7 +330,7 @@ ALTER TABLE "public"."reports" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."users" (
     "id" "uuid" NOT NULL,
     "email" character varying(255),
-    "role" "public"."user_role" DEFAULT 'regular'::"public"."user_role",
+    "role" "public"."user_role",
     "jurisdiction" "text",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "onboarding_completed" boolean DEFAULT false,
@@ -451,7 +430,7 @@ CREATE POLICY "Allow admins full access" ON "public"."reports" USING ((( SELECT 
 
 
 
-CREATE POLICY "Allow anonymous report creation" ON "public"."reports" FOR INSERT WITH CHECK ((("auth"."role"() IS NULL) OR ("auth"."role"() = 'anon'::"text")));
+CREATE POLICY "Allow anonymous report creation" ON "public"."reports" FOR INSERT WITH CHECK (("auth"."role"() = 'anon'::"text"));
 
 
 
@@ -467,9 +446,7 @@ CREATE POLICY "Allow authorities to view reports in their jurisdiction" ON "publ
 
 
 
-CREATE POLICY "Users can view user profiles" ON "public"."users" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "id") OR (( SELECT "users_1"."role"
-   FROM "public"."users" "users_1"
-  WHERE ("users_1"."id" = "auth"."uid"())) = 'admin'::"public"."user_role")));
+CREATE POLICY "Users can view user profiles" ON "public"."users" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "id") OR (("auth"."jwt"() ->> 'user_role'::"text") = 'admin'::"text")));
 
 
 
@@ -1386,12 +1363,6 @@ GRANT ALL ON FUNCTION "public"."contains_2d"("public"."geometry", "public"."box2
 GRANT ALL ON FUNCTION "public"."contains_2d"("public"."geometry", "public"."box2df") TO "anon";
 GRANT ALL ON FUNCTION "public"."contains_2d"("public"."geometry", "public"."box2df") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."contains_2d"("public"."geometry", "public"."box2df") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."create_user_profile"() TO "anon";
-GRANT ALL ON FUNCTION "public"."create_user_profile"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."create_user_profile"() TO "service_role";
 
 
 

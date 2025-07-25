@@ -62,15 +62,15 @@ export const useGoogleMaps = () => {
   }, [supabase]);
 
   const reverseGeocode = useCallback(async (location) => {
-    if (!geocoder) return null;
-
-    return new Promise((resolve, reject) => {
+    if (!geocoder) return "Address not available";
+    return new Promise((resolve) => {
       geocoder.geocode({ location }, (results, status) => {
         if (status === 'OK' && results[0]) {
           resolve(results[0].formatted_address);
         } else {
           console.error('Reverse geocode failed:', status);
-          reject(new Error('Failed to find a human-readable address for the location.'));
+          // Fallback to coordinates if address lookup fails
+          resolve(`Lat: ${location.lat.toFixed(5)}, Lng: ${location.lng.toFixed(5)}`);
         }
       });
     });

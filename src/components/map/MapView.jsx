@@ -104,6 +104,7 @@ const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition
           root.render(
             <MapMarker
               severity={report.severity}
+              status={report.status}
               title={report.incident_type}
               onClick={() => onMarkerClick && onMarkerClick(report)}
               isSelected={report.id === selectedReportId}
