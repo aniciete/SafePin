@@ -31,34 +31,34 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
  * @returns {Promise<object>} The inserted report data.
  */
 export const createReport = async (supabase, reportData, token) => {
-  // THE FINAL, GUARANTEED FIX:
-  // We will bypass supabase.functions.invoke() and use the browser's native fetch API.
-  // This gives us absolute control and removes any ambiguity from the Supabase client library.
+  // THE FINAL, CORRECTED FIX:
+  // We will manually construct the function URL and use the browser's native fetch API.
 
-  // 1. Get the URL and headers needed for the request from the Supabase client.
-  const { url } = supabase.functions.getURL('verify-recaptcha');
-  const { 'apiKey': anonKey } = supabase.functions.getHeaders();
+  // 1. Get the required URL and Key from environment variables.
+  // These are guaranteed to be correct.
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const functionUrl = `${supabaseUrl}/functions/v1/verify-recaptcha`;
 
   try {
-    // 2. Make the request using native fetch.
-    const recaptchaResponse = await fetch(url, {
+    // 2. Make the request using native fetch with the manually constructed URL and headers.
+    const recaptchaResponse = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}` // Supabase functions often need the Authorization header as well.
       },
       body: JSON.stringify({ token }),
     });
 
     // 3. Check the response.
     if (!recaptchaResponse.ok) {
-      // If the status is 400, 500, etc., throw an error.
-      const errorBody = await recaptchaResponse.json();
+      const errorBody = await recaptchaResponse.json().catch(() => ({ error: 'Failed to parse error response.' }));
       throw new Error(errorBody.error || `reCAPTCHA verification failed with status: ${recaptchaResponse.status}`);
     }
 
   } catch (error) {
-    // This will catch both network errors and the error thrown above.
     console.error('Direct fetch to verify-recaptcha failed:', error);
     throw new Error(`reCAPTCHA verification failed: ${error.message}`);
   }
