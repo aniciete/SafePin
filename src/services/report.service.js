@@ -24,33 +24,46 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
 };
 
 /**
- * Creates a new report after verifying reCAPTCHA.
+ * Creates a new report after verifying reCAPTCHA using the native fetch API.
  * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {object} reportData The report data to insert.
  * @param {string} token The reCAPTCHA token.
  * @returns {Promise<object>} The inserted report data.
  */
 export const createReport = async (supabase, reportData, token) => {
-  // THE FINAL FIX: We will be extremely explicit about the request body.
-  // 1. Create the payload as a simple JavaScript object.
-  const payload = { token };
-  
-  // 2. Convert the payload into a Blob with the correct MIME type.
-  // This is the most robust way to send a JSON body and avoids all serialization ambiguity.
-  const payloadBlob = new Blob([JSON.stringify(payload)], {
-    type: 'application/json',
-  });
+  // THE FINAL, GUARANTEED FIX:
+  // We will bypass supabase.functions.invoke() and use the browser's native fetch API.
+  // This gives us absolute control and removes any ambiguity from the Supabase client library.
 
-  // 3. Invoke the function, passing the Blob directly as the body.
-  const { error: recaptchaError } = await supabase.functions.invoke('verify-recaptcha', {
-    body: payloadBlob,
-  });
+  // 1. Get the URL and headers needed for the request from the Supabase client.
+  const { url } = supabase.functions.getURL('verify-recaptcha');
+  const { 'apiKey': anonKey } = supabase.functions.getHeaders();
 
-  if (recaptchaError) {
-    throw new Error(`reCAPTCHA verification failed: ${recaptchaError.message}`);
+  try {
+    // 2. Make the request using native fetch.
+    const recaptchaResponse = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    // 3. Check the response.
+    if (!recaptchaResponse.ok) {
+      // If the status is 400, 500, etc., throw an error.
+      const errorBody = await recaptchaResponse.json();
+      throw new Error(errorBody.error || `reCAPTCHA verification failed with status: ${recaptchaResponse.status}`);
+    }
+
+  } catch (error) {
+    // This will catch both network errors and the error thrown above.
+    console.error('Direct fetch to verify-recaptcha failed:', error);
+    throw new Error(`reCAPTCHA verification failed: ${error.message}`);
   }
 
-  // If verification succeeds, insert the report.
+  // 4. If verification succeeds, proceed with inserting the report.
   const { data, error } = await supabase
     .from('reports')
     .insert([reportData])
@@ -62,6 +75,7 @@ export const createReport = async (supabase, reportData, token) => {
 
   return data[0];
 };
+
 
 /**
  * Updates the status of a report.
