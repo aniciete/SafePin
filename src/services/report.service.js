@@ -24,58 +24,33 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
 };
 
 /**
- * Creates a new report after verifying reCAPTCHA using the native fetch API.
+ * Creates a new report by calling the single, secure database function.
  * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {object} reportData The report data to insert.
  * @param {string} token The reCAPTCHA token.
- * @returns {Promise<object>} The inserted report data.
+ * @returns {Promise<object>} The result of the function call.
  */
 export const createReport = async (supabase, reportData, token) => {
-  // THE FINAL, CORRECTED FIX:
-  // We will manually construct the function URL and use the browser's native fetch API.
-
-  // 1. Get the required URL and Key from environment variables.
-  // These are guaranteed to be correct.
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const functionUrl = `${supabaseUrl}/functions/v1/verify-recaptcha`;
-
-  try {
-    // 2. Make the request using native fetch with the manually constructed URL and headers.
-    const recaptchaResponse = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}` // Supabase functions often need the Authorization header as well.
-      },
-      body: JSON.stringify({ token }),
-    });
-
-    // 3. Check the response.
-    if (!recaptchaResponse.ok) {
-      const errorBody = await recaptchaResponse.json().catch(() => ({ error: 'Failed to parse error response.' }));
-      throw new Error(errorBody.error || `reCAPTCHA verification failed with status: ${recaptchaResponse.status}`);
-    }
-
-  } catch (error) {
-    console.error('Direct fetch to verify-recaptcha failed:', error);
-    throw new Error(`reCAPTCHA verification failed: ${error.message}`);
-  }
-
-  // 4. If verification succeeds, proceed with inserting the report.
-  const { data, error } = await supabase
-    .from('reports')
-    .insert([reportData])
-    .select();
+  // Call the new all-in-one database function with all the required parameters.
+  const { data, error } = await supabase.rpc('create_report_securely', {
+    recaptcha_token: token,
+    incident_type: reportData.incident_type,
+    severity: reportData.severity,
+    description: reportData.description,
+    location: reportData.location,
+    image_path: reportData.image_path,
+    tracking_code: reportData.tracking_code,
+    jurisdiction: reportData.jurisdiction,
+    contact_info: reportData.contact_info,
+  });
 
   if (error) {
-    throw new Error(`Failed to create report: ${error.message}`);
+    // The specific error message from the database function (e.g., "reCAPTCHA verification failed") will be passed here.
+    throw new Error(error.message);
   }
 
-  return data[0];
+  return data;
 };
-
 
 /**
  * Updates the status of a report.
