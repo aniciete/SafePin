@@ -1,51 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import UserListItemSkeleton from './UserListItemSkeleton';
 import { useToast } from '@/hooks/use-toast';
 import CreateUserForm from './CreateUserForm';
-import jurisdictions from '../../utils/jurisdictions.json';
+import { getJurisdictionNameByCode } from '../../utils/jurisdictionUtils';
+import { formatDateTime, formatLabel } from '../../utils/formatUtils';
+import { exportToCsv } from '../../utils/csvUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-  DialogClose
-} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pencil, Trash2, UserX, Download } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+
+const UserTableRowSkeleton = () => (
+  <TableRow>
+    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+    <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+  </TableRow>
+);
 
 const UserList = () => {
   const { supabase } = useSupabase();
-  const [users, setUsers] = useState([]);
+  const { toast } = useToast();
+  
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingUser, setEditingUser] = useState(null);
-  const [editedRole, setEditedRole] = useState('');
-  const [editedJurisdiction, setEditedJurisdiction] = useState('');
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const { toast } = useToast();
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('users').select('*').order('created_at', { ascending: false });
-      if (searchTerm) query = query.ilike('email', `%${searchTerm}%`);
-      if (roleFilter && roleFilter !== 'all') query = query.eq('role', roleFilter);
-      const { data, error } = await query;
+      const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      setUsers(data);
+      setAllUsers(data || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
       toast({ title: 'Error fetching users', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -54,13 +50,19 @@ const UserList = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [searchTerm, roleFilter]);
+  }, []);
 
-  const handleUserCreated = () => fetchUsers();
+  const filteredUsers = useMemo(() => {
+    return allUsers.filter(user => {
+      const searchMatch = searchTerm.toLowerCase() === '' || user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const roleMatch = roleFilter === 'all' || user.role === roleFilter;
+      return searchMatch && roleMatch;
+    });
+  }, [allUsers, searchTerm, roleFilter]);
 
   const handleDelete = async (userId) => {
     try {
-      const { error } = await supabase.from('users').delete().eq('id', userId);
+      const { error } = await supabase.functions.invoke('delete-user', { body: { userId } });
       if (error) throw error;
       toast({ title: 'Success', description: 'User deleted successfully!' });
       fetchUsers();
@@ -69,144 +71,138 @@ const UserList = () => {
     }
   };
 
-  const handleEdit = (user) => {
-    setEditingUser(user.id);
-    setEditedRole(user.role);
-    setEditedJurisdiction(user.jurisdiction || '');
-  };
-
-  const handleCancel = () => setEditingUser(null);
-
-  const handleSave = async (userId) => {
-    try {
-      // Enforce business logic: Admins CANNOT have a jurisdiction.
-      const jurisdictionToSave = editedRole === 'admin' ? null : editedJurisdiction;
-
-      if (editedRole === 'authority' && !jurisdictionToSave) {
-        toast({ title: 'Validation Error', description: 'An authority user must have a jurisdiction.', variant: 'destructive' });
-        return;
-      }
-      
-      const { error } = await supabase
-        .from('users')
-        .update({ role: editedRole, jurisdiction: jurisdictionToSave })
-        .eq('id', userId);
-
-      if (error) throw error;
-      toast({ title: 'Success', description: 'User updated successfully!' });
-      setEditingUser(null);
-      fetchUsers();
-    } catch (error) {
-      toast({ title: 'Error updating user', description: error.message, variant: 'destructive' });
+  const handleExport = () => {
+    if (filteredUsers.length > 0) {
+      exportToCsv(filteredUsers, `safepin-users-${new Date().toISOString().split('T')[0]}.csv`);
+    } else {
+      toast({
+        title: 'No Data to Export',
+        description: 'The current filtered list is empty.',
+        variant: 'destructive',
+      });
     }
   };
-  
-  const getJurisdictionName = (code) => {
-    if (!code) return 'N/A';
-    const match = jurisdictions.find(j => j.psgc_code === code);
-    return match ? `${match.barangay}, ${match.city}` : code;
+
+  // Animation variants for the table body and rows
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.03 },
+    },
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">User Management</h2>
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="min-w-full"><tbody>{[...Array(5)].map((_, index) => <UserListItemSkeleton key={index} />)}</tbody></table>
-        </div>
-      </div>
-    );
-  }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">User Management</h2>
-      <CreateUserForm onUserCreated={handleUserCreated} />
-      <div className="flex items-center space-x-4">
-        <Input type="text" placeholder="Search by email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full md:w-1/3" />
-        <Select onValueChange={setRoleFilter} defaultValue={roleFilter}>
-          <SelectTrigger><SelectValue placeholder="Filter by role" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="authority">Authority</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="space-y-6">
+      <div>
+        {/* --- THE FIX for dark text --- */}
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
+        <p className="text-muted-foreground">Create, search, and manage user accounts.</p>
       </div>
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-full divide-y">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Email</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Role</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Jurisdiction</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Created At</th>
-              <th className="px-4 py-2 text-left text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-muted/50">
-                <td className="px-4 py-2 font-medium">{user.email}</td>
-                <td className="px-4 py-2">
-                  {editingUser === user.id ? (
-                    <Select onValueChange={setEditedRole} defaultValue={editedRole}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="authority">Authority</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : ( user.role )}
-                </td>
-                <td className="px-4 py-2">
-                  {/* THIS IS THE FIX: Only show dropdown for authorities during edit */}
-                  {editingUser === user.id ? (
-                    editedRole === 'authority' ? (
-                      <Select onValueChange={setEditedJurisdiction} defaultValue={editedJurisdiction}>
-                        <SelectTrigger><SelectValue placeholder="Select a jurisdiction" /></SelectTrigger>
-                        <SelectContent>
-                          {jurisdictions.map((j) => (
-                            <SelectItem key={j.psgc_code} value={j.psgc_code}>
-                              {j.barangay}, {j.city}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : ( <span className="text-muted-foreground">N/A</span> )
-                  ) : ( getJurisdictionName(user.jurisdiction) )}
-                </td>
-                <td className="px-4 py-2">{new Date(user.created_at).toLocaleDateString()}</td>
-                <td className="px-4 py-2 space-x-2">
-                  {editingUser === user.id ? (
-                    <>
-                      <Button onClick={() => handleSave(user.id)} size="sm">Save</Button>
-                      <Button onClick={handleCancel} variant="outline" size="sm">Cancel</Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button onClick={() => handleEdit(user)} variant="secondary" size="sm">Edit</Button>
-                      <Dialog>
-                        <DialogTrigger asChild><Button variant="destructive" size="sm">Delete</Button></DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Are you sure?</DialogTitle>
-                            <DialogDescription>This action will permanently delete the user account.</DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                            <Button variant="destructive" onClick={() => handleDelete(user.id)}>Delete</Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card>
+        <CardHeader><CardTitle>Create a New User</CardTitle></CardHeader>
+        <CardContent><CreateUserForm onUserCreated={fetchUsers} /></CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>All Users</CardTitle>
+          <CardDescription>A list of all admin and authority accounts in the system.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <Input 
+                type="text" 
+                placeholder="Search by email..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm" 
+              />
+              <Select onValueChange={setRoleFilter} value={roleFilter}>
+                <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="authority">Authority</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </div>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Jurisdiction</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <motion.tbody
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {loading ? (
+                  [...Array(5)].map((_, i) => <UserTableRowSkeleton key={i} />)
+                ) : filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <motion.tr
+                      key={user.id}
+                      variants={itemVariants}
+                      className="hover:bg-muted/50" // Framer Motion needs className here
+                    >
+                      <TableCell className="font-medium">{user.email}</TableCell>
+                      <TableCell>{formatLabel(user.role)}</TableCell>
+                      <TableCell>{getJurisdictionNameByCode(user.jurisdiction)}</TableCell>
+                      <TableCell>{formatDateTime(user.created_at)}</TableCell>
+                      <TableCell className="text-right space-x-1">
+                         <Button variant="ghost" size="icon" onClick={() => toast({ title: 'In Development', description: 'Editing user details will be available in a future update.' })}>
+                            <Pencil className="h-4 w-4" />
+                         </Button>
+                         <Dialog>
+                           <DialogTrigger asChild>
+                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                           </DialogTrigger>
+                           <DialogContent>
+                             <DialogHeader><DialogTitle>Are you sure?</DialogTitle><DialogDescription>This will permanently delete the user account from the system.</DialogDescription></DialogHeader>
+                             <DialogFooter>
+                               <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                               <Button variant="destructive" onClick={() => handleDelete(user.id)}>Delete</Button>
+                             </DialogFooter>
+                           </DialogContent>
+                         </Dialog>
+                      </TableCell>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center text-center py-6">
+                        <UserX className="h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-semibold">No Users Found</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">No users match your current search and filter criteria.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </motion.tbody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

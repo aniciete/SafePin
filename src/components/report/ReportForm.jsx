@@ -15,12 +15,28 @@ import AddressSearchInput from './AddressSearchInput';
 import { Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const formVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? '50%' : '-50%',
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    x: direction < 0 ? '50%' : '-50%',
+    opacity: 0,
+  }),
+};
+
 const ReportForm = () => {
   const { supabase } = useSupabase();
   const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger, watch } = useForm({
     mode: 'onChange',
     defaultValues: {
-      description: ''
+      description: '',
+      incidentType: '',
     }
   });
   const { toast } = useToast();
@@ -28,13 +44,14 @@ const ReportForm = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Submitting...');
   const [trackingCode, setTrackingCode] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [[currentStep, direction], setCurrentStep] = useState([1, 0]);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageInfo, setImageInfo] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
 
   const selectedFile = watch('image');
   const latitude = watch('latitude');
+  const incidentTypeSelection = watch('incidentType');
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -50,7 +67,12 @@ const ReportForm = () => {
   const nextStep = async () => {
     let fieldsToValidate = [];
     switch (currentStep) {
-      case 1: fieldsToValidate = ['incidentType', 'severity']; break;
+      case 1:
+        fieldsToValidate = ['incidentType', 'severity'];
+        if (incidentTypeSelection === 'Other') {
+          fieldsToValidate.push('incidentTypeOther');
+        }
+        break;
       case 2: fieldsToValidate = ['latitude', 'longitude']; break;
       case 3: fieldsToValidate = ['description']; break;
       default: break;
@@ -58,12 +80,12 @@ const ReportForm = () => {
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep([currentStep + 1, 1]);
     }
   };
 
   const prevStep = () => {
-    setCurrentStep(currentStep - 1);
+    setCurrentStep([currentStep - 1, -1]);
   };
 
   const onSubmit = async (data) => {
@@ -93,6 +115,7 @@ const ReportForm = () => {
       setLoadingMessage('Submitting report...');
       const reportData = {
         incident_type: data.incidentType,
+        incident_type_other: data.incidentType === 'Other' ? data.incidentTypeOther : null,
         severity: data.severity,
         description: validateText(data.description).value,
         location: { lat: data.latitude, lng: data.longitude },
@@ -106,7 +129,7 @@ const ReportForm = () => {
       setTrackingCode(newTrackingCode);
       toast({ title: 'Success', description: 'Report submitted successfully!' });
       reset();
-      setCurrentStep(1);
+      setCurrentStep([1, 0]);
       setImagePreview(null);
       setImageInfo(null);
     } catch (error) {
@@ -161,9 +184,20 @@ const ReportForm = () => {
         </div>
       )}
       {!trackingCode && <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <AnimatePresence mode="wait">
-          {currentStep === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} transition={{ duration: 0.3 }}>
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div
+            key={currentStep}
+            custom={direction}
+            variants={formVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+          >
+            {currentStep === 1 && (
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-center">Step 1: What Happened?</h3>
                 <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
@@ -193,6 +227,27 @@ const ReportForm = () => {
                   />
                   {errors.incidentType && <p className="text-sm text-destructive">{errors.incidentType.message}</p>}
                 </div>
+
+                <AnimatePresence>
+                  {incidentTypeSelection === 'Other' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginTop: '1rem' }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      className="grid w-full max-w-sm items-center gap-1.5 mx-auto overflow-hidden"
+                    >
+                      <Label htmlFor="incidentTypeOther">Please Specify <span className="text-destructive">*</span></Label>
+                      <Input 
+                        id="incidentTypeOther"
+                        placeholder="e.g., Noise Complaint"
+                        {...register('incidentTypeOther', { required: "Please specify the incident type." })}
+                        className={errors.incidentTypeOther ? 'border-destructive' : ''}
+                      />
+                      {errors.incidentTypeOther && <p className="text-sm text-destructive">{errors.incidentTypeOther.message}</p>}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
                   <Label htmlFor="severity">Severity Level <span className="text-destructive">*</span></Label>
                   <Controller name="severity" control={control} rules={{ required: 'Severity level is required.' }}
@@ -213,34 +268,29 @@ const ReportForm = () => {
                   {errors.severity && <p className="text-sm text-destructive">{errors.severity.message}</p>}
                 </div>
                  <p className="text-xs text-muted-foreground text-center pt-2">* Required field</p>
-              </div>
-            </motion.div>
-          )}
+             </div>
+           )}
 
-          {currentStep === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}>
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen? <span className="text-destructive">*</span></h3>
-                <AddressSearchInput 
-                  onLocationChange={handleLocationChange} 
-                  markerPosition={markerPosition}
-                />
-                <input type="hidden" {...register('latitude', { required: 'A valid location in Metro Manila is required.' })} />
-                <input type="hidden" {...register('longitude', { required: 'A valid location in Metro Manila is required.' })} />
-                <input type="hidden" {...register('jurisdiction')} />
-                {errors.latitude && <p className="text-sm text-destructive text-center">{errors.latitude.message}</p>}
-                <p className="text-xs text-muted-foreground text-center pt-2">* Required field</p>
-              </div>
-            </motion.div>
-          )}
+           {currentStep === 2 && (
+             <div className="space-y-4">
+               <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen? <span className="text-destructive">*</span></h3>
+               <AddressSearchInput
+                 onLocationChange={handleLocationChange}
+                 markerPosition={markerPosition}
+               />
+               <input type="hidden" {...register('latitude', { required: 'A valid location in Metro Manila is required.' })} />
+               <input type="hidden" {...register('longitude', { required: 'A valid location in Metro Manila is required.' })} />
+               <input type="hidden" {...register('jurisdiction')} />
+               {errors.latitude && <p className="text-sm text-destructive text-center">{errors.latitude.message}</p>}
+               <p className="text-xs text-muted-foreground text-center pt-2">* Required field</p>
+             </div>
+           )}
 
-          {currentStep === 3 && (
-             <motion.div key="step3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}>
-               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
-                
-                <div className="grid w-full gap-1.5">
-                  <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
+           {currentStep === 3 && (
+              <div className="space-y-6">
+               <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
+               <div className="grid w-full gap-1.5">
+                 <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
                   <Textarea 
                     id="description" 
                     {...register('description', { required: 'A detailed description is required.' })} 
@@ -249,7 +299,6 @@ const ReportForm = () => {
                   />
                   {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
                 </div>
-                
                 <div className="grid w-full gap-1.5">
                   <Label htmlFor="contactInfo">Contact Info</Label>
                   <Input 
@@ -263,7 +312,6 @@ const ReportForm = () => {
                     For follow-up questions from authorities. Stays confidential.
                   </p>
                 </div>
-
                 <div className="grid w-full gap-1.5">
                   <Label htmlFor="image">Attach an Image</Label>
                   <Label 
@@ -284,7 +332,6 @@ const ReportForm = () => {
                     className="sr-only"
                   />
                 </div>
-                
                 <AnimatePresence>
                   {imagePreview && (
                       <motion.div
@@ -301,11 +348,10 @@ const ReportForm = () => {
                       </motion.div>
                     )}
                 </AnimatePresence>
-                
                 <p className="text-xs text-muted-foreground pt-2">* Required field</p>
               </div>
-             </motion.div>
-          )}
+            )}
+          </motion.div>
         </AnimatePresence>
 
         <div className="flex justify-between items-center pt-4">

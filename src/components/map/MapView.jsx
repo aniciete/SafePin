@@ -1,132 +1,99 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import React from 'react';
 import mapLoader from '../../services/mapLoader';
-import MapViewSkeleton from './MapViewSkeleton';
 import MapMarker from './MapMarker';
 
-const MapView = ({ reports = [], onMarkerClick, onLocationSelect, markerPosition, selectedReportId }) => {
+const MapView = React.memo(({ reports = [], onMarkerClick, selectedReportId, hoveredReportId, initialCenter, initialZoom = 12 }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const userPinRef = useRef(null);
-  const userPinRoot = useRef(null);
   const reportMarkersRef = useRef({});
   const reportMarkerRoots = useRef({});
   const [isMapInitialized, setIsMapInitialized] = useState(false);
 
+  // Effect for initializing the map
   useEffect(() => {
     if (mapInstanceRef.current) return;
-
     mapLoader.load().then(async (google) => {
       const { Map } = await google.maps.importLibrary("maps");
+      const center = initialCenter || { lat: 14.5995, lng: 120.9842 };
       const map = new Map(mapContainerRef.current, {
-        center: { lat: 14.5995, lng: 120.9842 },
-        zoom: 12,
+        center: center,
+        zoom: initialCenter ? initialZoom : 12,
         mapId: 'fe9a462b09a63dfca63c05a8',
-        disableDefaultUI: true,
-        zoomControl: true,
-        gestureHandling: 'cooperative',
+        disableDefaultUI: true, zoomControl: true, gestureHandling: 'cooperative',
       });
-      
-      map.addListener('click', (e) => {
-        if (onLocationSelect) {
-          const latLng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-          onLocationSelect(latLng);
-        }
-      });
-
       mapInstanceRef.current = map;
       setIsMapInitialized(true);
     }).catch(e => console.error("API Load Failed:", e));
+    return () => { Object.values(reportMarkerRoots.current).forEach(root => root.unmount()); };
+  }, [initialCenter, initialZoom]);
 
-    return () => {
-      if (userPinRoot.current) userPinRoot.current.unmount();
-      Object.values(reportMarkerRoots.current).forEach(root => root.unmount());
-    };
-  }, [onLocationSelect]);
-
-  useEffect(() => {
-    if (!isMapInitialized || !markerPosition) {
-      return;
-    }
-    
-    const map = mapInstanceRef.current;
-
-    const updateUserPin = async () => {
-      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-
-      if (userPinRef.current) {
-        userPinRef.current.position = markerPosition;
-      } else {
-        const container = document.createElement('div');
-        userPinRoot.current = createRoot(container);
-        userPinRoot.current.render(
-          <MapMarker severity="Low" pulse={true} title="Selected Location" />
-        );
-        userPinRef.current = new AdvancedMarkerElement({
-          position: markerPosition,
-          map: map,
-          content: container,
-          gmpDraggable: true,
-        });
-        userPinRef.current.addListener('dragend', (event) => {
-          const newPosition = event.latLng;
-          if (onLocationSelect && newPosition) {
-            onLocationSelect({ lat: newPosition.lat(), lng: newPosition.lng() });
-          }
-        });
-      }
-      map.moveCamera({ center: markerPosition, zoom: 17 });
-    };
-
-    updateUserPin();
-    
-  }, [isMapInitialized, markerPosition]);
-
+  // Effect for adding/removing/updating markers
   useEffect(() => {
     if (!isMapInitialized) return;
-    
     const map = mapInstanceRef.current;
-    
-    const updateReportMarkers = async () => {
-      Object.values(reportMarkersRef.current).forEach(marker => marker.map = null);
-      Object.values(reportMarkerRoots.current).forEach(root => root.unmount());
-      reportMarkersRef.current = {};
-      reportMarkerRoots.current = {};
+    const existingMarkerIds = Object.keys(reportMarkersRef.current);
+    const newReportIds = reports.map(r => r.id);
 
-      if (!reports || reports.length === 0) return;
+    existingMarkerIds.forEach(id => {
+      if (!newReportIds.includes(id)) {
+        reportMarkersRef.current[id].map = null;
+        reportMarkerRoots.current[id].unmount();
+        delete reportMarkersRef.current[id];
+        delete reportMarkerRoots.current[id];
+      }
+    });
 
+    const updateMarkers = async () => {
       const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-      
       reports.forEach((report) => {
         if (report.location?.lat && report.location?.lng) {
-          const container = document.createElement('div');
-          const root = createRoot(container);
-          root.render(
+          if (!reportMarkersRef.current[report.id]) {
+            const container = document.createElement('div');
+            const root = createRoot(container);
+            const marker = new AdvancedMarkerElement({ position: report.location, map, content: container });
+            reportMarkersRef.current[report.id] = marker;
+            reportMarkerRoots.current[report.id] = root;
+          }
+          // Render the React component for the marker's content
+          reportMarkerRoots.current[report.id].render(
             <MapMarker
               severity={report.severity}
               status={report.status}
               title={report.incident_type}
               onClick={() => onMarkerClick && onMarkerClick(report)}
               isSelected={report.id === selectedReportId}
+              isHovered={report.id === hoveredReportId}
+              isDimmed={hoveredReportId && report.id !== hoveredReportId}
             />
           );
-          
-          const marker = new AdvancedMarkerElement({
-            position: report.location,
-            map: map,
-            content: container,
-            zIndex: report.id === selectedReportId ? 99 : 1,
-          });
-
-          reportMarkersRef.current[report.id] = marker;
-          reportMarkerRoots.current[report.id] = root;
         }
       });
     };
-    updateReportMarkers();
-  }, [isMapInitialized, reports, onMarkerClick, selectedReportId]);
+    updateMarkers();
+  }, [isMapInitialized, reports, onMarkerClick, selectedReportId, hoveredReportId]);
 
-  return <div ref={mapContainerRef} className="h-full w-full" />;
-};
+  // --- THIS IS THE NEW, DEDICATED EFFECT FOR Z-INDEX ---
+  useEffect(() => {
+    if (!isMapInitialized) return;
+    Object.entries(reportMarkersRef.current).forEach(([id, marker]) => {
+      const isSelected = id === selectedReportId;
+      const isHovered = id === hoveredReportId;
+      
+      if (isSelected) {
+        marker.zIndex = 100; // Selected is always on top
+      } else if (isHovered) {
+        marker.zIndex = 50;  // Hovered is next
+      } else {
+        marker.zIndex = 1;   // Default is at the bottom
+      }
+    });
+  }, [isMapInitialized, selectedReportId, hoveredReportId]);
 
+
+  return <div ref={mapContainerRef} className="h-full w-full rounded-lg overflow-hidden" />;
+});
+
+MapView.displayName = 'MapView';
 export default MapView;

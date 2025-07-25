@@ -10,8 +10,11 @@
   --card-foreground: 210 17% 15%;
   --popover: 210 20% 100%;
   --popover-foreground: 210 17% 15%;
-  --primary: 122 39% 49%;
+  
+  /* --- THIS IS THE FIX: Using the exact HSL value for #4CAF50 --- */
+  --primary: 92 100% 32.8%;
   --primary-foreground: 0 0% 100%;
+  
   --secondary: 210 89% 53%;
   --secondary-foreground: 0 0% 100%;
   --muted: 210 11% 71%;
@@ -22,7 +25,10 @@
   --destructive-foreground: 0 0% 100%;
   --border: 210 14% 89%;
   --input: 210 14% 89%;
-  --ring: 122 39% 49%;
+  
+  /* The focus ring should also match the primary color */
+  --ring: 92 100% 32.8%;
+  
   --radius: 8px;
 }
 
@@ -101,4 +107,48 @@ gmp-place-autocomplete::part(input):focus {
 gmp-place-autocomplete::part(input)::placeholder {
   color: hsl(var(--muted-foreground));
   opacity: 1;
+}
+
+/* 
+  ==========================================
+  DARK MODE THEME (V5 - True Monochromatic)
+  ==========================================
+*/
+.dark {
+  /* HSL(0, 0%, X%) creates a pure gray. */
+  --background: 0 0% 9.25%;      /* #171717 - A very dark gray, almost black */
+  --foreground: 0 0% 98%;      /* #FAFAFA - Bright, clean white */
+  
+  --card: 0 0% 12%;          /* #1F1F1F - A slightly lighter dark gray for cards */
+  --card-foreground: 0 0% 98%;
+
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 98%;
+
+  /* Brand colors remain for buttons and highlights */
+  --primary: 122 39% 49%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 89% 53%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted tones are lighter shades of pure gray */
+  --muted: 0 0% 15%;          /* #262626 */
+  --muted-foreground: 0 0% 63%;  /* #A1A1A1 */
+
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 98%;
+
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+
+  /* Borders and inputs are a distinct but subtle gray */
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 122 39% 49%;
+}
+
+
+/* Also add a dark mode for the Google Maps Autocomplete */
+.dark gmp-place-autocomplete {
+  color-scheme: dark;
 }

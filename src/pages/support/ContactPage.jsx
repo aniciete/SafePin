@@ -182,9 +182,9 @@ const ContactPage = () => {
                   <div>
                     <h3 className="font-semibold">Address</h3>
                     <p className="text-muted-foreground">
-                      Unit 2501, 25th Floor<br />
-                      Robinsons Equitable Tower<br />
-                      Pasig City, Metro Manila 1605<br />
+                      E407<br />
+                      Far Eastern Univeristy, Engineering Building<br />
+                      Manila, Metro Manila 1015<br />
                       Philippines
                     </p>
                   </div>

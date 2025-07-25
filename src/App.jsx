@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
 import AuthGuard from './components/auth/AuthGuard';
 import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from './contexts/ThemeProvider';
 import MainLayout from './components/layout/MainLayout';
 import EmergencyBanner from './components/layout/EmergencyBanner';
 
@@ -67,9 +68,10 @@ const App = () => (
   <SupabaseProvider>
     <AuthProvider>
       <Router>
-        <EmergencyBanner />
-        <AppRoutes />
-        <Toaster />
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <AppRoutes />
+          <Toaster />
+        </ThemeProvider>
       </Router>
     </AuthProvider>
   </SupabaseProvider>

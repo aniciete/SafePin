@@ -42,7 +42,7 @@ const TriageQueue = ({ reports, onReportUpdate, loading }) => {
           reports.map(report => (
             <div key={report.id} className="p-4 border rounded-lg">
               <h3 className="font-semibold">{report.incident_type}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(report.created_at).toLocaleString()}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{formatDateTime(report.created_at)}</p>
               <p className="text-sm mt-2">{report.description?.substring(0, 100)}...</p>
               <div className="flex justify-end space-x-2 mt-4">
                 <Button onClick={() => handleUpdateStatus(report.id, 'verified')} size="sm">Verify</Button>

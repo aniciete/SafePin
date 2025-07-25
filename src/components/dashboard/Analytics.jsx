@@ -64,16 +64,6 @@ const Analytics = ({ reports }) => {
         </Card>
       </div>
       <div className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Incident Hotspots</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              <MapView reports={reports} />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

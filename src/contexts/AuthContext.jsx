@@ -7,10 +7,8 @@ export const AuthProvider = ({ children }) => {
   const { supabase } = useSupabase();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  // Initialize loading to true. This is critical for the AuthGuard to work on refresh.
   const [loading, setLoading] = useState(true);
 
-  // This callback remains the same.
   const fetchUserProfile = useCallback(async (authUser) => {
     if (!authUser) {
       setProfile(null);
@@ -32,24 +30,19 @@ export const AuthProvider = ({ children }) => {
     }
   }, [supabase]);
 
-  // This useEffect is designed to robustly handle the initial page load and session refresh.
   useEffect(() => {
-    // 1. Proactively get the session on initial load.
+    setLoading(true);
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
         await fetchUserProfile(currentUser);
       }
-      // 2. Set loading to false only after the initial check is complete.
       setLoading(false);
     });
 
-    // 3. Set up the listener for subsequent auth changes (e.g., SIGNED_OUT).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // This listener primarily handles logouts or token refreshes.
-        // The initial session is handled by getSession() above.
         if (event === 'SIGNED_IN') {
           setUser(session.user);
           fetchUserProfile(session.user);
@@ -59,27 +52,23 @@ export const AuthProvider = ({ children }) => {
         }
       }
     );
-
-    return () => {
-      subscription?.unsubscribe();
-    };
+    return () => subscription?.unsubscribe();
   }, [supabase, fetchUserProfile]);
 
   const value = {
     user,
     profile,
     loading,
-    // This login function is designed to work with the LoginForm's redirect logic.
     login: async (email, password) => {
+      // This is the key: The login function is self-contained.
+      // It signs in, gets the profile, and returns it.
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { profile: null, error };
       if (data.user) {
-        // Manually fetch the profile here to return it immediately to the LoginForm.
-        // This ensures the redirect happens correctly without a race condition.
         const userProfile = await fetchUserProfile(data.user);
         return { profile: userProfile, error: null };
       }
-      return { profile: null, error: new Error('Login failed.') };
+      return { profile: null, error: new Error('Login failed: No user data returned.') };
     },
     logout: () => supabase.auth.signOut(),
   };

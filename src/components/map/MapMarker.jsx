@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import SafePinIcon from './SafePinIcon';
 
-const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification', onClick, title, isSelected = false }) => {
+const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification', onClick, title, isSelected = false, isHovered = false, isDimmed = false }) => {
 
   const getSeverityColor = () => {
     switch (String(severity).toLowerCase()) {
@@ -20,19 +20,11 @@ const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification
 
   const markerVariants = {
     initial: { y: -30, opacity: 0, scale: 0.8 },
-    animate: { 
-      y: 0, 
-      // Set a base lower opacity for resolved items
-      opacity: isResolved ? 0.75 : 1,
-      scale: isSelected ? 1.3 : 1,
-      zIndex: isSelected ? 10 : 1,
+    animate: {
+      y: 0,
+      opacity: isResolved ? 0.75 : (isDimmed ? 0.3 : 1),
+      scale: isSelected ? 1.3 : (isHovered ? 1.1 : 1),
     },
-    hover: { 
-      scale: 1.1, 
-      zIndex: 5,
-      // Ensure it becomes fully opaque on hover, even if resolved
-      opacity: 1, 
-    }
   };
 
   return (
@@ -40,14 +32,14 @@ const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification
       variants={markerVariants}
       initial="initial"
       animate="animate"
-      whileHover="hover"
       transition={{ type: 'spring', stiffness: 400, damping: 15 }}
       className="relative w-10 h-10 cursor-pointer"
       onClick={onClick}
-      title={`${title} (${status})`} // Add status to the tooltip for clarity
+      title={`${title} (${status})`}
       style={{
         transformOrigin: 'bottom center',
         filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3))',
+        zIndex: isSelected || isHovered ? 10 : 1,
       }}
     >
       {needsAttention && !isSelected && (
@@ -58,7 +50,6 @@ const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification
       )}
       
       <div className={cn('relative w-full h-full')}>
-        {/* Pass the isInactive prop to the icon */}
         <SafePinIcon color={color} isInactive={isResolved} />
       </div>
     </motion.div>
@@ -66,5 +57,4 @@ const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification
 });
 
 MapMarker.displayName = 'MapMarker';
-
 export default MapMarker;

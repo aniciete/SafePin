@@ -70,7 +70,7 @@ const TrackReportPage = () => {
               <h2 className="text-xl font-bold text-center mb-6">Report Progress</h2>
               <StatusTimeline status={report.status} />
               <p className="text-center text-sm text-muted-foreground mt-6">
-                Submitted At: {new Date(report.created_at).toLocaleString()}
+                Submitted At: {formatDateTime(report.created_at)}
               </p>
             </div>
           )}

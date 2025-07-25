@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'; // Import useEffect
+import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -10,48 +10,47 @@ import { Label } from '@/components/ui/label';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Add submitting state
-  const { login, profile } = useAuth(); // Get profile from the context
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // This useEffect will run AFTER the login is successful and the context has been updated.
-  // This is the key to fixing the redirect race condition.
-  useEffect(() => {
-    // Only navigate if we are in the process of submitting and a profile is now available.
-    if (isSubmitting && profile) {
-      if (profile.role === 'admin') {
-        navigate(PATHS.ADMIN_DASHBOARD, { replace: true });
-      } else if (profile.role === 'authority') {
-        navigate(PATHS.AUTHORITY_DASHBOARD, { replace: true });
-      } else {
-        navigate(PATHS.LANDING, { replace: true });
-      }
-      // Reset submitting state after navigation
-      setIsSubmitting(false);
-    }
-  }, [profile, isSubmitting, navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); // Set submitting state to true
-
+    setIsSubmitting(true);
+    
     try {
-      // The login function now just triggers the auth event.
-      // The useEffect above will handle the navigation.
-      const { error } = await login(email, password);
+      // The login function now returns the profile directly.
+      const { profile: loggedInProfile, error } = await login(email, password);
+      
       if (error) {
         throw error;
       }
-      // Don't navigate here anymore.
+      
+      // If we get a profile, we can navigate.
+      if (loggedInProfile) {
+        toast({ title: 'Success', description: 'Logged in successfully!' });
+        if (loggedInProfile.role === 'admin') {
+          navigate(PATHS.ADMIN_DASHBOARD, { replace: true });
+        } else if (loggedInProfile.role === 'authority') {
+          navigate(PATHS.AUTHORITY_DASHBOARD, { replace: true });
+        } else {
+          navigate(PATHS.LANDING, { replace: true });
+        }
+      } else {
+        // This handles the case where login succeeds but profile fetch fails.
+        throw new Error('Login successful, but could not retrieve user profile.');
+      }
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Login Failed',
         description: error.message,
         variant: 'destructive',
       });
-      setIsSubmitting(false); // Reset submitting state on error
+      setIsSubmitting(false); // Reset button on failure
     }
+    // No need for a `finally` block, as we only want to reset the button on failure.
+    // On success, the component will unmount anyway.
   };
 
   return (

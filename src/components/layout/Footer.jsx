@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-// Import the singleton instance from the config file
 import { supabase } from '@/config/supabase';
-import logo from '@/assets/SafePin Map Logo.png';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +23,6 @@ const Footer = () => {
 
     setIsSubmitting(true);
     try {
-      // This now uses the SAME supabase client as the rest of the app.
       const { data, error } = await supabase.functions.invoke('subscribe-newsletter', {
         body: { email },
       });
@@ -39,7 +36,7 @@ const Footer = () => {
       setEmail('');
       setHasConsented(false);
       
-    } catch (error) { // <-- THIS IS THE FIX: Removed the "=>"
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "Failed to subscribe. Please try again.",
@@ -51,11 +48,12 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-card">
+    <footer className="bg-card border-t">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <img src={logo} alt="SafePin Logo" className="h-10 mb-4" />
+            {/* --- REPLACED LOGO WITH TEXT --- */}
+            <h2 className="text-2xl font-bold text-primary mb-2">SafePin</h2>
             <p className="text-muted-foreground text-sm">
               Your partner in community safety.
             </p>
