@@ -1,3 +1,5 @@
+// This service now has all the necessary functions for report management.
+
 /**
  * Uploads an image to Supabase Storage.
  * @param {SupabaseClient} supabase The Supabase client instance.
@@ -14,7 +16,7 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
   const filePath = `reports/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('reports')
+    .from('reports') // Ensure this matches your bucket name
     .upload(filePath, file);
 
   if (uploadError) {
@@ -24,25 +26,23 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
 };
 
 /**
- * Inserts a new report into the database after verifying reCAPTCHA.
+ * Creates a new report by calling the secure database function.
  * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {object} reportData The report data to insert.
  * @param {string} token The reCAPTCHA token.
- * @returns {Promise<object>} The inserted report data.
+ * @returns {Promise<object>} The result of the function call.
  */
 export const createReport = async (supabase, reportData, token) => {
-  // 1. Verify the reCAPTCHA token by calling the Edge Function.
-  // The body MUST be stringified for the function to receive it correctly.
   const { error: recaptchaError } = await supabase.functions.invoke('verify-recaptcha', {
-    body: JSON.stringify({ token }),
+    // THE FIX: Pass the object directly to the 'body' property.
+    // The Supabase client library will handle serializing it correctly.
+    body: { token },
   });
 
   if (recaptchaError) {
-    // This will now throw the "Edge Function returned a non-2xx status code" error if the secret is missing.
     throw new Error(`reCAPTCHA verification failed: ${recaptchaError.message}`);
   }
 
-  // 2. If reCAPTCHA is verified, proceed with inserting the report.
   const { data, error } = await supabase
     .from('reports')
     .insert([reportData])
@@ -53,4 +53,26 @@ export const createReport = async (supabase, reportData, token) => {
   }
 
   return data[0];
+};
+
+/**
+ * Updates the status of a report.
+ * @param {SupabaseClient} supabase The Supabase client instance.
+ * @param {string} reportId The ID of the report to update.
+ * @param {string} status The new status.
+ * @returns {Promise<object>} The updated report data.
+ */
+export const updateReportStatus = async (supabase, reportId, status) => {
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status })
+    .eq('id', reportId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update report status: ${error.message}`);
+  }
+
+  return data;
 };

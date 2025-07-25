@@ -6,5 +6,10 @@
   VITE_SUPABASE_URL = "https://tsyowtatzuxbvquhkgyo.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeW93dGF0enV4YnZxdWhrZ3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwODI3MjYsImV4cCI6MjA2ODY1ODcyNn0.WY-Ly-k9zrP7vEvefKKLsatd1RPfS9Txo3sKBiDxPTY"
   VITE_GOOGLE_MAPS_API_KEY = "AIzaSyAAG5tqhGWOysws0ugo22aUggpzxAt9ofE"
-  VITE_RECAPTCHA_SITE_KEY="6LdbX4orAAAAAIh8ham1lnIR8x6aB-rfV6dQNPpd"
-  
+  VITE_RECAPTCHA_SITE_KEY = "6LdbX4orAAAAAIh8ham1lnIR8x6aB-rfV6dQNPpd"
+
+# THIS IS THE FIX FOR THE 404 ERROR
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
