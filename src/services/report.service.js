@@ -1,5 +1,3 @@
-// This service now has all the necessary functions for report management.
-
 /**
  * Uploads an image to Supabase Storage.
  * @param {SupabaseClient} supabase The Supabase client instance.
@@ -16,7 +14,7 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
   const filePath = `reports/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('reports') // Ensure this matches your bucket name
+    .from('reports')
     .upload(filePath, file);
 
   if (uploadError) {
@@ -26,23 +24,33 @@ export const uploadReportImage = async (supabase, file, trackingCode) => {
 };
 
 /**
- * Creates a new report by calling the secure database function.
+ * Creates a new report after verifying reCAPTCHA.
  * @param {SupabaseClient} supabase The Supabase client instance.
  * @param {object} reportData The report data to insert.
  * @param {string} token The reCAPTCHA token.
- * @returns {Promise<object>} The result of the function call.
+ * @returns {Promise<object>} The inserted report data.
  */
 export const createReport = async (supabase, reportData, token) => {
+  // THE FINAL FIX: We will be extremely explicit about the request body.
+  // 1. Create the payload as a simple JavaScript object.
+  const payload = { token };
+  
+  // 2. Convert the payload into a Blob with the correct MIME type.
+  // This is the most robust way to send a JSON body and avoids all serialization ambiguity.
+  const payloadBlob = new Blob([JSON.stringify(payload)], {
+    type: 'application/json',
+  });
+
+  // 3. Invoke the function, passing the Blob directly as the body.
   const { error: recaptchaError } = await supabase.functions.invoke('verify-recaptcha', {
-    // THE FIX: Pass the object directly to the 'body' property.
-    // The Supabase client library will handle serializing it correctly.
-    body: { token },
+    body: payloadBlob,
   });
 
   if (recaptchaError) {
     throw new Error(`reCAPTCHA verification failed: ${recaptchaError.message}`);
   }
 
+  // If verification succeeds, insert the report.
   const { data, error } = await supabase
     .from('reports')
     .insert([reportData])
