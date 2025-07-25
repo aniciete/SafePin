@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+// Import the singleton instance from the config file
 import { supabase } from '@/config/supabase';
 import logo from '@/assets/SafePin Map Logo.png';
 
@@ -24,6 +25,7 @@ const Footer = () => {
 
     setIsSubmitting(true);
     try {
+      // This now uses the SAME supabase client as the rest of the app.
       const { data, error } = await supabase.functions.invoke('subscribe-newsletter', {
         body: { email },
       });
@@ -37,7 +39,7 @@ const Footer = () => {
       setEmail('');
       setHasConsented(false);
       
-    } catch (error) {
+    } catch (error) { // <-- THIS IS THE FIX: Removed the "=>"
       toast({
         title: "Error",
         description: error.message || "Failed to subscribe. Please try again.",

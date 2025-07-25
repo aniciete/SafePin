@@ -9,4 +9,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+// Create and export a SINGLETON instance of the Supabase client.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
