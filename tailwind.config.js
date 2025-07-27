@@ -122,7 +122,9 @@ export default {
     },
   },
   plugins: [
+    // --- THIS IS THE FIX: Revert to using require() for all plugins ---
     require("tailwindcss-animate"),
-    forms, // <-- Add the forms plugin back
+    forms,
+    require('tailwind-scrollbar'),
   ],
 };

@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReportFeedItem from './ReportFeedItem';
 import ReportListItemSkeleton from '../report/ReportListItemSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ReportFeed = ({ reports, selectedReportId, onSelectReport, onHoverReport, loading }) => {
   return (
@@ -8,15 +9,18 @@ const ReportFeed = ({ reports, selectedReportId, onSelectReport, onHoverReport, 
       <CardHeader>
         <CardTitle>Report Feed</CardTitle>
         <CardDescription>
-          {/* THIS IS THE FIX: We now display the length of the 'reports' prop, */}
-          {/* which is the correctly filtered array. */}
-          {loading ? 'Loading reports...' : `${reports.length} report${reports.length !== 1 ? 's' : ''} in your jurisdiction.`}
+          {loading && reports.length === 0 ? (
+            <Skeleton className="h-4 w-48" />
+          ) : (
+            `${reports.length} report${reports.length !== 1 ? 's' : ''} in your jurisdiction.`
+          )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow overflow-y-auto pr-3">
-        {loading ? (
+      {/* --- THIS IS THE FIX: Add scrollbar styling classes --- */}
+      <CardContent className="flex-grow overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-muted-foreground/50 scrollbar-track-transparent">
+        {loading && reports.length === 0 ? (
           <div className="space-y-2">
-            {[...Array(5)].map((_, i) => <ReportListItemSkeleton key={i} />)}
+            {[...Array(10)].map((_, i) => <ReportListItemSkeleton key={i} />)}
           </div>
         ) : reports.length > 0 ? (
           <div className="space-y-3">

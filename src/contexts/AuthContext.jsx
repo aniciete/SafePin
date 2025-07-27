@@ -65,8 +65,10 @@ export const AuthProvider = ({ children }) => {
 
       if (data.user) {
         // --- THIS IS THE FIX ---
-        // After a successful login, we manually refresh the JWT to ensure
-        // the user_metadata (role, jurisdiction) is up-to-date for RLS.
+        // After a successful login, we manually refresh the session.
+        // This forces the server to re-evaluate the JWT and its associated
+        // permissions, ensuring that RLS policies use the correct, fresh data
+        // for the newly logged-in user (especially their jurisdiction).
         await supabase.auth.refreshSession();
         
         const userProfile = await fetchUserProfile(data.user);

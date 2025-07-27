@@ -72,18 +72,32 @@ const AssignJurisdictionModal = ({ report, onAssigned }) => {
   );
 };
 
+const REPORTS_PER_PAGE = 25;
+
 const ReportModeration = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [view, setView] = useState('main');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
   const [selectedReportForView, setSelectedReportForView] = useState(null);
 
-  const fetchReports = useCallback(async () => {
-    setLoading(true);
+  const fetchReports = useCallback(async (currentPage, shouldAppend = false) => {
+    if (currentPage === 0) setLoading(true);
+    else setLoadingMore(true);
+    
     try {
+      const from = currentPage * REPORTS_PER_PAGE;
+      const to = from + REPORTS_PER_PAGE - 1;
+
       const supabaseAdmin = getSupabaseAdmin();
-      let query = supabaseAdmin.from('reports').select('*').order('created_at', { ascending: false });
+      let query = supabaseAdmin
+        .from('reports')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (view === 'flagged') {
         query = query.eq('is_flagged', true);
@@ -92,16 +106,49 @@ const ReportModeration = () => {
       const { data, error } = await query;
       
       if (error) throw error;
-      setReports(data || []);
+      
+      const newReports = data || [];
+      
+      setReports(prev => shouldAppend ? [...prev, ...newReports] : newReports);
+      
+      if (newReports.length < REPORTS_PER_PAGE) {
+        setHasMore(false);
+      }
+
     } catch (error) {
       toast({ title: 'Error fetching reports', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [view, toast]);
 
   useEffect(() => {
-    fetchReports();
+    setReports([]);
+    setPage(0);
+    setHasMore(true);
+    // The fetchReports dependency is stable due to useCallback, but view changes trigger it.
+    // We pass 0 to ensure it fetches the first page.
+    fetchReports(0, false);
+  }, [view, fetchReports]);
+
+  const handleLoadMore = () => {
+    // This will trigger the next fetch because `page` is a dependency in the data-fetching useEffect
+    setPage(prevPage => prevPage + 1);
+  };
+  
+  // This effect runs when page changes, but only for subsequent pages
+  useEffect(() => {
+    if (page > 0) {
+      fetchReports(page, true);
+    }
+  }, [page, fetchReports]);
+  
+  const refetchAll = useCallback(() => {
+    setReports([]);
+    setPage(0);
+    setHasMore(true);
+    fetchReports(0, false);
   }, [fetchReports]);
 
   const handleDelete = async (reportId) => {
@@ -110,7 +157,7 @@ const ReportModeration = () => {
       const { error } = await supabaseAdmin.from('reports').delete().eq('id', reportId);
       if (error) throw error;
       toast({ title: 'Success', description: 'Report deleted successfully!' });
-      fetchReports();
+      refetchAll();
     } catch (error) {
       toast({ title: 'Error deleting report', description: error.message, variant: 'destructive' });
     }
@@ -122,7 +169,7 @@ const ReportModeration = () => {
       const { error } = await supabaseAdmin.from('reports').update({ is_flagged: isFlagged }).eq('id', reportId);
       if (error) throw error;
       toast({ title: 'Success', description: `Report ${isFlagged ? 'flagged' : 'unflagged'} successfully!` });
-      fetchReports();
+      refetchAll();
     } catch (error) {
       toast({ title: 'Error updating report', description: error.message, variant: 'destructive' });
     }
@@ -183,18 +230,10 @@ const ReportModeration = () => {
                   </TableRow>
                 </TableHeader>
                 <motion.tbody variants={containerVariants} initial="hidden" animate="visible">
-                  {loading ? (
+                  {loading && reports.length === 0 ? (
                     [...Array(10)].map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell colSpan={4}>
-                          <div className="flex items-center justify-between p-2">
-                            <div className="space-y-2">
-                              <Skeleton className="h-4 w-32" />
-                              <Skeleton className="h-3 w-24" />
-                            </div>
-                            <Skeleton className="h-8 w-20" />
-                          </div>
-                        </TableCell>
+                      <TableRow key={`skeleton-${i}`}>
+                        <TableCell colSpan={4}><Skeleton className="h-12 w-full" /></TableCell>
                       </TableRow>
                     ))
                   ) : reports.length > 0 ? (
@@ -221,7 +260,7 @@ const ReportModeration = () => {
                             onClick={(e) => e.stopPropagation()}
                           >
                             <span className="truncate">{getJurisdictionNameByCode(report.jurisdiction)}</span>
-                            <AssignJurisdictionModal report={report} onAssigned={fetchReports} />
+                            <AssignJurisdictionModal report={report} onAssigned={refetchAll} />
                           </div>
                         </TableCell>
                         <TableCell>
@@ -263,6 +302,17 @@ const ReportModeration = () => {
                 </motion.tbody>
               </Table>
             </div>
+            <div className="flex justify-center mt-4">
+              {hasMore && !loading && (
+                <Button onClick={handleLoadMore} disabled={loadingMore}>
+                  {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loadingMore ? 'Loading...' : 'Load More'}
+                </Button>
+              )}
+              {!hasMore && reports.length > 0 && (
+                <p className="text-sm text-muted-foreground">You've reached the end of the list.</p>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -270,7 +320,7 @@ const ReportModeration = () => {
       <ReportQuickView
         report={selectedReportForView}
         onClose={() => setSelectedReportForView(null)}
-        onReportUpdate={fetchReports}
+        onReportUpdate={refetchAll}
       />
     </>
   );

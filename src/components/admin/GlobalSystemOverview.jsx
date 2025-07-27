@@ -1,190 +1,199 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import GlobalSystemOverviewSkeleton from './GlobalSystemOverviewSkeleton';
-import { getJurisdictionNameByCode } from '../../utils/jurisdictionUtils';
+import { useTheme } from '@/contexts/ThemeProvider';
+import { ResponsiveFunnel } from '@nivo/funnel';
+import { ResponsiveWaffle } from '@nivo/waffle';
+import { ResponsiveBar } from '@nivo/bar';
 import { formatLabel } from '../../utils/formatUtils';
-import { motion } from 'framer-motion';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.25,
-      ease: 'easeOut',
-    },
-  },
-};
+const ChartPlaceholder = ({ message }) => (
+  <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+    {message}
+  </div>
+);
 
 const GlobalSystemOverview = () => {
   const { supabase } = useSupabase();
-  const [stats, setStats] = useState({ userStats: [], reportStats: [], topJurisdictions: [] });
-  const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
 
+  // Separate state objects for each chart, including its own loading status
+  const [reportStats, setReportStats] = useState({ data: [], loading: true });
+  const [userStats, setUserStats] = useState({ data: [], loading: true });
+  const [topJurisdictions, setTopJurisdictions] = useState({ data: [], loading: true });
+
+  const nivoTheme = {
+    textColor: theme === 'dark' ? '#d1d5db' : '#374151',
+    fontSize: 12,
+    axis: {
+      domain: { line: { stroke: 'transparent' } },
+      ticks: { text: { fill: theme === 'dark' ? '#9ca3af' : '#6b7280' } },
+      legend: { text: { fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 14 } },
+    },
+    grid: { line: { stroke: theme === 'dark' ? '#374151' : '#e5e7eb', strokeDasharray: '3 3' } },
+    tooltip: { container: { background: theme === 'dark' ? '#1f2937' : '#ffffff', color: 'inherit', border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}` } },
+    legends: { text: { fill: theme === 'dark' ? '#d1d5db' : '#374151' } },
+  };
+
+  // Fetch data for each chart individually for resilience
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!supabase) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
+    const fetchReportStats = async () => {
       try {
-        const [userRes, reportRes, jurisdictionRes] = await Promise.all([
-          supabase.rpc('get_user_stats'),
-          supabase.rpc('get_report_stats'),
-          supabase.rpc('get_top_jurisdictions_by_pending_reports', { limit_count: 5 })
-        ]);
-        
-        if (userRes.error) throw userRes.error;
-        if (reportRes.error) throw reportRes.error;
-        if (jurisdictionRes.error) throw jurisdictionRes.error;
-
-        setStats({
-          userStats: userRes.data || [],
-          reportStats: reportRes.data || [],
-          topJurisdictions: jurisdictionRes.data || [],
-        });
+        const { data, error } = await supabase.rpc('get_report_stats');
+        if (error) throw error;
+        setReportStats({ data: data || [], loading: false });
       } catch (error) {
-        console.error('Error fetching system overview stats:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching report stats:', error);
+        setReportStats({ data: [], loading: false });
       }
     };
 
-    fetchStats();
+    const fetchUserStats = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_user_stats');
+        if (error) throw error;
+        setUserStats({ data: data || [], loading: false });
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+        setUserStats({ data: [], loading: false });
+      }
+    };
+
+    const fetchTopJurisdictions = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_top_jurisdictions_by_report_count', { limit_count: 5 });
+        if (error) throw error;
+        setTopJurisdictions({ data: data || [], loading: false });
+      } catch (error) {
+        console.error('Error fetching top jurisdictions:', error);
+        setTopJurisdictions({ data: [], loading: false });
+      }
+    };
+
+    fetchReportStats();
+    fetchUserStats();
+    fetchTopJurisdictions();
   }, [supabase]);
 
-  if (loading) {
+  // Data processing hooks remain the same but now depend on the new state objects
+  const funnelData = useMemo(() => {
+    if (reportStats.loading || !reportStats.data) return [];
+    const order = ['Pending Verification', 'Verified', 'Resolved'];
+    const counts = reportStats.data.reduce((acc, stat) => {
+      acc[formatLabel(stat.status)] = stat.count;
+      return acc;
+    }, {});
+    return order.map(step => ({
+      id: step,
+      value: counts[step] || 0,
+      label: step,
+    })).filter(d => d.value > 0);
+  }, [reportStats]);
+
+  const waffleData = useMemo(() => {
+    if (userStats.loading || !userStats.data) return [];
+    return userStats.data.map(stat => ({
+      id: formatLabel(stat.role),
+      label: formatLabel(stat.role),
+      value: stat.count,
+    }));
+  }, [userStats]);
+  
+  const totalUsers = useMemo(() => (waffleData || []).reduce((sum, d) => sum + d.value, 0), [waffleData]);
+  
+  const topJurisdictionsData = useMemo(() => {
+    if (topJurisdictions.loading || !topJurisdictions.data) return [];
+    return topJurisdictions.data
+      .map(j => ({
+        jurisdiction: j.jurisdiction_name,
+        count: j.count,
+      }))
+      .sort((a, b) => a.count - b.count);
+  }, [topJurisdictions]);
+
+  const isLoading = reportStats.loading || userStats.loading || topJurisdictions.loading;
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
-          <p className="text-muted-foreground">A global summary of system activity.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Global System Overview</h1>
+          <p className="text-muted-foreground">A global summary of system activity and health.</p>
         </div>
         <GlobalSystemOverviewSkeleton />
       </div>
     );
   }
 
-  const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#f44336', '#9C27B0'];
-
   return (
     <div className="space-y-6">
       <div>
-       <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
-        <p className="text-muted-foreground">A global summary of system activity.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Global System Overview</h1>
+        <p className="text-muted-foreground">A global summary of system activity and health.</p>
       </div>
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* User Stats Card */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader><CardTitle>User Stats</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.userStats} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="role" width={80} tickLine={false} axisLine={false} tickFormatter={formatLabel} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
-                  <Bar dataKey="count" barSize={30} radius={[0, 4, 4, 0]}>
-                    {stats.userStats.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader><CardTitle>Report Moderation Funnel</CardTitle><CardDescription>Flow of reports from submission to resolution.</CardDescription></CardHeader>
+          <CardContent className="h-[300px]">
+            {reportStats.loading ? <ChartPlaceholder message="Loading..." /> : funnelData.length > 1 ? (
+              <ResponsiveFunnel data={funnelData} theme={nivoTheme} margin={{ top: 20, right: 20, bottom: 20, left: 20 }} colors={{ scheme: 'spectral' }} borderWidth={20} labelColor={{ from: 'color', modifiers: [['darker', 3]] }} beforeSeparatorLength={100} beforeSeparatorOffset={20} afterSeparatorLength={100} afterSeparatorOffset={20} />
+            ) : ( <ChartPlaceholder message="Not enough data for a funnel." /> )}
+          </CardContent>
+        </Card>
         
-        {/* Report Stats Card */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader><CardTitle>Report Stats</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                 <BarChart
-                  data={stats.reportStats}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <XAxis type="number" hide />
-                  <YAxis
-                    type="category"
-                    dataKey="status"
-                    width={110}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={formatLabel}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                    contentStyle={{
-                      background: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
-                    }}
-                    labelFormatter={formatLabel}
-                  />
-                  <Bar dataKey="count" barSize={25} radius={[0, 4, 4, 0]}>
-                    {stats.reportStats.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Top Jurisdictions Card */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Jurisdictions</CardTitle>
-              <CardDescription>By number of pending reports.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-6">
-              {stats.topJurisdictions.length > 0 ? (
-                stats.topJurisdictions.map((j) => (
-                  <div key={j.jurisdiction} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground truncate pr-2">{getJurisdictionNameByCode(j.jurisdiction)}</span>
-                    <span className="font-semibold">{j.pending_reports_count}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center pt-8">No pending reports.</p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
+        <Card>
+          <CardHeader><CardTitle>User Role Distribution</CardTitle><CardDescription>Breakdown of admin vs. authority accounts.</CardDescription></CardHeader>
+          <CardContent className="h-[300px]">
+             {userStats.loading ? <ChartPlaceholder message="Loading..." /> : (
+                <ResponsiveWaffle data={waffleData} total={totalUsers} rows={18} columns={14} theme={nivoTheme} padding={4} margin={{ top: 10, right: 10, bottom: 50, left: 10 }} colors={{ scheme: 'set2' }} borderRadius={3} borderColor={{ from: 'color', modifiers: [['darker', 0.3]] }} legends={[{ anchor: 'bottom', direction: 'row', justify: false, translateX: 0, translateY: 40, itemsSpacing: 4, itemWidth: 100, itemHeight: 20, itemDirection: 'left-to-right', itemOpacity: 1, symbolSize: 20 }]} />
+             )}
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Card className="lg:col-span-2">
+        <CardHeader><CardTitle>Top 5 Active Jurisdictions</CardTitle><CardDescription>Total reports submitted per jurisdiction.</CardDescription></CardHeader>
+        <CardContent className="h-[300px]">
+          {topJurisdictions.loading ? <ChartPlaceholder message="Loading..." /> : topJurisdictionsData.length > 0 ? (
+            <ResponsiveBar
+                data={topJurisdictionsData}
+                keys={['count']}
+                indexBy="jurisdiction"
+                theme={nivoTheme}
+                layout="horizontal"
+                margin={{ top: 10, right: 40, bottom: 50, left: 200 }}
+                padding={0.4}
+                valueScale={{ type: 'linear' }}
+                indexScale={{ type: 'band', round: true }}
+                colors={'hsl(var(--primary))'}
+                borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                axisTop={null}
+                axisRight={null}
+                axisBottom={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: 'Total Reports',
+                    legendPosition: 'middle',
+                    legendOffset: 40,
+                }}
+                axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                }}
+                enableGridY={false}
+                labelSkipWidth={12}
+                labelTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+                animate={true}
+            />
+          ) : (
+            <ChartPlaceholder message="No jurisdiction data available." />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -44,16 +44,18 @@ const ReportFeedItem = ({ report, isSelected, onSelect, onHover }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      whileHover={{ scale: 1.02, backgroundColor: 'hsl(var(--muted))' }}
-      // THIS IS THE FIX: Changed 'ease-in-out' to the correct array format.
+      // --- THIS IS THE FIX ---
+      // We remove `backgroundColor` from the animation prop.
+      // Framer Motion will now only handle the scaling.
+      whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
       onClick={onSelect}
       onMouseEnter={() => onHover(report.id)}
       onMouseLeave={() => onHover(null)}
       className={cn(
-        "p-3 rounded-lg border-l-4 cursor-pointer",
+        "p-3 rounded-lg border-l-4 cursor-pointer transition-colors", // Added `transition-colors` for smooth background change
         getSeverityClass(),
-        isSelected ? "bg-muted shadow-md" : "bg-card",
+        isSelected ? "bg-muted shadow-md" : "bg-card hover:bg-muted", // Added `hover:bg-muted` to let Tailwind handle the hover effect
         report.status === 'resolved' ? 'opacity-60' : ''
       )}
     >

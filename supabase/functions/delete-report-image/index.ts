@@ -6,7 +6,7 @@ import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-
 // Initialize the Supabase client with the service role key
 const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  Deno.env.get('SERVICE_ROLE_KEY') ?? ''
 );
 
 serve(async (req) => {
