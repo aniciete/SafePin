@@ -1,6 +1,6 @@
 # Production Deployment Plan (v4 - Corrected)
 
-This document outlines the simplified process for promoting the **`safepin-staging`** project (`tsyowtatzuxbvquhkgyo`) to production and deploying the frontend to Netlify.
+This document outlines the simplified process for promoting the **`safepin-staging`** project (`clfsoexpcrfrlijwqsqu`) to production and deploying the frontend to Netlify.
 
 ## Deployment Strategy
 Instead of migrating to a new Supabase project, we are promoting the current, stable `safepin-staging` project to be the official production environment. This eliminates the need for database migrations and reduces deployment risk.
@@ -8,7 +8,7 @@ Instead of migrating to a new Supabase project, we are promoting the current, st
 ## Deployment Steps
 
 ### 1. Production Project Setup (Supabase)
-1.  **Rename Project:** In the Supabase dashboard for `tsyowtatzuxbvquhkgyo`, go to **Project Settings > General** and rename the project to something that clearly identifies it as production (e.g., "SafePin Production").
+1.  **Rename Project:** In the Supabase dashboard for `clfsoexpcrfrlijwqsqu`, go to **Project Settings > General** and rename the project to something that clearly identifies it as production (e.g., "SafePin Production").
 2.  **Invite Team:** In **Project Settings > Team**, invite all necessary team members.
 3.  **Enable Backups:** For production projects, it is critical to have robust backups. Go to **Database > Backups** and enable Point-in-Time Recovery (PITR). This is a paid feature but essential for production databases.
 4.  **Set Production Secrets:**
@@ -18,7 +18,7 @@ Instead of migrating to a new Supabase project, we are promoting the current, st
     ```
 5.  **Deploy Edge Functions:**
     ```bash
-    supabase functions deploy --project-ref tsyowtatzuxbvquhkgyo
+    supabase functions deploy --project-ref clfsoexpcrfrlijwqsqu
     ```
 
 ### 2. Frontend Deployment (Netlify)

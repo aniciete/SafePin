@@ -49,7 +49,8 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
     <motion.button
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.15, ease: "easeInOut" }}
+      // THIS IS THE FIX: Changed 'easeInOut' to the correct array format for this version of framer-motion.
+      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
       {...props}

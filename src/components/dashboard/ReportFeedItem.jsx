@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Paperclip } from 'lucide-react'; // Import the icon
+import { Paperclip } from 'lucide-react';
 
 const timeAgo = (date) => {
   if (!date) return '';
@@ -45,7 +45,8 @@ const ReportFeedItem = ({ report, isSelected, onSelect, onHover }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       whileHover={{ scale: 1.02, backgroundColor: 'hsl(var(--muted))' }}
-      transition={{ duration: 0.15, ease: 'ease-in-out' }}
+      // THIS IS THE FIX: Changed 'ease-in-out' to the correct array format.
+      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
       onClick={onSelect}
       onMouseEnter={() => onHover(report.id)}
       onMouseLeave={() => onHover(null)}

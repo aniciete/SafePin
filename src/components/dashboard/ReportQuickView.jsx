@@ -96,7 +96,7 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] text-foreground">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             {report.incident_type}
@@ -142,7 +142,7 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
           )}
           
           <div className="space-y-2 pt-4 border-t">
-            <Label htmlFor="notes" className="font-semibold">Internal Notes</Label>
+            <Label htmlFor="notes" className="font-semibold, text-foreground">Internal Notes</Label>
             <Textarea
               id="notes"
               placeholder="Add investigation notes, actions taken, or follow-up reminders..."

@@ -8,7 +8,9 @@ const ReportFeed = ({ reports, selectedReportId, onSelectReport, onHoverReport, 
       <CardHeader>
         <CardTitle>Report Feed</CardTitle>
         <CardDescription>
-          {loading ? 'Loading reports...' : `${reports.length} reports in your jurisdiction.`}
+          {/* THIS IS THE FIX: We now display the length of the 'reports' prop, */}
+          {/* which is the correctly filtered array. */}
+          {loading ? 'Loading reports...' : `${reports.length} report${reports.length !== 1 ? 's' : ''} in your jurisdiction.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow overflow-y-auto pr-3">
