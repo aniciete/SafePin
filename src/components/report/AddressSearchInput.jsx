@@ -13,13 +13,10 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
   const [jurisdictionInfo, setJurisdictionInfo] = useState({ name: null, code: null });
   const [isGeolocating, setIsGeolocating] = useState(false);
   const inputRef = useRef(null);
-  
-  // This state controls when the MapView is actually mounted.
   const [isStable, setIsStable] = useState(false);
+
   useEffect(() => {
-    // After the component has mounted and animated into place,
-    // a short timeout ensures the DOM is stable. Then we set isStable to true.
-    const timer = setTimeout(() => setIsStable(true), 350); // Matches animation duration
+    const timer = setTimeout(() => setIsStable(true), 350);
     return () => clearTimeout(timer);
   }, []);
 
@@ -43,6 +40,7 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
 
     const isLocationValid = !jurisdiction.name.toLowerCase().includes('outside');
     
+    // This is the key function that updates the parent form state
     onLocationChange({
       lat: isLocationValid ? newLocation.lat : null,
       lng: isLocationValid ? newLocation.lng : null,
@@ -50,6 +48,7 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
     });
   }, [getJurisdiction, reverseGeocode, onLocationChange]);
 
+  // This is the function that will be called by MapView when the map is clicked
   const handleMapClick = useCallback((newLocation) => {
     updateLocation(newLocation);
   }, [updateLocation]);
@@ -90,7 +89,7 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
         }
       });
 
-      return () => listener.remove();
+      return () => window.google.maps.event.removeListener(listener);
     }
   }, [isStable, isApiLoaded, updateLocation]);
 
@@ -101,9 +100,10 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
         <Input ref={inputRef} id="address-search" type="text" placeholder="e.g., Ayala Avenue, Makati" />
       </div>
       <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-md" role="application">
-        {/* Only render the MapView component AFTER the container is stable. */}
         {isStable ? (
           <MapView
+            // --- THIS IS THE FIX ---
+            // Pass the handleMapClick function to the onLocationSelect prop of MapView
             onLocationSelect={handleMapClick}
             markerPosition={markerPosition} 
           />
@@ -115,7 +115,7 @@ const AddressSearchInput = ({ onLocationChange, markerPosition }) => {
         </Button>
       </div>
       {jurisdictionInfo.name && (
-        <div className="mt-2 text-center p-2 rounded-md bg-primary text-primary-foreground">
+        <div className="mt-2 text-center p-2 rounded-md bg-primary/10 text-primary-foreground">
           <p className="text-sm font-medium">Assigned Barangay: <span className="font-bold">{jurisdictionInfo.name}</span></p>
         </div>
       )}

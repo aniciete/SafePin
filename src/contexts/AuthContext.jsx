@@ -60,11 +60,15 @@ export const AuthProvider = ({ children }) => {
     profile,
     loading,
     login: async (email, password) => {
-      // This is the key: The login function is self-contained.
-      // It signs in, gets the profile, and returns it.
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { profile: null, error };
+
       if (data.user) {
+        // --- THIS IS THE FIX ---
+        // After a successful login, we manually refresh the JWT to ensure
+        // the user_metadata (role, jurisdiction) is up-to-date for RLS.
+        await supabase.auth.refreshSession();
+        
         const userProfile = await fetchUserProfile(data.user);
         return { profile: userProfile, error: null };
       }

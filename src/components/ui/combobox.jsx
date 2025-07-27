@@ -31,9 +31,13 @@ export function Combobox({ options, value, onChange, placeholder = "Select...", 
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between font-normal"
+          className="w-full justify-between font-normal text-foreground"
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {/* --- THIS IS THE FIX --- */}
+          {/* We wrap the text in a span with truncation classes to prevent overflow. */}
+          <span className="block truncate">
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -46,7 +50,7 @@ export function Combobox({ options, value, onChange, placeholder = "Select...", 
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label} // Search by label
+                  value={option.label}
                   onSelect={() => {
                     onChange(option.value)
                     setOpen(false)

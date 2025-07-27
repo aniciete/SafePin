@@ -152,3 +152,9 @@ gmp-place-autocomplete::part(input)::placeholder {
 .dark gmp-place-autocomplete {
   color-scheme: dark;
 }
+
+/* Fix for dark mode dropdown header contrast */
+.dark .cmdk-group-heading {
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+}

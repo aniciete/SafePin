@@ -23,7 +23,11 @@ const Sidebar = () => {
 
   return (
     <div className="flex flex-col w-64 h-full px-4 py-6 bg-card border-r border-border">
-      {/* ... (Logo/Title remains the same) ... */}
+      {/* --- THIS IS THE FIX: Added the missing Logo/Title block --- */}
+      <Link to="/" className="flex items-center justify-center px-4 mb-8 no-underline">
+        <img src={logo} alt="SafePin Logo" className="h-10 mr-2" />
+        <span className="text-3xl font-bold text-primary">SafePin</span>
+      </Link>
       
       <div className="flex flex-col justify-between flex-1">
         <nav className="space-y-2">
@@ -51,7 +55,6 @@ const Sidebar = () => {
               <NavLink to="/dashboard/authority/analytics" className={getLinkClass('/dashboard/authority/analytics')}>
                 <BarChart2 className="mr-3 h-5 w-5" /> Analytics
               </NavLink>
-              {/* --- UNCOMMENT THIS LINK --- */}
               <NavLink to="/dashboard/authority/settings" className={getLinkClass('/dashboard/authority/settings')}>
                 <Settings className="mr-3 h-5 w-5" /> Settings
               </NavLink>

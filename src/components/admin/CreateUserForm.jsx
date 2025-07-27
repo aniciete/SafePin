@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
-import { useSupabase } from '../../contexts/SupabaseContext';
+import { useSupabase } from '../../contexts/SupabaseContext'; // <-- Use the STANDARD client
 import { useToast } from '@/hooks/use-toast';
 import { getFormattedJurisdictions } from '../../utils/jurisdictionUtils';
 import { Button } from '@/components/ui/button';
@@ -8,33 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
+import { Loader2 } from 'lucide-react';
 
-// NEW: Dynamic password validation function that builds a sentence.
 const validatePassword = (password = '') => {
   const errors = [];
-
-  if (password.length < 8) {
-    errors.push("be at least 8 characters");
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push("contain an uppercase letter");
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push("contain a lowercase letter");
-  }
-  if (!/[0-9]/.test(password)) {
-    errors.push("contain a number");
-  }
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push("contain a special character");
-  }
-
-  // If there are no errors, the password is valid.
-  if (errors.length === 0) {
-    return true;
-  }
-
-  // Build the dynamic error sentence.
+  if (password.length < 8) errors.push("be at least 8 characters");
+  if (!/[A-Z]/.test(password)) errors.push("contain an uppercase letter");
+  if (!/[a-z]/.test(password)) errors.push("contain a lowercase letter");
+  if (!/[0-9]/.test(password)) errors.push("contain a number");
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push("contain a special character");
+  if (errors.length === 0) return true;
   let errorMessage = "Password must ";
   if (errors.length > 2) {
     const firstErrors = errors.slice(0, errors.length - 1).join(', ');
@@ -45,20 +28,17 @@ const validatePassword = (password = '') => {
   } else {
     errorMessage += `${errors[0]}.`;
   }
-
   return errorMessage;
 };
 
-
 const CreateUserForm = ({ onUserCreated }) => {
-  const { supabase } = useSupabase();
+  const { supabase } = useSupabase(); // Use the standard, shared Supabase client
+  const { toast } = useToast();
   const { register, handleSubmit, formState: { errors }, reset, control } = useForm({
-    mode: 'onChange', // Validate as the user types
+    mode: 'onChange',
     defaultValues: { role: 'authority', jurisdiction: '', password: '' }
   });
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-
   const selectedRole = useWatch({ control, name: 'role' });
   const jurisdictionOptions = getFormattedJurisdictions();
 
@@ -66,15 +46,18 @@ const CreateUserForm = ({ onUserCreated }) => {
     setLoading(true);
     try {
       const { data: functionData, error } = await supabase.functions.invoke('create-user', {
-        body: {
+        // THE FIX: Explicitly stringify the body.
+        body: JSON.stringify({
           email: data.email,
           password: data.password,
           role: data.role,
-          jurisdiction: data.jurisdiction,
-        },
+          jurisdiction: data.role === 'authority' ? data.jurisdiction : null,
+        }),
       });
+
       if (error) throw error;
       if (functionData.error) throw new Error(functionData.error);
+
       toast({ title: 'Success', description: 'User created successfully!' });
       reset();
       if (onUserCreated) onUserCreated();
@@ -101,10 +84,9 @@ const CreateUserForm = ({ onUserCreated }) => {
             placeholder="••••••••" 
             {...register('password', { 
               required: 'Password is required', 
-              validate: validatePassword // Use the new sentence-building validator
+              validate: validatePassword
             })} 
           />
-          {/* This <p> tag will now display our dynamic sentence */}
           {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
         </div>
       </div>
@@ -113,7 +95,7 @@ const CreateUserForm = ({ onUserCreated }) => {
         <div className="space-y-1.5">
           <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
           <Controller name="role" control={control} rules={{ required: 'Role is required' }} render={({ field }) => (
-            <Select onValuechange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger id="role"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="authority">Authority</SelectItem>
@@ -141,6 +123,7 @@ const CreateUserForm = ({ onUserCreated }) => {
       </div>
       <div className="flex justify-end pt-2">
         <Button type="submit" disabled={loading}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {loading ? 'Creating...' : 'Create User'}
         </Button>
       </div>

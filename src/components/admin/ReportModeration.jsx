@@ -1,37 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '@/hooks/use-toast';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getFormattedJurisdictions, getJurisdictionNameByCode } from '../../utils/jurisdictionUtils';
 import { formatDateTime, formatLabel } from '../../utils/formatUtils';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Combobox } from '@/components/ui/combobox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Paperclip, FileX2 } from 'lucide-react';
+import { Paperclip, FileX2, Loader2 } from 'lucide-react';
 import ReportQuickView from '../dashboard/ReportQuickView';
 import { motion } from 'framer-motion';
 
 const AssignJurisdictionModal = ({ report, onAssigned }) => {
-  const { supabase } = useSupabase();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedJurisdiction, setSelectedJurisdiction] = useState(report.jurisdiction || '');
@@ -40,7 +23,8 @@ const AssignJurisdictionModal = ({ report, onAssigned }) => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await supabase
+    const supabaseAdmin = getSupabaseAdmin();
+    const { error } = await supabaseAdmin
       .from('reports')
       .update({ jurisdiction: selectedJurisdiction })
       .eq('id', report.id);
@@ -62,7 +46,7 @@ const AssignJurisdictionModal = ({ report, onAssigned }) => {
           {report.jurisdiction ? 'Change' : 'Assign'}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="text-foreground">
         <DialogHeader>
           <DialogTitle>Assign Jurisdiction</DialogTitle>
           <DialogDescription>Select a barangay for report ID: {report.tracking_code}</DialogDescription>
@@ -79,6 +63,7 @@ const AssignJurisdictionModal = ({ report, onAssigned }) => {
         <DialogFooter>
           <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
           <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSaving ? 'Saving...' : 'Save Assignment'}
           </Button>
         </DialogFooter>
@@ -87,9 +72,7 @@ const AssignJurisdictionModal = ({ report, onAssigned }) => {
   );
 };
 
-
 const ReportModeration = () => {
-  const { supabase } = useSupabase();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('main');
@@ -99,11 +82,15 @@ const ReportModeration = () => {
   const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
+      const supabaseAdmin = getSupabaseAdmin();
+      let query = supabaseAdmin.from('reports').select('*').order('created_at', { ascending: false });
+
       if (view === 'flagged') {
         query = query.eq('is_flagged', true);
       }
+      
       const { data, error } = await query;
+      
       if (error) throw error;
       setReports(data || []);
     } catch (error) {
@@ -111,15 +98,16 @@ const ReportModeration = () => {
     } finally {
       setLoading(false);
     }
-  }, [supabase, toast, view]);
+  }, [view, toast]);
 
   useEffect(() => {
     fetchReports();
-  }, [fetchReports, view]);
+  }, [fetchReports]);
 
   const handleDelete = async (reportId) => {
+    const supabaseAdmin = getSupabaseAdmin();
     try {
-      const { error } = await supabase.from('reports').delete().eq('id', reportId);
+      const { error } = await supabaseAdmin.from('reports').delete().eq('id', reportId);
       if (error) throw error;
       toast({ title: 'Success', description: 'Report deleted successfully!' });
       fetchReports();
@@ -129,8 +117,9 @@ const ReportModeration = () => {
   };
 
   const handleFlag = async (reportId, isFlagged) => {
+    const supabaseAdmin = getSupabaseAdmin();
     try {
-      const { error } = await supabase.from('reports').update({ is_flagged: isFlagged }).eq('id', reportId);
+      const { error } = await supabaseAdmin.from('reports').update({ is_flagged: isFlagged }).eq('id', reportId);
       if (error) throw error;
       toast({ title: 'Success', description: `Report ${isFlagged ? 'flagged' : 'unflagged'} successfully!` });
       fetchReports();
@@ -146,6 +135,15 @@ const ReportModeration = () => {
       case 'resolved': return 'outline';
       default: return 'destructive';
     }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.02 } },
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
@@ -184,17 +182,7 @@ const ReportModeration = () => {
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <motion.tbody
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.02 },
-                    },
-                  }}
-                  initial="hidden"
-                  animate="visible"
-                >
+                <motion.tbody variants={containerVariants} initial="hidden" animate="visible">
                   {loading ? (
                     [...Array(10)].map((_, i) => (
                       <TableRow key={i}>
@@ -213,19 +201,16 @@ const ReportModeration = () => {
                     reports.map((report) => (
                       <motion.tr
                         key={report.id}
-                        variants={{
-                          hidden: { opacity: 0, y: 10 },
-                          visible: { opacity: 1, y: 0 },
-                        }}
+                        variants={itemVariants}
                         layout
                         onClick={() => setSelectedReportForView(report)}
-                        className="cursor-pointer"
+                        className="cursor-pointer hover:bg-muted/50"
                       >
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {report.image_path && <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
                             <div>
-                              <div className="font-medium">{report.incident_type}</div>
+                              <div className="font-medium">{report.incident_type_other || report.incident_type}</div>
                               <div className="text-xs text-muted-foreground">{formatDateTime(report.created_at)}</div>
                             </div>
                           </div>
@@ -253,7 +238,7 @@ const ReportModeration = () => {
                           </Button>
                           <Dialog>
                             <DialogTrigger asChild><Button variant="destructive" size="sm">Delete</Button></DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="text-foreground">
                               <DialogHeader><DialogTitle>Are you sure?</DialogTitle><DialogDescription>This action cannot be undone and will permanently delete the report.</DialogDescription></DialogHeader>
                               <DialogFooter>
                                 <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>

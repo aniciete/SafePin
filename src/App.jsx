@@ -1,19 +1,22 @@
-// src/App.jsx
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useOutletContext as useReactRouterOutletContext } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SupabaseProvider } from './contexts/SupabaseContext';
+import { ThemeProvider } from './contexts/ThemeProvider';
 import AuthGuard from './components/auth/AuthGuard';
 import { Toaster } from '@/components/ui/toaster';
-import { ThemeProvider } from './contexts/ThemeProvider';
+
+// Import Layouts
 import MainLayout from './components/layout/MainLayout';
-import EmergencyBanner from './components/layout/EmergencyBanner';
+import AuthLayout from './components/layout/AuthLayout';
 
 // Lazy-loaded page components
 const HomePage = lazy(() => import('./pages/landing/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const UpdatePasswordPage = lazy(() => import('./pages/auth/UpdatePasswordPage'));
 const ReportPage = lazy(() => import('./pages/report/ReportPage'));
-const TrackReportPage = lazy(() => import('./pages/report/TrackReportPage'));
+const MyReportsPage = lazy(() => import('./pages/report/MyReportsPage')); // <-- RENAMED IMPORT
 const AuthorityDashboardPage = lazy(() => import('./pages/dashboard/authority/AuthorityDashboardPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboard/admin/AdminDashboardPage'));
 const AboutPage = lazy(() => import('./pages/about/AboutPage'));
@@ -24,24 +27,22 @@ const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const StatusPage = lazy(() => import('./pages/support/StatusPage'));
 const UnsubscribePage = lazy(() => import('./pages/newsletter/UnsubscribePage'));
 
-// THIS IS THE FIX: AppRoutes is now defined at the top level, outside of App.
-// This prevents it from being recreated on every render.
+
 const AppRoutes = () => {
-  const location = useLocation();
   const { loading } = useAuth();
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center h-screen bg-background">Loading...</div>;
   }
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading Page...</div>}>
-      <Routes location={location}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen bg-background">Loading Page...</div>}>
+      <Routes>
+        {/* --- Layout for Public Pages --- */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
           <Route path="/report" element={<ReportPage />} />
-          <Route path="/track" element={<TrackReportPage />} />
+          <Route path="/my-reports" element={<MyReportsPage />} /> {/* <-- CORRECTED ROUTE */}
           <Route path="/about" element={<AboutPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -50,14 +51,22 @@ const AppRoutes = () => {
           <Route path="/status" element={<StatusPage />} />
           <Route path="/unsubscribe" element={<UnsubscribePage />} />
         </Route>
+
+        {/* --- Layout for Auth Pages --- */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/update-password" element={<UpdatePasswordPage />} />
+        </Route>
         
-        <Route 
-          path="/dashboard/authority/*" 
-          element={<AuthGuard role="authority"><AuthorityDashboardPage /></AuthGuard>} 
-        />
+        {/* --- Layouts for Secure Dashboards --- */}
         <Route 
           path="/dashboard/admin/*" 
           element={<AuthGuard role="admin"><AdminDashboardPage /></AuthGuard>} 
+        />
+        <Route 
+          path="/dashboard/authority/*" 
+          element={<AuthGuard role="authority"><AuthorityDashboardPage /></AuthGuard>} 
         />
       </Routes>
     </Suspense>
@@ -68,7 +77,7 @@ const App = () => (
   <SupabaseProvider>
     <AuthProvider>
       <Router>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme="dark" storageKey="safepin-ui-theme">
           <AppRoutes />
           <Toaster />
         </ThemeProvider>
@@ -76,7 +85,5 @@ const App = () => (
     </AuthProvider>
   </SupabaseProvider>
 );
-
-export const useOutletContext = useReactRouterOutletContext;
 
 export default App;

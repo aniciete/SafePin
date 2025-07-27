@@ -1,55 +1,46 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-// Define CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
-  // This is needed if you're planning to invoke your function from a browser.
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { email, password, role, jurisdiction } = await req.json()
+    const { email, password, role, jurisdiction } = await req.json();
 
-    // Create a Supabase client with the service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    // Create the user in auth.users. The `on_auth_user_created` trigger in the
-    // database will automatically create a corresponding profile in public.users.
+    // Create the user in the 'auth.users' table.
+    // The database trigger 'on_auth_user_created_direct' will automatically
+    // handle creating the corresponding profile in 'public.users'.
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { role, jurisdiction },
-    })
+    });
 
     if (createError) {
-      console.error('Error creating user in auth.users:', createError.message);
-      return new Response(JSON.stringify({ error: createError.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      });
+      // If user creation fails, throw the error.
+      throw createError;
     }
+    
+    // We no longer need to manually insert the profile here. The trigger does it.
 
-    // The trigger will handle profile creation.
-    // We can return the user object, but it's often better to refetch user data on the client
-    // to ensure the profile information is included.
-    return new Response(JSON.stringify({ message: 'User created successfully. Profile being created by trigger.' }), {
+    return new Response(JSON.stringify({ message: 'User created successfully.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
-    console.error('Unhandled error in create-user function:', error);
-    return new Response(JSON.stringify({ error: 'An unexpected error occurred.' }), {
+    console.error('Error in create-user function:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      status: 400,
     });
   }
-})
+});

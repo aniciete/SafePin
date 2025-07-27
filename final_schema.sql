@@ -16,6 +16,13 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
+CREATE EXTENSION IF NOT EXISTS "http" WITH SCHEMA "public";
+
+
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
 
 
@@ -129,6 +136,61 @@ $$;
 ALTER FUNCTION "public"."assign_jurisdiction_on_report_insert"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_daily_report_counts"("days_limit" integer) RETURNS TABLE("day" "date", "count" bigint)
+    LANGUAGE "sql"
+    AS $$
+  -- 1. Generate a series of the last N days (including today)
+  WITH date_series AS (
+    SELECT generate_series(
+      (NOW() - (days_limit - 1) * INTERVAL '1 day')::DATE,
+      NOW()::DATE,
+      '1 day'::INTERVAL
+    )::DATE AS day
+  )
+  -- 2. Left join the report counts onto the date series
+  SELECT
+    ds.day,
+    COALESCE(rc.count, 0) AS count
+  FROM
+    date_series ds
+  LEFT JOIN (
+    SELECT
+      created_at::DATE AS day,
+      COUNT(*) AS count
+    FROM
+      public.reports
+    WHERE
+      created_at >= (NOW() - (days_limit - 1) * INTERVAL '1 day')::DATE
+    GROUP BY
+      created_at::DATE
+  ) rc ON ds.day = rc.day
+  ORDER BY
+    ds.day ASC;
+$$;
+
+
+ALTER FUNCTION "public"."get_daily_report_counts"("days_limit" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_jurisdiction_centroid"("jurisdiction_code" "text") RETURNS json
+    LANGUAGE "sql"
+    AS $$
+  SELECT
+    json_build_object(
+      'lat', ST_Y(ST_Centroid(geom)),
+      'lng', ST_X(ST_Centroid(geom))
+    )
+  FROM
+    public.jurisdiction_boundaries
+  WHERE
+    psgc_code = jurisdiction_code
+  LIMIT 1;
+$$;
+
+
+ALTER FUNCTION "public"."get_jurisdiction_centroid"("jurisdiction_code" "text") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_jurisdiction_for_location"("lat" double precision, "lng" double precision) RETURNS "text"
     LANGUAGE "plpgsql"
     AS $$
@@ -231,23 +293,25 @@ $$;
 ALTER FUNCTION "public"."get_user_stats"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."on_auth_user_created"() RETURNS "trigger"
+CREATE OR REPLACE FUNCTION "public"."handle_new_user_profile"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
     AS $$
 BEGIN
+  -- Insert a new row into public.users, taking the details from the new auth.users record.
   INSERT INTO public.users (id, email, role, jurisdiction)
   VALUES (
     NEW.id,
     NEW.email,
     (NEW.raw_user_meta_data->>'role')::public.user_role,
-    NEW.raw_user_meta_data->>'jurisdiction'
+    (NEW.raw_user_meta_data->>'jurisdiction')
   );
   RETURN NEW;
 END;
 $$;
 
 
-ALTER FUNCTION "public"."on_auth_user_created"() OWNER TO "postgres";
+ALTER FUNCTION "public"."handle_new_user_profile"() OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -277,6 +341,46 @@ ALTER TABLE "public"."jurisdiction_boundaries" ALTER COLUMN "id" ADD GENERATED B
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."reports" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid",
+    "anonymous_user_id" "text",
+    "location" "jsonb",
+    "incident_type" "public"."incident_type",
+    "severity" "text",
+    "description" "text",
+    "image_path" "text",
+    "status" "public"."report_status" DEFAULT 'pending_verification'::"public"."report_status",
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone,
+    "verified_by" "uuid",
+    "verified_at" timestamp with time zone,
+    "tracking_code" "text",
+    "jurisdiction" "text",
+    "is_flagged" boolean DEFAULT false,
+    "contact_info" "text",
+    "notes" "text",
+    "incident_type_other" "text",
+    CONSTRAINT "incident_type_other_check" CHECK (((("incident_type" = 'Other'::"public"."incident_type") AND ("incident_type_other" IS NOT NULL) AND ("incident_type_other" <> ''::"text")) OR (("incident_type" <> 'Other'::"public"."incident_type") AND ("incident_type_other" IS NULL))))
+);
+
+
+ALTER TABLE "public"."reports" OWNER TO "postgres";
+
+
+CREATE OR REPLACE VIEW "public"."public_reports" AS
+ SELECT "id",
+    "incident_type",
+    "incident_type_other",
+    "status",
+    "created_at",
+    "tracking_code"
+   FROM "public"."reports";
+
+
+ALTER VIEW "public"."public_reports" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."rate_limits" (
     "id" bigint NOT NULL,
     "key" "text",
@@ -301,30 +405,6 @@ ALTER SEQUENCE "public"."rate_limits_id_seq" OWNER TO "postgres";
 
 ALTER SEQUENCE "public"."rate_limits_id_seq" OWNED BY "public"."rate_limits"."id";
 
-
-
-CREATE TABLE IF NOT EXISTS "public"."reports" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid",
-    "anonymous_user_id" "text",
-    "location" "jsonb",
-    "incident_type" "public"."incident_type",
-    "severity" "text",
-    "description" "text",
-    "image_path" "text",
-    "status" "public"."report_status" DEFAULT 'pending_verification'::"public"."report_status",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone,
-    "verified_by" "uuid",
-    "verified_at" timestamp with time zone,
-    "tracking_code" "text",
-    "jurisdiction" "text",
-    "is_flagged" boolean DEFAULT false,
-    "contact_info" "text"
-);
-
-
-ALTER TABLE "public"."reports" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."users" (
@@ -424,17 +504,13 @@ ALTER TABLE ONLY "public"."users"
 
 
 
-CREATE POLICY "Allow admins full access" ON "public"."reports" USING ((( SELECT "users"."role"
-   FROM "public"."users"
-  WHERE ("users"."id" = "auth"."uid"())) = 'admin'::"public"."user_role"));
-
-
-
 CREATE POLICY "Allow anonymous report creation" ON "public"."reports" FOR INSERT WITH CHECK (("auth"."role"() = 'anon'::"text"));
 
 
 
 CREATE POLICY "Allow authorities to update reports in their jurisdiction" ON "public"."reports" FOR UPDATE USING (((( SELECT "users"."role"
+   FROM "public"."users"
+  WHERE ("users"."id" = "auth"."uid"())) = 'authority'::"public"."user_role") AND ("jurisdiction" = "public"."get_user_jurisdiction"()))) WITH CHECK (((( SELECT "users"."role"
    FROM "public"."users"
   WHERE ("users"."id" = "auth"."uid"())) = 'authority'::"public"."user_role") AND ("jurisdiction" = "public"."get_user_jurisdiction"())));
 
@@ -446,7 +522,11 @@ CREATE POLICY "Allow authorities to view reports in their jurisdiction" ON "publ
 
 
 
-CREATE POLICY "Users can view user profiles" ON "public"."users" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "id") OR (("auth"."jwt"() ->> 'user_role'::"text") = 'admin'::"text")));
+CREATE POLICY "Allow public read access to basic report details" ON "public"."reports" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Users can view profiles" ON "public"."users" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "id") OR ((("auth"."jwt"() -> 'user_metadata'::"text") ->> 'role'::"text") = 'admin'::"text")));
 
 
 
@@ -459,6 +539,10 @@ ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
 
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
@@ -1324,6 +1408,13 @@ GRANT ALL ON FUNCTION "public"."box3dtobox"("public"."box3d") TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."bytea_to_text"("data" "bytea") TO "postgres";
+GRANT ALL ON FUNCTION "public"."bytea_to_text"("data" "bytea") TO "anon";
+GRANT ALL ON FUNCTION "public"."bytea_to_text"("data" "bytea") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."bytea_to_text"("data" "bytea") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."checkauth"("text", "text") TO "postgres";
 GRANT ALL ON FUNCTION "public"."checkauth"("text", "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."checkauth"("text", "text") TO "authenticated";
@@ -2115,6 +2206,18 @@ GRANT ALL ON FUNCTION "public"."geomfromewkt"("text") TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."get_daily_report_counts"("days_limit" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_daily_report_counts"("days_limit" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_daily_report_counts"("days_limit" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_jurisdiction_centroid"("jurisdiction_code" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_jurisdiction_centroid"("jurisdiction_code" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_jurisdiction_centroid"("jurisdiction_code" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_jurisdiction_for_location"("lat" double precision, "lng" double precision) TO "anon";
 GRANT ALL ON FUNCTION "public"."get_jurisdiction_for_location"("lat" double precision, "lng" double precision) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_jurisdiction_for_location"("lat" double precision, "lng" double precision) TO "service_role";
@@ -2187,6 +2290,110 @@ GRANT ALL ON FUNCTION "public"."gserialized_gist_sel_nd"("internal", "oid", "int
 
 
 
+GRANT ALL ON FUNCTION "public"."handle_new_user_profile"() TO "anon";
+GRANT ALL ON FUNCTION "public"."handle_new_user_profile"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."handle_new_user_profile"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http"("request" "public"."http_request") TO "postgres";
+GRANT ALL ON FUNCTION "public"."http"("request" "public"."http_request") TO "anon";
+GRANT ALL ON FUNCTION "public"."http"("request" "public"."http_request") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http"("request" "public"."http_request") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying, "content" character varying, "content_type" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying, "content" character varying, "content_type" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying, "content" character varying, "content_type" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_delete"("uri" character varying, "content" character varying, "content_type" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying, "data" "jsonb") TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying, "data" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying, "data" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_get"("uri" character varying, "data" "jsonb") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_head"("uri" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_head"("uri" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_head"("uri" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_head"("uri" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_header"("field" character varying, "value" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_header"("field" character varying, "value" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_header"("field" character varying, "value" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_header"("field" character varying, "value" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_list_curlopt"() TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_list_curlopt"() TO "anon";
+GRANT ALL ON FUNCTION "public"."http_list_curlopt"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_list_curlopt"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_patch"("uri" character varying, "content" character varying, "content_type" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_patch"("uri" character varying, "content" character varying, "content_type" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_patch"("uri" character varying, "content" character varying, "content_type" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_patch"("uri" character varying, "content" character varying, "content_type" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "data" "jsonb") TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "data" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "data" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "data" "jsonb") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "content" character varying, "content_type" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "content" character varying, "content_type" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "content" character varying, "content_type" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_post"("uri" character varying, "content" character varying, "content_type" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_put"("uri" character varying, "content" character varying, "content_type" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_put"("uri" character varying, "content" character varying, "content_type" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_put"("uri" character varying, "content" character varying, "content_type" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_put"("uri" character varying, "content" character varying, "content_type" character varying) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_reset_curlopt"() TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_reset_curlopt"() TO "anon";
+GRANT ALL ON FUNCTION "public"."http_reset_curlopt"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_reset_curlopt"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."http_set_curlopt"("curlopt" character varying, "value" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."http_set_curlopt"("curlopt" character varying, "value" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."http_set_curlopt"("curlopt" character varying, "value" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."http_set_curlopt"("curlopt" character varying, "value" character varying) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."is_contained_2d"("public"."box2df", "public"."box2df") TO "postgres";
 GRANT ALL ON FUNCTION "public"."is_contained_2d"("public"."box2df", "public"."box2df") TO "anon";
 GRANT ALL ON FUNCTION "public"."is_contained_2d"("public"."box2df", "public"."box2df") TO "authenticated";
@@ -2240,12 +2447,6 @@ GRANT ALL ON FUNCTION "public"."longtransactionsenabled"() TO "postgres";
 GRANT ALL ON FUNCTION "public"."longtransactionsenabled"() TO "anon";
 GRANT ALL ON FUNCTION "public"."longtransactionsenabled"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."longtransactionsenabled"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."on_auth_user_created"() TO "anon";
-GRANT ALL ON FUNCTION "public"."on_auth_user_created"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."on_auth_user_created"() TO "service_role";
 
 
 
@@ -5693,6 +5894,13 @@ GRANT ALL ON FUNCTION "public"."st_zmin"("public"."box3d") TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."text_to_bytea"("data" "text") TO "postgres";
+GRANT ALL ON FUNCTION "public"."text_to_bytea"("data" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."text_to_bytea"("data" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."text_to_bytea"("data" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."unlockrows"("text") TO "postgres";
 GRANT ALL ON FUNCTION "public"."unlockrows"("text") TO "anon";
 GRANT ALL ON FUNCTION "public"."unlockrows"("text") TO "authenticated";
@@ -5718,6 +5926,27 @@ GRANT ALL ON FUNCTION "public"."updategeometrysrid"("catalogn_name" character va
 GRANT ALL ON FUNCTION "public"."updategeometrysrid"("catalogn_name" character varying, "schema_name" character varying, "table_name" character varying, "column_name" character varying, "new_srid_in" integer) TO "anon";
 GRANT ALL ON FUNCTION "public"."updategeometrysrid"("catalogn_name" character varying, "schema_name" character varying, "table_name" character varying, "column_name" character varying, "new_srid_in" integer) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."updategeometrysrid"("catalogn_name" character varying, "schema_name" character varying, "table_name" character varying, "column_name" character varying, "new_srid_in" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."urlencode"("string" "bytea") TO "postgres";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" "bytea") TO "anon";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" "bytea") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" "bytea") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."urlencode"("data" "jsonb") TO "postgres";
+GRANT ALL ON FUNCTION "public"."urlencode"("data" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."urlencode"("data" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."urlencode"("data" "jsonb") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."urlencode"("string" character varying) TO "postgres";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" character varying) TO "anon";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" character varying) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."urlencode"("string" character varying) TO "service_role";
 
 
 
@@ -5895,6 +6124,48 @@ GRANT ALL ON SEQUENCE "public"."jurisdiction_boundaries_id_seq" TO "service_role
 
 
 
+GRANT INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,MAINTAIN,UPDATE ON TABLE "public"."reports" TO "anon";
+GRANT INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,MAINTAIN,UPDATE ON TABLE "public"."reports" TO "authenticated";
+GRANT ALL ON TABLE "public"."reports" TO "service_role";
+
+
+
+GRANT SELECT("id") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT SELECT("incident_type") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("incident_type") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT SELECT("status") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("status") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT SELECT("created_at") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("created_at") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT SELECT("tracking_code") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("tracking_code") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT SELECT("incident_type_other") ON TABLE "public"."reports" TO "anon";
+GRANT SELECT("incident_type_other") ON TABLE "public"."reports" TO "authenticated";
+
+
+
+GRANT ALL ON TABLE "public"."public_reports" TO "anon";
+GRANT ALL ON TABLE "public"."public_reports" TO "authenticated";
+GRANT ALL ON TABLE "public"."public_reports" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."rate_limits" TO "anon";
 GRANT ALL ON TABLE "public"."rate_limits" TO "authenticated";
 GRANT ALL ON TABLE "public"."rate_limits" TO "service_role";
@@ -5904,12 +6175,6 @@ GRANT ALL ON TABLE "public"."rate_limits" TO "service_role";
 GRANT ALL ON SEQUENCE "public"."rate_limits_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."rate_limits_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."rate_limits_id_seq" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."reports" TO "anon";
-GRANT ALL ON TABLE "public"."reports" TO "authenticated";
-GRANT ALL ON TABLE "public"."reports" TO "service_role";
 
 
 

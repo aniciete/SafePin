@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    // 2. Get the user from the JWT and check if they are an admin.
+    // 2. Get the user from the JWT and check if they are an admin. This is a critical security check.
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       throw new Error("Authentication failed: User not found.");
@@ -33,30 +33,40 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
-    // 3. If the caller is an admin, proceed with the deletion.
-    const { userId } = await req.json();
-    if (!userId) {
-      throw new Error("User ID is required to delete a user.");
+
+    // 3. If the caller is confirmed to be an admin, proceed with the update logic.
+    const { userId, role, jurisdiction } = await req.json();
+    if (!userId || !role) {
+      throw new Error("User ID and role are required for the update.");
     }
 
-    // 4. Create the privileged admin client to perform the deletion.
+    // 4. Create the privileged admin client to perform the updates, bypassing RLS.
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '' // Use the secure key
     );
 
-    // 5. Use the admin client to delete the user from the auth schema.
-    // The profile in public.users will be deleted automatically due to the 'ON DELETE CASCADE' constraint.
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (error) throw error;
+    // 5. Update the user's metadata in the auth schema. This is important for JWT claims.
+    const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      { user_metadata: { role, jurisdiction: role === 'authority' ? jurisdiction : null } }
+    );
+    if (updateUserError) throw updateUserError;
 
-    return new Response(JSON.stringify({ message: 'User deleted successfully' }), {
+    // 6. Update the user's profile in the public.users table to keep them in sync.
+    const { error: updateProfileError } = await supabaseAdmin
+      .from('users')
+      .update({ role, jurisdiction: role === 'authority' ? jurisdiction : null })
+      .eq('id', userId);
+    if (updateProfileError) throw updateProfileError;
+
+    return new Response(JSON.stringify({ message: 'User updated successfully' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
+
   } catch (error) {
-    console.error('Error in delete-user function:', error);
+    console.error('Error in update-user function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

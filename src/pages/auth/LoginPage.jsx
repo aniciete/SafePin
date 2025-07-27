@@ -2,18 +2,17 @@ import LoginForm from '../../components/auth/LoginForm';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 const LoginPage = () => (
-  <main className="flex items-center justify-center h-screen bg-background">
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold text-center">
-          Login to SafePin
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <LoginForm />
-      </CardContent>
-    </Card>
-  </main>
+  // The main container is no longer needed as the AuthLayout handles centering
+  <Card className="w-full max-w-sm border-border/60 bg-card/80 backdrop-blur-sm">
+    <CardHeader>
+      <CardTitle className="text-2xl font-bold text-center">
+        SafePin Authorized Login
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <LoginForm />
+    </CardContent>
+  </Card>
 );
 
 export default LoginPage;

@@ -1,5 +1,4 @@
-# ========== INCLUDED ==========
-# Source code
+
 src/
 
 # Supabase (includes functions and migrations)
@@ -12,7 +11,7 @@ src/utils/__tests__/
 # Core config and documentation
 package.json
 tailwind.config.js
-postcss.config.js         # NEW: Crucial for CSS build pipeline
+postcss.config.js      
 vite.config.js
 .env
 README.md
@@ -21,8 +20,8 @@ DEPLOYMENT.md
 netlify.toml
 index.html
 eslint.config.js
-.prettierrc               # NEW: For code formatting consistency
-.gitignore                # NEW: Shows repository intent
+.prettierrc              
+.gitignore              
 playwright.config.js
 temp_create_admin.js
 
