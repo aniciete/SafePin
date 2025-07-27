@@ -6,6 +6,11 @@ import SafePinIcon from './SafePinIcon';
 const MapMarker = React.memo(({ severity = 'Low', status = 'pending_verification', onClick, title, isSelected = false, isHovered = false, isDimmed = false }) => {
 
   const getSeverityColor = () => {
+    // THIS IS THE FIX: The report submission pin will now always use the primary brand color.
+    // Dashboard markers will still use severity colors.
+    if (severity === 'critical' && status === 'pending_verification') {
+      return 'hsl(var(--primary))';
+    }
     switch (String(severity).toLowerCase()) {
       case 'critical': return 'hsl(var(--destructive))';
       case 'high': return '#FFC107';

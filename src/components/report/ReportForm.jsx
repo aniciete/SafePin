@@ -16,28 +16,16 @@ import { Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const formVariants = {
-  enter: (direction) => ({
-    x: direction > 0 ? '50%' : '-50%',
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction) => ({
-    x: direction < 0 ? '50%' : '-50%',
-    opacity: 0,
-  }),
+  enter: (direction) => ({ x: direction > 0 ? '50%' : '-50%', opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction) => ({ x: direction < 0 ? '50%' : '-50%', opacity: 0 }),
 };
 
 const ReportForm = () => {
   const { supabase } = useSupabase();
   const { register, handleSubmit, setValue, formState: { errors }, reset, control, trigger, watch } = useForm({
     mode: 'onChange',
-    defaultValues: {
-      description: '',
-      incidentType: '',
-    }
+    defaultValues: { description: '', incidentType: '' }
   });
   const { toast } = useToast();
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -47,7 +35,6 @@ const ReportForm = () => {
   const [[currentStep, direction], setCurrentStep] = useState([1, 0]);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageInfo, setImageInfo] = useState(null);
-  const [markerPosition, setMarkerPosition] = useState(null);
 
   const selectedFile = watch('image');
   const latitude = watch('latitude');
@@ -69,49 +56,38 @@ const ReportForm = () => {
     switch (currentStep) {
       case 1:
         fieldsToValidate = ['incidentType', 'severity'];
-        if (incidentTypeSelection === 'Other') {
-          fieldsToValidate.push('incidentTypeOther');
-        }
+        if (incidentTypeSelection === 'Other') fieldsToValidate.push('incidentTypeOther');
         break;
       case 2: fieldsToValidate = ['latitude', 'longitude']; break;
       case 3: fieldsToValidate = ['description']; break;
       default: break;
     }
-
     const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
-      setCurrentStep([currentStep + 1, 1]);
-    }
+    if (isValid) setCurrentStep([currentStep + 1, 1]);
   };
 
-  const prevStep = () => {
-    setCurrentStep([currentStep - 1, -1]);
-  };
+  const prevStep = () => setCurrentStep([currentStep - 1, -1]);
 
   const onSubmit = async (data) => {
     if (!supabase) return;
     setLoading(true);
     setTrackingCode(null);
-
     if (!executeRecaptcha) {
       toast({ title: 'Error', description: 'reCAPTCHA not ready.', variant: 'destructive' });
       setLoading(false);
       return;
     }
-
     try {
       setLoadingMessage('Verifying reCAPTCHA...');
       const token = await executeRecaptcha('reportSubmission');
       const newTrackingCode = `SP-${Date.now()}`;
       let imagePath = null;
-
       if (data.image && data.image[0]) {
         setLoadingMessage('Optimizing image...');
         const optimizedImage = await ImageOptimizer.optimizeImage(data.image[0]);
         setLoadingMessage('Uploading image...');
         imagePath = await uploadReportImage(supabase, optimizedImage, newTrackingCode);
       }
-
       setLoadingMessage('Submitting report...');
       const reportData = {
         incident_type: data.incidentType,
@@ -124,7 +100,6 @@ const ReportForm = () => {
         jurisdiction: data.jurisdiction,
         contact_info: data.contactInfo ? validateText(data.contactInfo, { required: false }).value : null,
       };
-
       await createReport(supabase, reportData, token);
       setTrackingCode(newTrackingCode);
       toast({ title: 'Success', description: 'Report submitted successfully!' });
@@ -140,15 +115,12 @@ const ReportForm = () => {
     }
   };
 
+  // THIS IS THE FIX: The handleLocationChange function is now much simpler.
+  // It only receives the final data from the child component and sets the form values.
   const handleLocationChange = useCallback((location) => {
     setValue('latitude', location.lat, { shouldValidate: true });
     setValue('longitude', location.lng, { shouldValidate: true });
     setValue('jurisdiction', location.jurisdiction, { shouldValidate: true });
-    if(location.lat && location.lng) {
-      setMarkerPosition({ lat: location.lat, lng: location.lng });
-    } else {
-      setMarkerPosition(null);
-    }
   }, [setValue]);
 
   const copyToClipboard = () => {
@@ -192,10 +164,7 @@ const ReportForm = () => {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
+            transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
           >
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -227,7 +196,6 @@ const ReportForm = () => {
                   />
                   {errors.incidentType && <p className="text-sm text-destructive">{errors.incidentType.message}</p>}
                 </div>
-
                 <AnimatePresence>
                   {incidentTypeSelection === 'Other' && (
                     <motion.div
@@ -237,7 +205,7 @@ const ReportForm = () => {
                       className="grid w-full max-w-sm items-center gap-1.5 mx-auto overflow-hidden"
                     >
                       <Label htmlFor="incidentTypeOther">Please Specify <span className="text-destructive">*</span></Label>
-                      <Input 
+                      <Input
                         id="incidentTypeOther"
                         placeholder="e.g., Noise Complaint"
                         {...register('incidentTypeOther', { required: "Please specify the incident type." })}
@@ -247,7 +215,6 @@ const ReportForm = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-
                 <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
                   <Label htmlFor="severity">Severity Level <span className="text-destructive">*</span></Label>
                   <Controller name="severity" control={control} rules={{ required: 'Severity level is required.' }}
@@ -270,14 +237,10 @@ const ReportForm = () => {
                  <p className="text-xs text-muted-foreground text-center pt-2">* Required field</p>
              </div>
            )}
-
            {currentStep === 2 && (
              <div className="space-y-4">
                <h3 className="text-xl font-semibold text-center">Step 2: Where did it happen? <span className="text-destructive">*</span></h3>
-               <AddressSearchInput
-                 onLocationChange={handleLocationChange}
-                 markerPosition={markerPosition}
-               />
+               <AddressSearchInput onLocationChange={handleLocationChange} />
                <input type="hidden" {...register('latitude', { required: 'A valid location in Metro Manila is required.' })} />
                <input type="hidden" {...register('longitude', { required: 'A valid location in Metro Manila is required.' })} />
                <input type="hidden" {...register('jurisdiction')} />
@@ -285,28 +248,27 @@ const ReportForm = () => {
                <p className="text-xs text-muted-foreground text-center pt-2">* Required field</p>
              </div>
            )}
-
            {currentStep === 3 && (
               <div className="space-y-6">
                <h3 className="text-xl font-semibold text-center">Step 3: Details & Evidence</h3>
                <div className="grid w-full gap-1.5">
                  <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
-                  <Textarea 
-                    id="description" 
-                    {...register('description', { required: 'A detailed description is required.' })} 
-                    placeholder="Provide as much detail as possible..." 
+                  <Textarea
+                    id="description"
+                    {...register('description', { required: 'A detailed description is required.' })}
+                    placeholder="Provide as much detail as possible..."
                     className={errors.description ? 'border-destructive' : ''}
                   />
                   {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
                 </div>
                 <div className="grid w-full gap-1.5">
                   <Label htmlFor="contactInfo">Contact Info</Label>
-                  <Input 
-                    type="text" 
-                    id="contactInfo" 
-                    {...register('contactInfo')} 
+                  <Input
+                    type="text"
+                    id="contactInfo"
+                    {...register('contactInfo')}
                     placeholder="Email or phone number"
-                    className="border-dashed" 
+                    className="border-dashed"
                   />
                   <p className="text-xs text-muted-foreground">
                     For follow-up questions from authorities. Stays confidential.
@@ -314,7 +276,7 @@ const ReportForm = () => {
                 </div>
                 <div className="grid w-full gap-1.5">
                   <Label htmlFor="image">Attach an Image</Label>
-                  <Label 
+                  <Label
                     htmlFor="image"
                     className="relative flex items-center gap-2 h-10 w-full rounded-md border border-dashed border-secondary bg-secondary px-3 py-2 text-sm text-secondary-foreground ring-offset-background cursor-pointer transition-colors hover:bg-secondary/80"
                   >
@@ -323,12 +285,12 @@ const ReportForm = () => {
                       {selectedFile && selectedFile[0] ? selectedFile[0].name : 'Choose a file...'}
                     </span>
                   </Label>
-                  <Input 
-                    type="file" 
-                    id="image" 
-                    {...register('image')} 
-                    onChange={handleImageChange} 
-                    accept="image/*" 
+                  <Input
+                    type="file"
+                    id="image"
+                    {...register('image')}
+                    onChange={handleImageChange}
+                    accept="image/*"
                     className="sr-only"
                   />
                 </div>
