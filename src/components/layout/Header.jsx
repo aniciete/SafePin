@@ -44,7 +44,6 @@ const Header = () => {
     } else {
       return (
         <>
-          {/* --- THIS IS THE CORRECTED LINK --- */}
           <Button asChild variant="ghost" className={isMobile ? mobileNavLinkClasses : navLinkClasses}>
             <Link to="/my-reports">Track a Report</Link>
           </Button>
@@ -76,15 +75,17 @@ const Header = () => {
           <ThemeToggle />
         </nav>
         
+        {/* --- THIS IS THE FIX --- */}
         <div className="md:hidden flex items-center">
           <ThemeToggle />
-          <button onClick={toggleMobileMenu} className="p-2 ml-2" aria-label="Toggle menu">
-            <motion.div animate={mobileMenuOpen ? "open" : "closed"} className="w-6 h-6">
-              <motion.span variants={{ closed: { rotate: 0, y: 0 }, open: { rotate: 45, y: 5 } }} className="block h-0.5 w-full bg-current" />
-              <motion.span variants={{ closed: { opacity: 1 }, open: { opacity: 0 } }} className="block h-0.5 w-full bg-current my-1" />
-              <motion.span variants={{ closed: { rotate: 0, y: 0 }, open: { rotate: -45, y: -5 } }} className="block h-0.5 w-full bg-current" />
+          {/* Convert the button to a shadcn Button for consistent styling and alignment */}
+          <Button onClick={toggleMobileMenu} variant="ghost" size="icon" className="ml-2" aria-label="Toggle menu">
+            <motion.div animate={mobileMenuOpen ? "open" : "closed"} className="w-6 h-6 flex flex-col items-center justify-center">
+              <motion.span variants={{ closed: { rotate: 0, y: 0 }, open: { rotate: 45, y: 5.5 } }} className="block h-0.5 w-5 bg-current" />
+              <motion.span variants={{ closed: { opacity: 1 }, open: { opacity: 0 } }} className="block h-0.5 w-5 bg-current my-1" />
+              <motion.span variants={{ closed: { rotate: 0, y: 0 }, open: { rotate: -45, y: -5.5 } }} className="block h-0.5 w-5 bg-current" />
             </motion.div>
-          </button>
+          </Button>
         </div>
       </div>
       

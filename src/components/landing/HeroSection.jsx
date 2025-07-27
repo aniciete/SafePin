@@ -33,15 +33,17 @@ const HeroSection = () => {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="bg-background text-foreground py-20 sm:py-24 lg:py-32">
+    // --- THIS IS THE FIX (Part 1): Adjust vertical padding for mobile ---
+    <section className="bg-background text-foreground py-16 sm:py-24 lg:py-32">
       <motion.div
         className="container mx-auto px-4 text-center"
         variants={prefersReducedMotion ? {} : containerVariants}
         initial="hidden"
         animate="visible"
       >
+        {/* --- THIS IS THE FIX (Part 2): Implement responsive font sizes --- */}
         <motion.h1
-          className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl"
+          className="text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl"
           variants={itemVariants}
         >
           Report an Incident Safely & Anonymously
@@ -63,14 +65,15 @@ const HeroSection = () => {
           </Button>
         </motion.div>
         <motion.div className="mt-16" variants={itemVariants}>
-          <h2 className="text-lg font-semibold text-muted-foreground">
+          <h2 className="text-base font-semibold text-muted-foreground">
             Trusted by National Authorities & Organizations
           </h2>
-          <div className="mt-8 flex flex-wrap justify-center items-center gap-x-8 gap-y-4">
+          {/* --- THIS IS THE FIX (Part 3): Adjust spacing and logo size for mobile --- */}
+          <div className="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-6 md:gap-x-8">
             {authorities.map((authority) => (
-              <div key={authority.acronym} className="flex-shrink-0" title={authority.description}>
+              <div key={authority.acronym} className="flex-shrink-0" title={authority.name}>
                 <img
-                  className="h-12 w-auto"
+                  className="h-10 md:h-12 w-auto"
                   src={authority.logo}
                   alt={`${authority.name} (${authority.acronym})`}
                 />

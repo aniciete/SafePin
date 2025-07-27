@@ -7,6 +7,7 @@ import { ResponsiveFunnel } from '@nivo/funnel';
 import { ResponsiveWaffle } from '@nivo/waffle';
 import { ResponsiveBar } from '@nivo/bar';
 import { formatLabel } from '../../utils/formatUtils';
+import { getJurisdictionNameByCode } from '../../utils/jurisdictionUtils';
 
 const ChartPlaceholder = ({ message }) => (
   <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -18,7 +19,6 @@ const GlobalSystemOverview = () => {
   const { supabase } = useSupabase();
   const { theme } = useTheme();
 
-  // Separate state objects for each chart, including its own loading status
   const [reportStats, setReportStats] = useState({ data: [], loading: true });
   const [userStats, setUserStats] = useState({ data: [], loading: true });
   const [topJurisdictions, setTopJurisdictions] = useState({ data: [], loading: true });
@@ -36,47 +36,29 @@ const GlobalSystemOverview = () => {
     legends: { text: { fill: theme === 'dark' ? '#d1d5db' : '#374151' } },
   };
 
-  // Fetch data for each chart individually for resilience
   useEffect(() => {
-    const fetchReportStats = async () => {
+    const fetchAllStats = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_report_stats');
-        if (error) throw error;
-        setReportStats({ data: data || [], loading: false });
+        const [reportRes, userRes, jurisdictionRes] = await Promise.all([
+          supabase.rpc('get_report_stats'),
+          supabase.rpc('get_user_stats'),
+          supabase.rpc('get_top_jurisdictions_by_report_count', { limit_count: 5 })
+        ]);
+
+        setReportStats({ data: reportRes.data || [], loading: false });
+        setUserStats({ data: userRes.data || [], loading: false });
+        setTopJurisdictions({ data: jurisdictionRes.data || [], loading: false });
+
       } catch (error) {
-        console.error('Error fetching report stats:', error);
-        setReportStats({ data: [], loading: false });
+        console.error('Error fetching system overview stats:', error);
+        setReportStats(s => ({ ...s, loading: false }));
+        setUserStats(s => ({ ...s, loading: false }));
+        setTopJurisdictions(s => ({ ...s, loading: false }));
       }
     };
-
-    const fetchUserStats = async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_user_stats');
-        if (error) throw error;
-        setUserStats({ data: data || [], loading: false });
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-        setUserStats({ data: [], loading: false });
-      }
-    };
-
-    const fetchTopJurisdictions = async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_top_jurisdictions_by_report_count', { limit_count: 5 });
-        if (error) throw error;
-        setTopJurisdictions({ data: data || [], loading: false });
-      } catch (error) {
-        console.error('Error fetching top jurisdictions:', error);
-        setTopJurisdictions({ data: [], loading: false });
-      }
-    };
-
-    fetchReportStats();
-    fetchUserStats();
-    fetchTopJurisdictions();
+    fetchAllStats();
   }, [supabase]);
 
-  // Data processing hooks remain the same but now depend on the new state objects
   const funnelData = useMemo(() => {
     if (reportStats.loading || !reportStats.data) return [];
     const order = ['Pending Verification', 'Verified', 'Resolved'];
@@ -133,10 +115,12 @@ const GlobalSystemOverview = () => {
         <p className="text-muted-foreground">A global summary of system activity and health.</p>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* --- THIS IS THE FIX: Changed grid layout to be mobile-first --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader><CardTitle>Report Moderation Funnel</CardTitle><CardDescription>Flow of reports from submission to resolution.</CardDescription></CardHeader>
-          <CardContent className="h-[300px]">
+          {/* --- THIS IS THE FIX: Added responsive height --- */}
+          <CardContent className="h-[350px] md:h-[300px]">
             {reportStats.loading ? <ChartPlaceholder message="Loading..." /> : funnelData.length > 1 ? (
               <ResponsiveFunnel data={funnelData} theme={nivoTheme} margin={{ top: 20, right: 20, bottom: 20, left: 20 }} colors={{ scheme: 'spectral' }} borderWidth={20} labelColor={{ from: 'color', modifiers: [['darker', 3]] }} beforeSeparatorLength={100} beforeSeparatorOffset={20} afterSeparatorLength={100} afterSeparatorOffset={20} />
             ) : ( <ChartPlaceholder message="Not enough data for a funnel." /> )}
@@ -145,7 +129,7 @@ const GlobalSystemOverview = () => {
         
         <Card>
           <CardHeader><CardTitle>User Role Distribution</CardTitle><CardDescription>Breakdown of admin vs. authority accounts.</CardDescription></CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px] md:h-[300px]">
              {userStats.loading ? <ChartPlaceholder message="Loading..." /> : (
                 <ResponsiveWaffle data={waffleData} total={totalUsers} rows={18} columns={14} theme={nivoTheme} padding={4} margin={{ top: 10, right: 10, bottom: 50, left: 10 }} colors={{ scheme: 'set2' }} borderRadius={3} borderColor={{ from: 'color', modifiers: [['darker', 0.3]] }} legends={[{ anchor: 'bottom', direction: 'row', justify: false, translateX: 0, translateY: 40, itemsSpacing: 4, itemWidth: 100, itemHeight: 20, itemDirection: 'left-to-right', itemOpacity: 1, symbolSize: 20 }]} />
              )}
@@ -153,9 +137,9 @@ const GlobalSystemOverview = () => {
         </Card>
       </div>
       
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader><CardTitle>Top 5 Active Jurisdictions</CardTitle><CardDescription>Total reports submitted per jurisdiction.</CardDescription></CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[350px] md:h-[300px]">
           {topJurisdictions.loading ? <ChartPlaceholder message="Loading..." /> : topJurisdictionsData.length > 0 ? (
             <ResponsiveBar
                 data={topJurisdictionsData}

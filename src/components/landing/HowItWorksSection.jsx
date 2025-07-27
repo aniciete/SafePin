@@ -48,7 +48,8 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="bg-background py-20">
+    // --- THIS IS THE FIX: Reduce vertical padding on mobile ---
+    <section className="bg-background py-16 lg:py-20">
       <div className="container mx-auto px-4">
         <AnimateOnScroll>
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">
@@ -56,7 +57,8 @@ const HowItWorksSection = () => {
           </h2>
         </AnimateOnScroll>
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          // --- THIS IS THE FIX: Reduce the gap between items on mobile ---
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -65,10 +67,12 @@ const HowItWorksSection = () => {
           {steps.map((step) => (
             <motion.div
               key={step.number}
-              className="text-center p-6 rounded-lg bg-card shadow-md"
+              // --- THIS IS THE FIX: Reduce padding inside each card on mobile ---
+              className="text-center p-4 md:p-6 rounded-lg bg-card shadow-md"
               variants={itemVariants}
             >
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-primary rounded-full text-primary-foreground text-2xl font-bold">
+              {/* --- THIS IS THE FIX: Make the number bubble smaller on mobile --- */}
+              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 bg-primary rounded-full text-primary-foreground text-xl md:text-2xl font-bold">
                 {step.number}
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">{step.title}</h3>

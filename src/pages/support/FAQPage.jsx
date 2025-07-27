@@ -5,15 +5,18 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 
 const FAQItem = ({ question, answer, isOpen, onToggle }) => {
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 overflow-hidden"> {/* Add overflow-hidden for cleaner animations */}
       <CardHeader>
+        {/* --- THIS IS THE FIX: Added flexbox properties to the button --- */}
         <Button
           variant="ghost"
-          className="w-full justify-between p-0 h-auto"
+          className="w-full justify-between p-0 h-auto text-left flex items-center gap-4"
           onClick={onToggle}
         >
-          <CardTitle className="text-left">{question}</CardTitle>
-          {isOpen ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+          {/* The CardTitle will now grow and wrap text */}
+          <CardTitle className="flex-grow">{question}</CardTitle>
+          {/* The icon will not shrink */}
+          {isOpen ? <ChevronUpIcon className="h-5 w-5 flex-shrink-0" /> : <ChevronDownIcon className="h-5 w-5 flex-shrink-0" />}
         </Button>
       </CardHeader>
       {isOpen && (
@@ -26,7 +29,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => {
 };
 
 const FAQPage = () => {
-  const [openItems, setOpenItems] = useState(new Set([0])); // First item open by default
+  const [openItems, setOpenItems] = useState(new Set([0]));
 
   const toggleItem = (index) => {
     const newOpenItems = new Set(openItems);

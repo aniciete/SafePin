@@ -38,7 +38,6 @@ const UserList = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      // Use the privileged admin client to bypass RLS and fetch all users directly.
       const supabaseAdmin = getSupabaseAdmin();
       const { data, error } = await supabaseAdmin
         .from('users')
@@ -72,7 +71,7 @@ const UserList = () => {
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       if (error) throw error;
       toast({ title: 'Success', description: 'User deleted successfully!' });
-      fetchUsers(); // Refresh the list after deletion
+      fetchUsers();
     } catch (error) {
       toast({ title: 'Error deleting user', description: error.message, variant: 'destructive' });
     }
@@ -122,17 +121,18 @@ const UserList = () => {
             <CardDescription>A list of all admin and authority accounts in the system.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex items-center gap-4">
+            {/* --- THIS IS THE FIX: Make the filter/export bar responsive --- */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center md:justify-between gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row items-stretch gap-4">
                 <Input 
                   type="text" 
                   placeholder="Search by email..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm" 
+                  className="w-full sm:w-auto" 
                 />
                 <Select onValueChange={setRoleFilter} value={roleFilter}>
-                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-[180px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
@@ -140,7 +140,7 @@ const UserList = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="outline" onClick={handleExport}>
+              <Button variant="outline" onClick={handleExport} className="w-full md:w-auto">
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
