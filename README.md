@@ -37,9 +37,7 @@ npm run dev
 ## Features
 
 ### Security
-- Email verification required
-- Rate limiting on authentication endpoints
-- Session management with timeout
+- Session management
 - Input validation and sanitization
 - CSRF protection
 - XSS prevention
@@ -54,13 +52,6 @@ npm run dev
 ### Accessibility
 SafePin is committed to providing an accessible experience for all users. Our accessibility features include:
 
-#### Keyboard Navigation
-- Full keyboard support for all interactive elements
-- Focus management and trapping in modals
-- Skip links for main content
-- Visible focus indicators
-- Logical tab order
-
 #### Screen Reader Support
 - ARIA landmarks and labels
 - Semantic HTML structure
@@ -70,8 +61,6 @@ SafePin is committed to providing an accessible experience for all users. Our ac
 - Image alt text
 
 #### Visual Accessibility
-- High contrast mode support
-- Adjustable text size
 - Color-independent design
 - Clear visual hierarchy
 - Consistent layout
