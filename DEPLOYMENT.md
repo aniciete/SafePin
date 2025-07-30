@@ -1,4 +1,4 @@
-# Production Deployment Plan (v4 - Corrected)
+# Production Deployment Plan (v5 - Corrected)
 
 This document outlines the simplified process for promoting the **`safepin-staging`** project (`ztbdbqcbhgyhnjyzpvhj`) to production and deploying the frontend to Netlify.
 
@@ -20,23 +20,31 @@ Instead of migrating to a new Supabase project, we are promoting the current, st
     ```bash
     supabase functions deploy --project-ref ztbdbqcbhgyhnjyzpvhj
     ```
+6.  **Run Consolidated Migration:**
+    ```bash
+    npx supabase db push --migration 0023_consolidated_fixes.sql
+    ```
 
 ### 2. Frontend Deployment (Netlify)
-6.  **Build the Frontend:**
+7.  **Run Tests:**
+    ```bash
+    npm run test
+    ```
+8.  **Build the Frontend:**
     ```bash
     npm run build
     ```
-7.  **Deploy to Netlify:**
+9.  **Deploy to Netlify:**
     ```bash
     # Ensure you are logged in to the Netlify CLI
     netlify deploy --dir=dist --prod
     ```
-8.  **Configure Netlify & Supabase:**
+10. **Configure Netlify & Supabase:**
     *   In the Netlify UI, go to **Site settings > Build & deploy > Environment** and add your production environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_MAPS_API_KEY`).
     *   In the Supabase Dashboard, go to **Authentication > URL Configuration** and set the **Site URL** to your production Netlify URL.
 
 ### 3. Final Verification
-9.  **Perform Production Smoke Test:**
+11. **Perform Production Smoke Test:**
     - [ ] Access the production URL and check for console errors.
     - [ ] Submit a new anonymous report with an image.
     - [ ] Verify the report can be tracked with the generated code.

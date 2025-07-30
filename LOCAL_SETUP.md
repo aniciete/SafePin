@@ -66,7 +66,7 @@ DB_PASSWORD="YOUR_DB_PASSWORD"
 
 ## 5. Apply the New Schema
 
-Now that your local environment is running, you can apply the new schema by running the migration files.
+Now that your local environment is running, you can apply the new schema by running the consolidated migration file.
 
 ```bash
 supabase db reset

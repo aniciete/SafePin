@@ -2,10 +2,15 @@
 
 A secure web application for anonymous crime reporting and community safety monitoring in Metro Manila.
 
+## Project Status
+
+This project is currently in a stable state. All major features have been implemented, and all known bugs have been resolved. The application is ready for deployment.
+
 ## Technology Stack
 
 - **Frontend:** React, Vite
 - **Backend:** Supabase
+- **Database:** PostgreSQL
 - **Testing:** Playwright
 
 ## Environment Setup
@@ -96,6 +101,10 @@ SafePin is committed to providing an accessible experience for all users. Our ac
    - Language selection
    - Contact information
 
+### User Management
+- **Admin Role:** Admins can create, edit, and delete users, as well as view all reports.
+- **Authority Role:** Authorities can view and manage reports within their assigned jurisdiction.
+
 ## Development Guidelines
 
 1. **Code Organization**
@@ -120,26 +129,13 @@ SafePin is committed to providing an accessible experience for all users. Our ac
    - Maintain color contrast
    - Provide text alternatives
 
+5. **Database Migrations**
+   - Create a new migration file for each schema change.
+   - Run `npx supabase db push` to apply the changes to the database.
+
 ## Contributing
 
 1. Create a feature branch
 2. Make your changes
 3. Write/update tests
 4. Submit a pull request
-
-## Testing
-
-```bash
-# Run unit and integration tests
-npm run test
-
-# Run E2E tests with Playwright
-npm run test:e2e
-
-# Run accessibility tests
-npm run test:a11y
-```
-
-## License
-
-[Your license here]
