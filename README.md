@@ -12,6 +12,7 @@
 - [Available Scripts](#available-scripts)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## Project Status
 
@@ -88,7 +89,9 @@ graph TD
 
 ### User Flows
 
-This diagram illustrates the primary user flows for both anonymous reporting and authenticated user actions.
+This section contains diagrams illustrating the primary user flows for each user role.
+
+#### Public User Flow (Anonymous Reporting)
 
 ```mermaid
 sequenceDiagram
@@ -96,9 +99,8 @@ sequenceDiagram
     participant Frontend
     participant Google_APIs as Google APIs (Maps, reCAPTCHA)
     participant Supabase_Edge_Functions as Supabase Edge Functions
-    participant Supabase_Backend as Supabase Backend (Auth, DB, Storage)
+    participant Supabase_Backend as Supabase Backend (DB, Storage)
 
-    %% Anonymous Report Submission
     User->>Frontend: 1. View map
     Frontend->>Google_APIs: 2. Fetch map tiles
     Google_APIs-->>Frontend: 3. Display map
@@ -114,17 +116,53 @@ sequenceDiagram
     Supabase_Backend-->>Supabase_Edge_Functions: 13. Return tracking ID
     Supabase_Edge_Functions-->>Frontend: 14. Success & tracking ID
     Frontend-->>User: 15. Display success message
+```
 
-    %% Authenticated User Login & Data Access
-    User->>Frontend: 1. Navigate to Login
-    User->>Frontend: 2. Submit credentials
-    Frontend->>Supabase_Backend: 3. Authenticate with Supabase Auth
-    Supabase_Backend-->>Frontend: 4. Authentication successful (JWT)
-    Frontend->>User: 5. Redirect to Dashboard
-    User->>Frontend: 6. Request data (e.g., reports)
-    Frontend->>Supabase_Backend: 7. Fetch data from DB via PostgREST (with RLS)
-    Supabase_Backend-->>Frontend: 8. Return filtered data
-    Frontend-->>User: 9. Display data in dashboard
+#### Authority User Flow
+
+```mermaid
+sequenceDiagram
+    participant Authority as Authority User
+    participant Frontend
+    participant Supabase_Backend as Supabase Backend (Auth, DB)
+
+    Authority->>Frontend: 1. Navigate to Login & submit credentials
+    Frontend->>Supabase_Backend: 2. Authenticate with Supabase Auth
+    Supabase_Backend-->>Frontend: 3. Authentication successful (JWT)
+    Frontend->>Authority: 4. Redirect to Authority Dashboard
+    Authority->>Frontend: 5. Request reports for jurisdiction
+    Frontend->>Supabase_Backend: 6. Fetch reports from DB via PostgREST (with RLS)
+    Supabase_Backend-->>Frontend: 7. Return filtered reports
+    Frontend-->>Authority: 8. Display reports in dashboard
+```
+
+#### Admin User Flow
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin User
+    participant Frontend
+    participant Supabase_Edge_Functions as Supabase Edge Functions
+    participant Supabase_Backend as Supabase Backend (Auth, DB)
+
+    Admin->>Frontend: 1. Navigate to Login & submit credentials
+    Frontend->>Supabase_Backend: 2. Authenticate with Supabase Auth
+    Supabase_Backend-->>Frontend: 3. Authentication successful (JWT)
+    Frontend->>Admin: 4. Redirect to Admin Dashboard
+    
+    %% View All Reports
+    Admin->>Frontend: 5a. Request all reports
+    Frontend->>Supabase_Backend: 6a. Fetch all reports from DB (bypasses RLS)
+    Supabase_Backend-->>Frontend: 7a. Return all reports
+    Frontend-->>Admin: 8a. Display reports
+    
+    %% Manage Users
+    Admin->>Frontend: 5b. Perform user management action (Create/Update/Delete)
+    Frontend->>Supabase_Edge_Functions: 6b. Invoke create-update-delete-user(userData)
+    Supabase_Edge_Functions->>Supabase_Backend: 7b. Interact with Supabase Auth & profiles table
+    Supabase_Backend-->>Supabase_Edge_Functions: 8b. Return success/failure
+    Supabase_Edge_Functions-->>Frontend: 9b. Relay result
+    Frontend-->>Admin: 10b. Display confirmation
 ```
 
 ## Technology Stack
