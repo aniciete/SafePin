@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       }
       return { profile: null, error: new Error('Login failed: No user data returned.') };
     },
-    logout: () => supabase.auth.signOut(),
+    logout: () => supabase.auth.signOut({ scope: 'local' }),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
