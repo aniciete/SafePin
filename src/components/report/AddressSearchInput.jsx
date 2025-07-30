@@ -12,7 +12,8 @@ import MapMarker from '../map/MapMarker';
 
 const AddressSearchInput = ({ onLocationChange }) => {
   const { isApiLoaded, getJurisdiction, reverseGeocode } = useGoogleMaps();
-  const { map, isLoaded, initMap } = useMap();
+  // --- THIS IS THE FIX (Part 1): Get the new setMapContainer function from the context ---
+  const { map, isLoaded, setMapContainer } = useMap();
   
   const [jurisdictionInfo, setJurisdictionInfo] = useState({ name: null, code: null });
   const [isGeolocating, setIsGeolocating] = useState(false);
@@ -21,27 +22,21 @@ const AddressSearchInput = ({ onLocationChange }) => {
   const markerRootRef = useRef(null);
 
   const updateLocation = useCallback(async (newLocation, newAddress = null) => {
-    if (!newLocation || !newLocation.lat || !newLocation.lng) return;
+    if (!newLocation || !newLocation.lat || !newLocation.lng || !map) return;
 
     if (!isWithinMetroManila(newLocation)) {
       alert('The selected location is outside Metro Manila. Please choose a location within the NCR.');
       return;
     }
     
-    // --- THIS IS THE FINAL FIX ---
-    // This logic ensures the map always moves to the new pin.
-    if (map) {
-      // Use panTo() for a smooth transition. This is more reliable than setCenter().
-      map.panTo(newLocation);
-      // If the map is zoomed out too far, zoom in. Otherwise, keep the user's zoom level.
-      if (map.getZoom() < 14) {
-        map.setZoom(16);
-      }
+    map.panTo(newLocation);
+    if (map.getZoom() < 14) {
+      map.setZoom(16);
     }
     
     if (markerRef.current) {
       markerRef.current.position = newLocation;
-    } else if (map) {
+    } else {
       const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
       const container = document.createElement('div');
       markerRootRef.current = createRoot(container);
@@ -83,7 +78,9 @@ const AddressSearchInput = ({ onLocationChange }) => {
       const listener = map.addListener('click', (e) => {
         updateLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
       });
-      return () => google.maps.event.removeListener(listener);
+      return () => {
+        google.maps.event.removeListener(listener);
+      };
     }
   }, [map, updateLocation]);
   
@@ -121,7 +118,9 @@ const AddressSearchInput = ({ onLocationChange }) => {
         <Input ref={inputRef} id="address-search" type="text" placeholder="e.g., Ayala Avenue, Makati" />
       </div>
       <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-md" role="application">
-        <div ref={initMap} className="h-full w-full" />
+        {/* --- THIS IS THE FIX (Part 2): Use the `setMapContainer` function as the ref --- */}
+        {/* This tells the context about the div every time it mounts. */}
+        <div ref={setMapContainer} className="h-full w-full" />
         {!isLoaded && <MapViewSkeleton />}
         <Button type="button" size="icon" className="absolute top-2 right-2 z-10" onClick={handleGetCurrentLocation} disabled={isGeolocating}>
           <Crosshair className={`h-5 w-5 ${isGeolocating ? 'animate-pulse' : ''}`} />

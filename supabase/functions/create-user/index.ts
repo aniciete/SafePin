@@ -2,7 +2,6 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -12,12 +11,20 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+        global: {
+          headers: {
+            'bypass-rls': 'true',
+          },
+        },
+      }
     );
 
-    // Create the user in the 'auth.users' table.
-    // The database trigger 'on_auth_user_created_direct' will automatically
-    // handle creating the corresponding profile in 'public.users'.
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -26,11 +33,8 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
-      // If user creation fails, throw the error.
       throw createError;
     }
-    
-    // We no longer need to manually insert the profile here. The trigger does it.
 
     return new Response(JSON.stringify({ message: 'User created successfully.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

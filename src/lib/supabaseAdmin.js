@@ -8,7 +8,25 @@ let supabaseAdmin = null;
  * It MUST ONLY be used in admin-only components protected by an AuthGuard.
  * The client is created as a singleton to avoid the "Multiple GoTrueClient instances" error.
  */
-export const getSupabaseAdmin = () => {
+export const getSupabaseAdmin = (jwt) => {
+  // If a JWT is provided, create a new client with the user's auth context.
+  // This is necessary for calling Edge Functions from the client-side.
+  if (jwt) {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !anonKey) {
+      throw new Error("Supabase URL and Anon Key are required for the user-context client.");
+    }
+    return createClient(supabaseUrl, anonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      },
+    });
+  }
+
+  // Otherwise, return the singleton admin client.
   if (supabaseAdmin) {
     return supabaseAdmin;
   }

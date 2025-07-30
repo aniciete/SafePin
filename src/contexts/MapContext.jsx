@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
+// --- THIS IS THE FIX: Add `useEffect` to the import statement ---
+import React, { createContext, useContext, useRef, useState, useCallback, useEffect } from 'react';
 import mapLoader from '../services/mapLoader';
 
 const MapContext = createContext();
@@ -8,10 +9,10 @@ export const useMap = () => useContext(MapContext);
 export const MapProvider = ({ children }) => {
   const mapRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  const [mapContainer, setMapContainer] = useState(null);
 
-  // This callback creates the map instance and stores it in a ref.
-  // It is designed to be called only once when the map container div is mounted.
-  const initMap = useCallback((mapContainer) => {
+  const initMap = useCallback(() => {
     if (mapRef.current || !mapContainer) return;
 
     mapLoader.load().then(async (google) => {
@@ -27,9 +28,20 @@ export const MapProvider = ({ children }) => {
       mapRef.current = map;
       setIsLoaded(true);
     });
-  }, []);
+  }, [mapContainer]);
 
-  const value = { map: mapRef.current, isLoaded, initMap };
+  useEffect(() => {
+    if (mapContainer) {
+      if (!mapRef.current) {
+        initMap();
+      } else {
+        // This is the official Google Maps API method to re-attach a map to a new div.
+        mapContainer.appendChild(mapRef.current.getDiv());
+      }
+    }
+  }, [mapContainer, initMap]);
+
+  const value = { map: mapRef.current, isLoaded, setMapContainer };
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>;
 };

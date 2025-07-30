@@ -61,7 +61,7 @@ const ReportFeedItem = ({ report, isSelected, onSelect, onHover }) => {
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
-          {report.image_path && (
+          {report.image_url && (
             <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           )}
           <h4 className="font-semibold text-sm">{report.incident_type}</h4>

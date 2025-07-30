@@ -75,6 +75,27 @@ node_modules/
 LOOKenv
 LOOKenv.local
 
+remote_backup.sql
+
+# Local Netlify state
+.netlify/
+
+# Local Supabase folders
+supabase/.branches/
+supabase/.temp/
+
+# IDE / Editor folders
+.vscode/
+.idea/
+.superdesign/
+
+# Test results & backups
+test-results/
+*.sql
+
+# macOS folder attributes
+.DS_Store
+
 # Local Netlify folder
 .netlify
 Xenv.example

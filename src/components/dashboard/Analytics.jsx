@@ -260,8 +260,8 @@ const Analytics = ({ reports }) => {
             valueFormat=">-.0s"
             axisTop={null}
             axisRight={null}
-            axisBottom={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Hour of Day', legendPosition: 'middle', legendOffset: 46, format: v => `${v}:00` }}
-            axisLeft={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Day of Week', legendPosition: 'middle', legendOffset: -70 }}
+            axisBottom={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Hour of Day', legendPosition: 'middle', legendOffset: 32.5, format: v => `${v}:00` }}
+            axisLeft={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Day of Week', legendPosition: 'middle', legendOffset: -80 }}
             colors={{ type: 'sequential', scheme: 'greens' }}
             emptyColor={theme === 'dark' ? '#1f2937' : '#f9fafb'}
             legends={[{ anchor: 'bottom', translateX: 0, translateY: 60, length: 400, thickness: 8, direction: 'row', tickPosition: 'after', tickSize: 3, tickSpacing: 4, tickOverlap: false, title: 'Less Frequent → More Frequent' }]}

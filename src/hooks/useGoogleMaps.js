@@ -37,9 +37,9 @@ export const useGoogleMaps = () => {
     }
 
     try {
+      // --- THIS IS THE FIX: Call the new function with a single JSONB parameter ---
       const { data: psgc, error } = await supabase.rpc('get_jurisdiction_for_location', {
-        lat: location.lat,
-        lng: location.lng,
+        location_data: location // Pass the whole { lat, lng } object
       });
 
       if (error) {
@@ -69,7 +69,6 @@ export const useGoogleMaps = () => {
           resolve(results[0].formatted_address);
         } else {
           console.error('Reverse geocode failed:', status);
-          // Fallback to coordinates if address lookup fails
           resolve(`Lat: ${location.lat.toFixed(5)}, Lng: ${location.lng.toFixed(5)}`);
         }
       });

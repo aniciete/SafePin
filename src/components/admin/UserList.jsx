@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSupabase } from '@/contexts/SupabaseContext';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { useToast } from '@/hooks/use-toast';
 import CreateUserForm from './CreateUserForm';
@@ -27,6 +28,7 @@ const UserTableRowSkeleton = () => (
 );
 
 const UserList = () => {
+  const { supabase } = useSupabase();
   const { toast } = useToast();
   
   const [allUsers, setAllUsers] = useState([]);
@@ -67,8 +69,13 @@ const UserList = () => {
 
   const handleDelete = async (userId) => {
     try {
-      const supabaseAdmin = getSupabaseAdmin();
-      const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseAdmin = getSupabaseAdmin(session.access_token);
+      const { error } = await supabaseAdmin.functions.invoke('delete-user', {
+        body: JSON.stringify({ userId }),
+      });
       if (error) throw error;
       toast({ title: 'Success', description: 'User deleted successfully!' });
       fetchUsers();
@@ -180,7 +187,7 @@ const UserList = () => {
                            </Button>
                            <Dialog>
                              <DialogTrigger asChild>
-                               <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                               <Button variant="ghost" size="icon" className="text-destructive hover:text-white">
                                  <Trash2 className="h-4 w-4" />
                                </Button>
                              </DialogTrigger>

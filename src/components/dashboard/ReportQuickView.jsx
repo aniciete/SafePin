@@ -39,11 +39,11 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
     if (report.location) {
       reverseGeocode(report.location).then(setAddress);
     }
-    if (report.image_path) {
+    if (report.image_url) {
       const fetchImageUrl = async () => {
         const { data, error } = await supabase.storage
           .from('reports')
-          .createSignedUrl(report.image_path, 60);
+          .createSignedUrl(report.image_url, 60);
         if (error) {
           console.error('Error fetching signed URL:', error);
           return;
@@ -57,10 +57,19 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
   if (!report) return null;
 
   const handleUpdateStatus = async (newStatus) => {
+    console.log(`Attempting to update report ${report.id} to status ${newStatus}`);
     setIsUpdatingStatus(true);
     try {
-      const { error } = await supabase.from('reports').update({ status: newStatus }).eq('id', report.id);
-      if (error) throw error;
+      const { error } = await supabase.rpc('update_report_details', {
+        report_id_arg: report.id,
+        new_status: newStatus,
+        new_notes: notes,
+      });
+      if (error) {
+        console.error('Error updating status:', error);
+        throw error;
+      }
+      console.log('Update successful');
       toast({ title: 'Success', description: `Report status updated to ${newStatus}.` });
       onReportUpdate();
       onClose();
@@ -72,10 +81,19 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
   };
 
   const handleSaveNotes = async () => {
+    console.log(`Attempting to save notes for report ${report.id}`);
     setIsSavingNotes(true);
     try {
-      const { error } = await supabase.from('reports').update({ notes: notes }).eq('id', report.id);
-      if (error) throw error;
+      const { error } = await supabase.rpc('update_report_details', {
+        report_id_arg: report.id,
+        new_status: report.status,
+        new_notes: notes,
+      });
+      if (error) {
+        console.error('Error saving notes:', error);
+        throw error;
+      }
+      console.log('Save notes successful');
       toast({ title: 'Success', description: 'Notes saved successfully.' });
       onReportUpdate();
     } catch (error) {
@@ -100,7 +118,7 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             {report.incident_type}
-            {report.image_path && <Paperclip className="h-5 w-5 text-muted-foreground" />}
+            {report.image_url && <Paperclip className="h-5 w-5 text-muted-foreground" />}
           </DialogTitle>
           <DialogDescription>
             {address ? address : <Skeleton className="h-4 w-3/4" />}
@@ -130,7 +148,7 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
             </div>
           )}
 
-          {report.image_path && (
+          {report.image_url && (
             <div>
               <h4 className="font-semibold mb-2">Attached Image</h4>
               {imageUrl ? (
@@ -165,6 +183,13 @@ const ReportQuickView = ({ report, onClose, onReportUpdate }) => {
               </Button>
               <Button onClick={() => handleUpdateStatus('verified')} disabled={isUpdatingStatus}>
                 Verify
+              </Button>
+            </div>
+          )}
+          {report.status === 'verified' && (
+            <div className="w-full flex justify-end gap-2">
+              <Button onClick={() => handleUpdateStatus('resolved')} disabled={isUpdatingStatus}>
+                Mark as Resolved
               </Button>
             </div>
           )}

@@ -15,10 +15,13 @@ const AuthGuard = ({ children, role }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. If there IS a user but the profile is still loading, or the role doesn't match, redirect.
-  // This handles the case where the user object is restored but the profile fetch isn't complete.
-  // The check for profile is crucial.
-  if (!profile || (role && profile.role !== role)) {
+  // 3. If there IS a user but the profile is still loading, show a loading indicator.
+  if (user && !profile) {
+    return <div className="flex items-center justify-center h-screen">Loading profile...</div>;
+  }
+
+  // 4. If the profile has loaded but the role doesn't match, redirect.
+  if (profile && role && profile.role !== role) {
     // Redirect non-matching roles to the homepage.
     return <Navigate to="/" replace />;
   }

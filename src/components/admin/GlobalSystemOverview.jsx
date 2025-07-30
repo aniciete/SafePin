@@ -122,7 +122,7 @@ const GlobalSystemOverview = () => {
           {/* --- THIS IS THE FIX: Added responsive height --- */}
           <CardContent className="h-[350px] md:h-[300px]">
             {reportStats.loading ? <ChartPlaceholder message="Loading..." /> : funnelData.length > 1 ? (
-              <ResponsiveFunnel data={funnelData} theme={nivoTheme} margin={{ top: 20, right: 20, bottom: 20, left: 20 }} colors={{ scheme: 'spectral' }} borderWidth={20} labelColor={{ from: 'color', modifiers: [['darker', 3]] }} beforeSeparatorLength={100} beforeSeparatorOffset={20} afterSeparatorLength={100} afterSeparatorOffset={20} />
+              <ResponsiveFunnel data={funnelData} theme={nivoTheme} margin={{ top: 20, right: 20, bottom: 20, left: 20 }} colors={{ scheme: 'spectral' }} borderWidth={20} labelColor="white" beforeSeparatorLength={100} beforeSeparatorOffset={20} afterSeparatorLength={100} afterSeparatorOffset={20} />
             ) : ( <ChartPlaceholder message="Not enough data for a funnel." /> )}
           </CardContent>
         </Card>
@@ -151,7 +151,12 @@ const GlobalSystemOverview = () => {
                 padding={0.4}
                 valueScale={{ type: 'linear' }}
                 indexScale={{ type: 'band', round: true }}
-                colors={'hsl(var(--primary))'}
+                colors={({ id, data }) => {
+                  const value = data.count;
+                  if (value > 100) return 'hsl(var(--destructive))';
+                  if (value > 50) return 'hsl(var(--warning))';
+                  return 'hsl(var(--primary))';
+                }}
                 borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
                 axisTop={null}
                 axisRight={null}
@@ -170,7 +175,7 @@ const GlobalSystemOverview = () => {
                 }}
                 enableGridY={false}
                 labelSkipWidth={12}
-                labelTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+                labelTextColor="white"
                 animate={true}
             />
           ) : (

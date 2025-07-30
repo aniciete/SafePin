@@ -52,3 +52,5 @@ src/utils/jurisdictions-trunc.json
 # Supabase CLI internal state
 !supabase/.temp/
 !supabase/.branches/
+
+src/utils/metroManilaBoundary.json

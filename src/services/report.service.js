@@ -1,21 +1,25 @@
 /**
  * Uploads an image to Supabase Storage.
  */
-export const uploadReportImage = async (supabase, file, trackingCode) => {
+export const uploadReportImage = async (supabase, file) => {
   if (!file) {
+    console.error('uploadReportImage called with no file.');
     throw new Error('No image file provided.');
   }
+  console.log('Uploading file:', file);
   const fileExt = file.name.split('.').pop();
-  const fileName = `${trackingCode}.${fileExt}`;
-  const filePath = `reports/${fileName}`;
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = fileName;
 
   const { error: uploadError } = await supabase.storage
     .from('reports')
     .upload(filePath, file);
 
   if (uploadError) {
+    console.error('Supabase Storage Error:', uploadError);
     throw new Error(`Image upload failed: ${uploadError.message}`);
   }
+  console.log('Upload successful. Path:', filePath);
   return filePath;
 };
 
@@ -26,7 +30,7 @@ export const createReport = async (supabase, reportData, token) => {
   // This function now sends the entire report payload AND the reCAPTCHA token
   // to our new all-in-one Edge Function.
   const { data, error } = await supabase.functions.invoke('submit-report', {
-    body: { reportData, token },
+    body: JSON.stringify({ reportData, token }),
   });
 
   if (error) {
